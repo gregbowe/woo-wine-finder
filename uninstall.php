@@ -1,0 +1,31 @@
+<?php
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
+}
+
+if (!defined('MNW_WOO_OPTION')) {
+    define('MNW_WOO_OPTION', 'mnw_woo_settings');
+}
+if (!defined('MNW_WOO_API_BASE_URL')) {
+    // The API client defaults to the public service when no developer override exists.
+}
+
+$client_file = __DIR__ . '/includes/class-mnw-api-client.php';
+if (file_exists($client_file)) {
+    require_once $client_file;
+    if (class_exists('MNW_Woo_API_Client')) {
+        $client = new MNW_Woo_API_Client();
+        if ($client->is_configured()) {
+            // Best effort. A failed network call must never prevent WordPress uninstall.
+            $client->revoke();
+        }
+    }
+}
+
+wp_clear_scheduled_hook('mnw_woo_bootstrap_installation');
+wp_clear_scheduled_hook('mnw_woo_start_catalogue_sync');
+wp_clear_scheduled_hook('mnw_woo_sync_catalogue_page');
+wp_clear_scheduled_hook('mnw_woo_catalogue_reconcile');
+delete_option('mnw_woo_settings');
+delete_option('mnw_woo_catalogue_sync_state');
+delete_option('mnw_woo_bootstrap_lock');

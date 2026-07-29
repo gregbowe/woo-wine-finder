@@ -1,0 +1,9 @@
+*** My Next Wine for WooCommerce Changelog ***
+
+2026-07-29 - version 0.3.1
+* Added separate shopper-facing Wine Finder User Terms and linked them beside the recommendation button.
+* Strengthened merchant/customer ownership, AI transparency, platform-review, no-conversion-guarantee and privacy disclosures.
+* Updated the Merchant Terms acceptance version to 2026-07-29-2.
+
+2026-07-29 - version 0.3.0
+* Added consent-based store connection, versioned Merchant Terms acceptance, privacy disclosures and WordPress Privacy Policy Guide text.
