@@ -61,9 +61,11 @@ final class MNW_Woo_Widget {
         $widget_id = 'woo-' . wp_generate_uuid4();
         $heading = (string) ($settings['heading'] ?? 'Need help choosing wine?');
         $launcher_label = (string) ($settings['launcher_label'] ?? 'Find my wines');
+        $intro = (string) ($settings['intro'] ?? "Answer a few questions and get a selection from this shop's current range.");
         $button_label = (string) ($settings['button_label'] ?? 'Add selected to basket');
-        $launcher_position = 'left' === ($settings['launcher_position'] ?? 'right') ? 'left' : 'right';
+        $launcher_position = 'right' === ($settings['launcher_position'] ?? 'left') ? 'right' : 'left';
         $inherit_theme_styles = 'yes' === ($settings['inherit_theme_styles'] ?? 'yes') ? 'true' : 'false';
+        $analytics_enabled = 'yes' === ($settings['analytics_enabled'] ?? 'no') ? 'true' : 'false';
         $accent_color = sanitize_hex_color((string) ($settings['accent_color'] ?? '')) ?: '#722f37';
         $accent_text_color = sanitize_hex_color((string) ($settings['accent_text_color'] ?? '')) ?: '#ffffff';
         $configuration_endpoint = rest_url('my-next-wine/v1/configuration');

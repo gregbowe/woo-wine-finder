@@ -11,6 +11,7 @@ if (!defined('ABSPATH')) { exit; }
   data-swap-endpoint="<?php echo esc_url($swap_endpoint); ?>"
   data-events-endpoint="<?php echo esc_url($events_endpoint); ?>"
   data-cart-endpoint="<?php echo esc_url($cart_endpoint); ?>"
+  data-mnw-analytics-enabled="<?php echo esc_attr($analytics_enabled); ?>"
   data-mnw-wp-nonce="<?php echo esc_attr($wp_nonce); ?>"
   data-inherit-theme-styles="<?php echo esc_attr($inherit_theme_styles); ?>"
   data-fallback-accent="<?php echo esc_attr($accent_color); ?>"
@@ -68,7 +69,10 @@ if (!defined('ABSPATH')) { exit; }
             Wine, picked for you.
           </h2>
           <p class="mnw-wine-finder__aside-copy">
-            Four quick questions. We will choose from this shop's live range.
+            <?php echo esc_html($intro); ?>
+          </p>
+          <p class="mnw-wine-finder__aside-copy">
+            Automated, AI-assisted recommendations. Wine is sold and fulfilled by this shop.
           </p>
         </div>
 
@@ -322,7 +326,7 @@ if (!defined('ABSPATH')) { exit; }
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                A grape, region, style or dislike is enough.
+                A grape, region, style or dislike is enough. Do not enter names, contact details, allergies, health information or other sensitive personal information.
               </p>
 
               <div class="mnw-field">
@@ -371,7 +375,7 @@ if (!defined('ABSPATH')) { exit; }
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                Optional. Leave blank if it does not matter.
+                Optional. Leave blank if it does not matter. Do not enter names, contact details, allergies, health information or other sensitive personal information.
               </p>
 
               <div class="mnw-field">

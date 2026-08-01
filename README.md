@@ -11,7 +11,7 @@ A GPL-licensed WooCommerce connector for the externally hosted My Next Wine B2B 
 5. A new B2B-only merchant account is created automatically, or an existing WooCommerce merchant is safely reused.
 6. For a new B2B-only merchant, the plugin pushes a complete signed catalogue snapshot and keeps it reconciled.
 7. My Next Wine maps or ignores the products.
-8. Once the catalogue is ready, the merchant starts the 30-day trial and enables the widget.
+8. Once the catalogue is ready, the merchant completes WooCommerce.com checkout to start the 30-day trial and then enables the widget.
 
 The merchant never handles a Somm ID, installation ID, installation secret, connection code or WooCommerce REST API key.
 
@@ -34,7 +34,7 @@ No store or catalogue information is sent solely because the plugin is installed
 - a generated installation identity, ownership challenge and accepted terms version;
 - product/variation identifiers, descriptions, images, attributes, prices and availability;
 - the current shopper recommendation criteria when a recommendation is requested;
-- aggregate widget events; and
+- optional aggregate widget events, off by default and consent-gated; and
 - for attributed orders, order/product references, quantities, currency and total, without customer identity, address or payment-card details.
 
 The service may use contracted infrastructure, monitoring, support and AI providers as described in the Privacy Statement and subprocessor list.
@@ -42,6 +42,7 @@ The service may use contracted infrastructure, monitoring, support and AI provid
 ## What the plugin does
 
 - Displays the four-step My Next Wine Wine Finder.
+- Gives merchants Shopify-equivalent controls for launcher placement, theme inheritance, colours, labels, introduction text, optional My Next Wine notes and optional ratings.
 - Sends shopper answers to My Next Wine through signed server-to-server requests.
 - Registers the WooCommerce installation using a short-lived ownership challenge after consent.
 - Pushes full, signed catalogue snapshots for B2B-only installations.
@@ -77,11 +78,20 @@ When the store URL uniquely matches an existing My Next Wine WooCommerce merchan
 
 Ambiguous or conflicting matches are rejected for manual support review rather than linked automatically.
 
+## Woo Marketplace billing
+
+- The backend creates the monthly contract through WooCommerce.com's SaaS Billing API and redirects the merchant to Woo checkout.
+- The Wine Finder is activated only by a valid signed `saas_billing_contract.activated` webhook, never by the browser return alone.
+- Woo handles renewals, payment retries, invoices and tax calculation. Failed renewals pause access until a signed renewal event arrives.
+- Merchants can cancel from **WooCommerce → My Next Wine**; access remains until Woo reports that the prepaid term has ended.
+- Approved refunds are handled in the Woo vendor dashboard and signed refunded/canceled events remove access.
+- Uninstalling the plugin revokes the local service connection but does not silently cancel a WooCommerce.com subscription.
+
 ## Public-release prerequisites
 
-- Set the full legal entity name, business address, company/registration number, VAT number where applicable, and monitored support/privacy email in production.
+- Set the sole-trader legal name, genuine geographic business address, CRO business-name registration number and monitored support/privacy email in the backend AWS Secrets Manager record. Leave VAT blank while not VAT registered.
 - Publish the Merchant Terms, Privacy Statement and subprocessor list at the URLs above.
-- Complete the chosen public billing integration and make price, tax, renewal, cancellation and refund handling visible before the merchant starts a paid plan.
+- Obtain Woo Marketplace sandbox credentials, register the signed webhook URL, complete Woo technical review and then replace the sandbox API host/credentials with production values.
 - Test against the exact WordPress/WooCommerce/PHP versions claimed in `readme.txt` and update `Tested up to` before submission.
 - Prepare support, security, accessibility, screenshots and reviewer instructions for the selected WordPress.org or Woo Marketplace route.
 
@@ -90,7 +100,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- Paid public launch still depends on the selected Stripe or Woo Marketplace billing implementation being complete and disclosed.
+- Woo Marketplace currently settles SaaS Billing API plans in USD; the public plan is therefore USD 29.99/month plus tax unless Woo approves another currency.
 
 ## Local development
 

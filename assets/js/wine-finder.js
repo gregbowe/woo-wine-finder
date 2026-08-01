@@ -22,6 +22,7 @@
     const configEndpoint = root.dataset.configEndpoint;
     const swapEndpoint = root.dataset.swapEndpoint;
     const eventsEndpoint = root.dataset.eventsEndpoint;
+    const analyticsEnabled = root.dataset.mnwAnalyticsEnabled === "true";
     const cartEndpoint = root.dataset.cartEndpoint;
     const wpNonce = root.dataset.mnwWpNonce;
     const dialog = root.querySelector("[data-mnw-dialog]");
@@ -372,7 +373,7 @@
 
     const openDialog = () => {
       if (!configurationReady) return;
-      sendAnalytics(eventsEndpoint, pageSessionId, "OPEN");
+      sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "OPEN");
       if (typeof dialog.showModal === "function") {
         if (!dialog.open) dialog.showModal();
       } else {
@@ -715,7 +716,7 @@
           currencyPrecision
         );
         currentRequest = payload;
-        sendAnalytics(eventsEndpoint, pageSessionId, "RECOMMENDATION_REQUEST", {
+        sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "RECOMMENDATION_REQUEST", {
           budget: payload.budget,
           bottleCount: payload.bottleCount
         });
@@ -743,7 +744,7 @@
         };
         currentRecommendation = result;
         showRecommendationSelection("exact");
-        sendAnalytics(eventsEndpoint, pageSessionId, "RECOMMENDATION_RESULT", {
+        sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "RECOMMENDATION_RESULT", {
           selectionTotal: Number(result.total || 0)
         });
 
@@ -818,7 +819,7 @@
         };
         showRecommendationSelection("exact");
         restoreSelectedWineIds(resultsElement, selectedIds, response.wine.sommWineId, wineToReplace.sommWineId);
-        sendAnalytics(eventsEndpoint, pageSessionId, "SWAP");
+        sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "SWAP");
       } catch (error) {
         console.error("Wine finder swap error", error);
         showError(error.message || "That wine could not be swapped. Please try again.");
@@ -846,7 +847,7 @@
       setPhase("cart");
 
       try {
-        sendAnalytics(eventsEndpoint, pageSessionId, "ADD_TO_CART");
+        sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "ADD_TO_CART");
         await addWinesToCart(
           cartEndpoint,
           wpNonce,
@@ -935,7 +936,7 @@
         openButton.disabled = false;
         openButton.setAttribute("aria-busy", "false");
         openButton.removeAttribute("title");
-        sendAnalytics(eventsEndpoint, pageSessionId, "IMPRESSION");
+        sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "IMPRESSION");
       })
       .catch((error) => {
         configurationReady = false;
@@ -1214,8 +1215,17 @@
     return `wf-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   };
 
-  const sendAnalytics = (endpoint, sessionId, type, details = {}) => {
-    if (!endpoint) return;
+  const wordpressStatisticsConsentAllowed = () => {
+    try {
+      return typeof window.wp_has_consent === "function"
+        && window.wp_has_consent("statistics") === true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const sendAnalytics = (enabled, endpoint, sessionId, type, details = {}) => {
+    if (!enabled || !endpoint || !wordpressStatisticsConsentAllowed()) return;
     const body = JSON.stringify({ type, sessionId, ...details });
     fetch(endpoint, {
       method: "POST",

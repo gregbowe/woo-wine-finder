@@ -27,13 +27,17 @@ final class MNW_Woo_API_Client {
             'last_catalogue_sync_at' => '',
             'last_catalogue_sync_error' => '',
             'auto_display' => 'yes',
-            'launcher_position' => 'right',
+            'analytics_enabled' => 'no',
+            'launcher_position' => 'left',
             'inherit_theme_styles' => 'yes',
             'accent_color' => '#722f37',
             'accent_text_color' => '#ffffff',
             'heading' => 'Need help choosing wine?',
+            'intro' => "Answer a few questions and get a selection from this shop's current range.",
             'launcher_label' => 'Find my wines',
             'button_label' => 'Add selected to basket',
+            'show_mnw_notes' => 'no',
+            'show_mnw_rating' => 'no',
         );
         $saved = get_option(MNW_WOO_OPTION, array());
         $settings = wp_parse_args(is_array($saved) ? $saved : array(), $defaults);
@@ -123,8 +127,26 @@ final class MNW_Woo_API_Client {
     }
 
     /** @return array<string,mixed>|WP_Error */
+    public function start_billing() {
+        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/start', array());
+    }
+
+    /** Compatibility alias for pre-Marketplace plugin code. @return array<string,mixed>|WP_Error */
     public function start_trial() {
-        return $this->request('POST', '/api/woocommerce/widget/merchant/start-trial', array());
+        return $this->start_billing();
+    }
+
+    /** @return array<string,mixed>|WP_Error */
+    public function cancel_billing() {
+        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/cancel', array());
+    }
+
+    /** @return array<string,mixed>|WP_Error */
+    public function update_display_settings(bool $show_notes, bool $show_rating) {
+        return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', array(
+            'showMyNextWineNotes' => $show_notes,
+            'showMyNextWineRating' => $show_rating,
+        ));
     }
 
     /** @return array<string,mixed>|WP_Error */

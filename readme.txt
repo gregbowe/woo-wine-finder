@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 0.3.1
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ My Next Wine is a hosted recommendation service for online wine merchants. This 
 
 My Next Wine provides technology only. The merchant remains the seller of every wine and is responsible for alcohol licensing, age verification, product information and condition, payment, fulfilment, delivery, customer service, refunds and legal compliance.
 
-The hosted service offers a 30-day free trial followed by the price disclosed in the connection and billing flow. Activating the plugin alone does not start the trial, create a charge or transmit store/catalogue data.
+The hosted service offers a 30-day free trial followed by USD 29.99 per month plus tax where applicable. Marketplace subscription checkout, renewals, payment retries, invoices, cancellation and refunds are handled through WooCommerce.com's SaaS Billing API. Activating the plugin alone does not start the trial, create a charge or transmit store/catalogue data.
 
 == Installation ==
 
@@ -27,7 +27,7 @@ The hosted service offers a 30-day free trial followed by the price disclosed in
 4. An authorised administrator ticks both consent boxes and chooses "Agree and connect store".
 5. The plugin proves ownership of the site and securely sends the disclosed store information to My Next Wine.
 6. The catalogue is synchronised and My Next Wine maps or ignores eligible products.
-7. When the catalogue is ready, start the 30-day trial and enable the Wine Finder.
+7. When the catalogue is ready, complete the WooCommerce.com subscription checkout to start the 30-day trial, then enable the Wine Finder.
 
 No WooCommerce REST key, Somm ID, installation ID or installation secret needs to be entered by the merchant.
 
@@ -50,7 +50,7 @@ After connection, the plugin may send:
 
 * Product and variation identifiers, SKUs, names, descriptions, images, categories, attributes, prices, currency, stock and availability.
 * Shopper bottle mix, budget, wine preferences and food-pairing text when a recommendation is requested.
-* Aggregate widget events such as impressions, opens, requests, results, swaps and basket clicks.
+* Optional aggregate widget events such as impressions, opens, requests, results, swaps and basket clicks. These are off by default and require both merchant enablement and a positive WordPress statistics-consent signal.
 * For orders attributed to the Wine Finder: order identifier, currency, total, selected product/variation references and quantities.
 * Technical request, replay-prevention and security metadata.
 
@@ -68,7 +68,7 @@ The plugin adds suggested wording to WordPress's Privacy Policy Guide under Sett
 
 Shopper preference answers are used to create the requested recommendation. For attributed orders, My Next Wine receives order and product references but not customer identity, address or payment-card data. Normal security logs may contain network or device metadata.
 
-Uninstall removes local plugin settings and sends a best-effort revocation request to My Next Wine. A merchant can also contact support@mynextwine.ie to request revocation, access, export or deletion, subject to legal retention requirements.
+Uninstall removes local plugin settings and sends a best-effort service revocation request to My Next Wine. Uninstalling does not itself cancel a WooCommerce.com subscription; cancel the plan first from WooCommerce > My Next Wine. A merchant can also contact support@mynextwine.ie to request revocation, access, export or deletion, subject to legal retention requirements.
 
 == Frequently Asked Questions ==
 
@@ -94,10 +94,19 @@ Yes. Disable the storefront widget in WooCommerce > My Next Wine, cancel the con
 
 == Changelog ==
 
+= 0.4.0 =
+* Replaced the local trial toggle with Woo Marketplace SaaS Billing API checkout.
+* Added signed webhook handling for activation, renewal, failed payment pauses, cancellation, prepaid-term expiry and refunds.
+* Added Woo invoice links and in-plugin plan cancellation.
+* Changed the default launcher position to bottom left.
+* Added the Shopify-equivalent popup introduction setting.
+* Added optional My Next Wine notes and rating controls matching the Shopify merchant display options.
+* Updated Woo-only Merchant Terms acceptance to version 2026-07-30-4.
+
 = 0.3.1 =
 * Added separate shopper-facing Wine Finder User Terms and linked them beside the recommendation button.
 * Strengthened merchant/customer ownership, AI transparency, platform-review, no-conversion-guarantee and privacy disclosures.
-* Updated the Merchant Terms acceptance version to 2026-07-29-2.
+* Updated the Merchant Terms acceptance version to 2026-07-29-3.
 
 = 0.3.0 =
 * Changed activation to a consent-based connection: no account or catalogue data is sent until an administrator explicitly agrees and connects the store.

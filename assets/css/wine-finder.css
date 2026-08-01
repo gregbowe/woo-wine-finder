@@ -3327,3 +3327,16 @@ body.mnw-wine-finder-open {
   color: inherit !important;
   stroke: currentColor !important;
 }
+
+/* Explicit position modifiers: the PHP default is bottom left. */
+.mnw-wine-finder--left .mnw-wine-finder__launcher {
+  right: auto;
+  left: max(22px, env(safe-area-inset-left));
+}
+
+@media (max-width: 749px) {
+  .mnw-wine-finder--left .mnw-wine-finder__launcher {
+    right: auto;
+    left: max(14px, env(safe-area-inset-left));
+  }
+}
