@@ -62,10 +62,18 @@ final class MNW_Woo_Catalogue_Sync {
      * inline as a reliable fallback. Two pages covers the common 100-product case.
      */
     public function maybe_process_queued_sync(): void {
+        global $pagenow;
+
+        // This is a read-only admin routing check; state-changing actions use nonce-protected handlers.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $current_page = isset($_GET['page'])
+            ? sanitize_key(wp_unslash($_GET['page']))
+            : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
         if (!current_user_can('manage_woocommerce')
-            || !isset($_GET['page'])
-            || 'my-next-wine' !== sanitize_key(wp_unslash($_GET['page']))
-            || (isset($_SERVER['PHP_SELF']) && 'admin-post.php' === basename((string) $_SERVER['PHP_SELF']))) {
+            || 'my-next-wine' !== $current_page
+            || 'admin-post.php' === $pagenow) {
             return;
         }
         if (false === get_option(self::SYNC_REQUESTED_OPTION, false) && empty($this->state())) {
@@ -76,7 +84,7 @@ final class MNW_Woo_Catalogue_Sync {
 
     public function manual_sync(): void {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You do not have permission to synchronise My Next Wine.', 'my-next-wine-woocommerce'));
+            wp_die(esc_html__('You do not have permission to synchronise My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mnw_woo_sync_catalogue');
         $result = $this->run_inline_sync(20, 25, true);
@@ -120,7 +128,7 @@ final class MNW_Woo_Catalogue_Sync {
     public function run_inline_sync(int $max_pages = 2, int $time_budget_seconds = 20, bool $force_new = false) {
         $settings = $this->client->settings();
         if (!$this->client->is_configured() || 'PLUGIN_PUSH' !== ($settings['catalogue_mode'] ?? '')) {
-            return new WP_Error('mnw_sync_not_configured', __('My Next Wine is not ready to synchronise this catalogue.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_sync_not_configured', __('My Next Wine is not ready to synchronise this catalogue.', 'my-next-wine-for-woocommerce'));
         }
         if (!$this->acquire_sync_lock()) {
             return array('complete' => false, 'page' => 0, 'total_pages' => 0);
@@ -182,7 +190,7 @@ final class MNW_Woo_Catalogue_Sync {
     private function process_page(string $sync_id, int $page) {
         $state = $this->state();
         if (empty($state['sync_id']) || !hash_equals((string) $state['sync_id'], $sync_id)) {
-            return new WP_Error('mnw_sync_superseded', __('A newer catalogue synchronisation has started.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_sync_superseded', __('A newer catalogue synchronisation has started.', 'my-next-wine-for-woocommerce'));
         }
 
         $page_data = $this->product_page(max(1, $page));
@@ -280,36 +288,40 @@ final class MNW_Woo_Catalogue_Sync {
 
     /** @return array{products:array<int,WC_Product>,total_pages:int} */
     private function product_page(int $page): array {
-        global $wpdb;
-        $offset = max(0, ($page - 1) * self::PAGE_SIZE);
-        $excluded = array('trash', 'auto-draft', 'inherit');
-        $placeholders = implode(',', array_fill(0, count($excluded), '%s'));
-        $count_sql = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'product' AND post_status NOT IN ($placeholders)";
-        $total = (int) $wpdb->get_var($wpdb->prepare($count_sql, ...$excluded));
-        $query_args = array_merge($excluded, array(self::PAGE_SIZE, $offset));
-        $ids_sql = "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_status NOT IN ($placeholders) ORDER BY ID ASC LIMIT %d OFFSET %d";
-        $ids = $wpdb->get_col($wpdb->prepare($ids_sql, ...$query_args));
+        $results = wc_get_products(array(
+            'limit' => self::PAGE_SIZE,
+            'page' => max(1, $page),
+            'paginate' => true,
+            'return' => 'objects',
+            'orderby' => 'ID',
+            'order' => 'ASC',
+            'status' => array_values(get_post_stati(array('internal' => false), 'names')),
+        ));
+
         $products = array();
-        foreach ($ids as $id) {
-            $product = wc_get_product((int) $id);
-            if ($product instanceof WC_Product) {
-                $products[] = $product;
+        if (is_object($results) && isset($results->products) && is_array($results->products)) {
+            foreach ($results->products as $product) {
+                if ($product instanceof WC_Product) {
+                    $products[] = $product;
+                }
             }
         }
+
         return array(
             'products' => $products,
-            'total_pages' => max(1, (int) ceil($total / self::PAGE_SIZE)),
+            'total_pages' => is_object($results) && isset($results->max_num_pages)
+                ? max(1, (int) $results->max_num_pages)
+                : 1,
         );
     }
 
     /** @return array<int,int> */
     private function variation_ids(int $parent_id): array {
-        global $wpdb;
-        $ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product_variation' AND post_parent = %d AND post_status NOT IN ('trash', 'auto-draft') ORDER BY ID ASC",
-            $parent_id
-        ));
-        return array_map('intval', $ids);
+        $parent = wc_get_product($parent_id);
+        if (!$parent instanceof WC_Product_Variable) {
+            return array();
+        }
+        return array_values(array_filter(array_map('intval', $parent->get_children())));
     }
 
     /** @return array<string,mixed> */

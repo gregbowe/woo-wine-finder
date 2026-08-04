@@ -100,7 +100,7 @@ final class MNW_Woo_Order_Attribution {
             if ($retry_count < 12) {
                 $order->update_meta_data('_mnw_attribution_retry_count', (string) ($retry_count + 1));
                 if (0 === $retry_count) {
-                    $order->add_order_note(__('My Next Wine attribution will be retried automatically.', 'my-next-wine-woocommerce'));
+                    $order->add_order_note(__('My Next Wine attribution will be retried automatically.', 'my-next-wine-for-woocommerce'));
                 }
                 $order->save();
                 $this->schedule_retry($order->get_id());

@@ -32,10 +32,10 @@ final class MNW_Woo_API_Client {
             'inherit_theme_styles' => 'yes',
             'accent_color' => '#722f37',
             'accent_text_color' => '#ffffff',
-            'heading' => __('Need help choosing wine?', 'my-next-wine-woocommerce'),
-            'intro' => __("Answer a few questions and get a selection from this shop's current range.", 'my-next-wine-woocommerce'),
-            'launcher_label' => __('Find my wines', 'my-next-wine-woocommerce'),
-            'button_label' => __('Add selected to basket', 'my-next-wine-woocommerce'),
+            'heading' => __('Need help choosing wine?', 'my-next-wine-for-woocommerce'),
+            'intro' => __("Answer a few questions and get a selection from this shop's current range.", 'my-next-wine-for-woocommerce'),
+            'launcher_label' => __('Find my wines', 'my-next-wine-for-woocommerce'),
+            'button_label' => __('Add selected to basket', 'my-next-wine-for-woocommerce'),
             'show_mnw_notes' => 'no',
             'show_mnw_rating' => 'no',
         );
@@ -90,7 +90,7 @@ final class MNW_Woo_API_Client {
      */
     public function request(string $method, string $path, ?array $payload = null, string $client_key = '') {
         if (!$this->is_configured()) {
-            return new WP_Error('mnw_not_configured', __('My Next Wine is still connecting this store.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_not_configured', __('My Next Wine is still connecting this store.', 'my-next-wine-for-woocommerce'));
         }
 
         $settings = $this->settings();
@@ -98,7 +98,7 @@ final class MNW_Woo_API_Client {
         $path = '/' . ltrim($path, '/');
         $raw_body = null === $payload ? '' : wp_json_encode($payload, JSON_UNESCAPED_SLASHES);
         if (false === $raw_body) {
-            return new WP_Error('mnw_json_error', __('The request could not be encoded.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_json_error', __('The request could not be encoded.', 'my-next-wine-for-woocommerce'));
         }
 
         $timestamp = (string) time();
@@ -163,16 +163,16 @@ final class MNW_Woo_API_Client {
     public function verify_recommendation_token(string $token) {
         $settings = $this->settings();
         if (!$this->is_configured() || strlen($token) > 20000 || false === strpos($token, '.')) {
-            return new WP_Error('mnw_invalid_token', __('The recommendation has expired. Please choose your wines again.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_invalid_token', __('The recommendation has expired. Please choose your wines again.', 'my-next-wine-for-woocommerce'));
         }
 
         list($encoded, $signature) = explode('.', $token, 2);
         if ('' === $encoded || !preg_match('/^[a-f0-9]{64}$/', $signature)) {
-            return new WP_Error('mnw_invalid_token', __('The recommendation token is invalid.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_invalid_token', __('The recommendation token is invalid.', 'my-next-wine-for-woocommerce'));
         }
         $expected = hash_hmac('sha256', $encoded, (string) $settings['installation_secret']);
         if (!hash_equals($expected, strtolower($signature))) {
-            return new WP_Error('mnw_invalid_token', __('The recommendation token is invalid.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_invalid_token', __('The recommendation token is invalid.', 'my-next-wine-for-woocommerce'));
         }
 
         $padding = strlen($encoded) % 4;
@@ -187,7 +187,7 @@ final class MNW_Woo_API_Client {
             || (int) $claims['expiresAt'] < time()
             || (int) $claims['expiresAt'] > time() + 3700
             || !is_array($claims['wines'])) {
-            return new WP_Error('mnw_expired_token', __('The recommendation has expired. Please choose your wines again.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_expired_token', __('The recommendation has expired. Please choose your wines again.', 'my-next-wine-for-woocommerce'));
         }
         return $claims;
     }
@@ -199,7 +199,7 @@ final class MNW_Woo_API_Client {
      */
     public function verify_incoming_request(WP_REST_Request $request, string $signed_path) {
         if (!$this->is_configured()) {
-            return new WP_Error('mnw_not_configured', __('My Next Wine is not connected.', 'my-next-wine-woocommerce'), array('status' => 503));
+            return new WP_Error('mnw_not_configured', __('My Next Wine is not connected.', 'my-next-wine-for-woocommerce'), array('status' => 503));
         }
         $settings = $this->settings();
         $installation_id = trim((string) $request->get_header('x-mnw-installation-id'));
@@ -212,19 +212,19 @@ final class MNW_Woo_API_Client {
             || abs(time() - (int) $timestamp) > self::SIGNATURE_SKEW_SECONDS
             || !preg_match('/^[a-zA-Z0-9-]{16,80}$/', $request_id)
             || !preg_match('/^[a-f0-9]{64}$/', $signature)) {
-            return new WP_Error('mnw_invalid_signature', __('Invalid My Next Wine signature.', 'my-next-wine-woocommerce'), array('status' => 401));
+            return new WP_Error('mnw_invalid_signature', __('Invalid My Next Wine signature.', 'my-next-wine-for-woocommerce'), array('status' => 401));
         }
 
         $replay_key = 'mnw_req_' . substr(hash('sha256', $installation_id . '|' . $request_id), 0, 32);
         if (false !== get_transient($replay_key)) {
-            return new WP_Error('mnw_replayed_request', __('This request has already been used.', 'my-next-wine-woocommerce'), array('status' => 409));
+            return new WP_Error('mnw_replayed_request', __('This request has already been used.', 'my-next-wine-for-woocommerce'), array('status' => 409));
         }
 
         $raw_body = (string) $request->get_body();
         $canonical = $this->canonical($request->get_method(), $signed_path, $installation_id, $timestamp, $request_id, $raw_body);
         $expected = hash_hmac('sha256', $canonical, (string) $settings['installation_secret']);
         if (!hash_equals($expected, $signature)) {
-            return new WP_Error('mnw_invalid_signature', __('Invalid My Next Wine signature.', 'my-next-wine-woocommerce'), array('status' => 401));
+            return new WP_Error('mnw_invalid_signature', __('Invalid My Next Wine signature.', 'my-next-wine-for-woocommerce'), array('status' => 401));
         }
         set_transient($replay_key, '1', self::SIGNATURE_SKEW_SECONDS + 60);
         return true;
@@ -307,7 +307,7 @@ final class MNW_Woo_API_Client {
             ? $preencoded_body
             : (null === $payload ? '' : wp_json_encode($payload, JSON_UNESCAPED_SLASHES));
         if (false === $raw_body) {
-            return new WP_Error('mnw_json_error', __('The request could not be encoded.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_json_error', __('The request could not be encoded.', 'my-next-wine-for-woocommerce'));
         }
         $url = untrailingslashit($this->default_api_base_url()) . '/' . ltrim($path, '/');
         $response = wp_remote_request($url, array(
@@ -325,7 +325,7 @@ final class MNW_Woo_API_Client {
         if (is_wp_error($response)) {
             return new WP_Error(
                 'mnw_backend_unreachable',
-                __('My Next Wine could not be reached.', 'my-next-wine-woocommerce'),
+                __('My Next Wine could not be reached.', 'my-next-wine-for-woocommerce'),
                 array('detail' => $response->get_error_message())
             );
         }
@@ -338,7 +338,7 @@ final class MNW_Woo_API_Client {
             if (!is_array($decoded)) {
                 return new WP_Error(
                     'mnw_invalid_backend_response',
-                    __('My Next Wine returned an unexpected response.', 'my-next-wine-woocommerce'),
+                    __('My Next Wine returned an unexpected response.', 'my-next-wine-for-woocommerce'),
                     array('status' => $status)
                 );
             }
@@ -347,7 +347,7 @@ final class MNW_Woo_API_Client {
         if ($status < 200 || $status >= 300) {
             $message = isset($decoded['error']) && is_string($decoded['error'])
                 ? $decoded['error']
-                : __('My Next Wine could not complete the request.', 'my-next-wine-woocommerce');
+                : __('My Next Wine could not complete the request.', 'my-next-wine-for-woocommerce');
             return new WP_Error('mnw_backend_error', $message, array(
                 'status' => $status,
                 'body' => $decoded,

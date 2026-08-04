@@ -10,14 +10,14 @@ if (!defined('MNW_WOO_API_BASE_URL')) {
     // The API client defaults to the public service when no developer override exists.
 }
 
-$client_file = __DIR__ . '/includes/class-mnw-api-client.php';
-if (file_exists($client_file)) {
-    require_once $client_file;
+$mnw_woo_client_file = __DIR__ . '/includes/class-mnw-api-client.php';
+if (file_exists($mnw_woo_client_file)) {
+    require_once $mnw_woo_client_file;
     if (class_exists('MNW_Woo_API_Client')) {
-        $client = new MNW_Woo_API_Client();
-        if ($client->is_configured()) {
+        $mnw_woo_client = new MNW_Woo_API_Client();
+        if ($mnw_woo_client->is_configured()) {
             // Best effort. A failed network call must never prevent WordPress uninstall.
-            $client->revoke();
+            $mnw_woo_client->revoke();
         }
     }
 }

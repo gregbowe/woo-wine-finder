@@ -23,8 +23,8 @@ final class MNW_Woo_Settings {
     public function admin_menu(): void {
         add_submenu_page(
             'woocommerce',
-            __('My Next Wine', 'my-next-wine-woocommerce'),
-            __('My Next Wine', 'my-next-wine-woocommerce'),
+            __('My Next Wine', 'my-next-wine-for-woocommerce'),
+            __('My Next Wine', 'my-next-wine-for-woocommerce'),
             'manage_woocommerce',
             'my-next-wine',
             array($this, 'render')
@@ -33,13 +33,13 @@ final class MNW_Woo_Settings {
 
     /** @param array<int,string> $links */
     public function action_links(array $links): array {
-        array_unshift($links, '<a href="' . esc_url(admin_url('admin.php?page=my-next-wine')) . '">' . esc_html__('Setup', 'my-next-wine-woocommerce') . '</a>');
+        array_unshift($links, '<a href="' . esc_url(admin_url('admin.php?page=my-next-wine')) . '">' . esc_html__('Setup', 'my-next-wine-for-woocommerce') . '</a>');
         return $links;
     }
 
     public function save(): void {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You do not have permission to manage My Next Wine.', 'my-next-wine-woocommerce'));
+            wp_die(esc_html__('You do not have permission to manage My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mnw_woo_save');
 
@@ -84,7 +84,7 @@ final class MNW_Woo_Settings {
         if ($display_error instanceof WP_Error) {
             $args['mnw_error'] = rawurlencode($this->error_message($display_error));
         } elseif ($requested_enabled && !$operational) {
-            $args['mnw_error'] = rawurlencode(__('The Wine Finder cannot be enabled until the catalogue is ready and My Next Wine confirms an active trial or paid plan.', 'my-next-wine-woocommerce'));
+            $args['mnw_error'] = rawurlencode(__('The Wine Finder cannot be enabled until the catalogue is ready and My Next Wine confirms an active trial or paid plan.', 'my-next-wine-for-woocommerce'));
         }
         wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
         exit;
@@ -92,7 +92,7 @@ final class MNW_Woo_Settings {
 
     public function refresh_status(): void {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You do not have permission to manage My Next Wine.', 'my-next-wine-woocommerce'));
+            wp_die(esc_html__('You do not have permission to manage My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mnw_woo_test');
         $result = $this->client->status();
@@ -109,7 +109,7 @@ final class MNW_Woo_Settings {
 
     public function start_billing(): void {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You do not have permission to start My Next Wine billing.', 'my-next-wine-woocommerce'));
+            wp_die(esc_html__('You do not have permission to start My Next Wine billing.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mnw_woo_start_billing');
         $result = $this->client->start_billing();
@@ -119,7 +119,7 @@ final class MNW_Woo_Settings {
 
         $checkout_url = esc_url_raw((string) ($result['checkoutUrl'] ?? $result['confirmationUrl'] ?? ''));
         if (!$this->is_allowed_stripe_url($checkout_url)) {
-            $this->redirect_with_message(__('My Next Wine did not return a valid Stripe checkout URL.', 'my-next-wine-woocommerce'));
+            $this->redirect_with_message(__('My Next Wine did not return a valid Stripe checkout URL.', 'my-next-wine-for-woocommerce'));
         }
         delete_transient('mnw_woo_last_status_' . get_current_user_id());
         wp_redirect($checkout_url); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- validated Stripe HTTPS URL.
@@ -128,7 +128,7 @@ final class MNW_Woo_Settings {
 
     public function manage_billing(): void {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You do not have permission to manage My Next Wine billing.', 'my-next-wine-woocommerce'));
+            wp_die(esc_html__('You do not have permission to manage My Next Wine billing.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mnw_woo_manage_billing');
         $result = $this->client->manage_billing();
@@ -138,7 +138,7 @@ final class MNW_Woo_Settings {
 
         $portal_url = esc_url_raw((string) ($result['portalUrl'] ?? ''));
         if (!$this->is_allowed_stripe_url($portal_url)) {
-            $this->redirect_with_message(__('My Next Wine did not return a valid Stripe billing portal URL.', 'my-next-wine-woocommerce'));
+            $this->redirect_with_message(__('My Next Wine did not return a valid Stripe billing portal URL.', 'my-next-wine-for-woocommerce'));
         }
         wp_redirect($portal_url); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- validated Stripe HTTPS URL.
         exit;
@@ -177,125 +177,141 @@ final class MNW_Woo_Settings {
         $show_mnw_rating = is_array($status)
             ? !empty($status['showMyNextWineRating'])
             : 'yes' === ($settings['show_mnw_rating'] ?? 'no');
+
+        // These read-only flags are set by nonce-protected admin-post handlers and only control notices.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $notice_saved = isset($_GET['mnw_saved']);
+        $notice_tested = isset($_GET['mnw_tested']);
+        $notice_billing_returned = isset($_GET['mnw_billing_returned']);
+        $notice_billing_cancelled = isset($_GET['mnw_billing_cancelled']);
+        $notice_portal_returned = isset($_GET['mnw_portal_returned']);
+        $notice_sync_complete = isset($_GET['mnw_sync_complete']);
+        $notice_sync_progress = isset($_GET['mnw_sync_progress']);
+        $notice_error = isset($_GET['mnw_error'])
+            ? rawurldecode(sanitize_text_field(wp_unslash($_GET['mnw_error'])))
+            : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('My Next Wine', 'my-next-wine-woocommerce'); ?></h1>
-            <?php if (isset($_GET['mnw_saved'])) : ?>
-                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Settings saved.', 'my-next-wine-woocommerce'); ?></p></div>
+            <h1><?php echo esc_html__('My Next Wine', 'my-next-wine-for-woocommerce'); ?></h1>
+            <?php if ($notice_saved) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Settings saved.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_tested'])) : ?>
-                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('My Next Wine status refreshed.', 'my-next-wine-woocommerce'); ?></p></div>
+            <?php if ($notice_tested) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('My Next Wine status refreshed.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_billing_returned'])) : ?>
-                <div class="notice notice-info"><p><?php echo esc_html__('Stripe checkout returned successfully. Access activates only after My Next Wine receives the signed Stripe billing webhook; refresh the status if it does not update immediately.', 'my-next-wine-woocommerce'); ?></p></div>
+            <?php if ($notice_billing_returned) : ?>
+                <div class="notice notice-info"><p><?php echo esc_html__('Stripe checkout returned successfully. Access activates only after My Next Wine receives the signed Stripe billing webhook; refresh the status if it does not update immediately.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_billing_cancelled'])) : ?>
-                <div class="notice notice-info is-dismissible"><p><?php echo esc_html__('Stripe checkout was cancelled. No subscription was started.', 'my-next-wine-woocommerce'); ?></p></div>
+            <?php if ($notice_billing_cancelled) : ?>
+                <div class="notice notice-info is-dismissible"><p><?php echo esc_html__('Stripe checkout was cancelled. No subscription was started.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_portal_returned'])) : ?>
-                <div class="notice notice-info is-dismissible"><p><?php echo esc_html__('Billing portal closed. Refresh the status to see any subscription changes.', 'my-next-wine-woocommerce'); ?></p></div>
+            <?php if ($notice_portal_returned) : ?>
+                <div class="notice notice-info is-dismissible"><p><?php echo esc_html__('Billing portal closed. Refresh the status to see any subscription changes.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_sync_complete'])) : ?>
-                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Catalogue synchronisation completed.', 'my-next-wine-woocommerce'); ?></p></div>
+            <?php if ($notice_sync_complete) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Catalogue synchronisation completed.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_sync_progress'])) : ?>
-                <div class="notice notice-info is-dismissible"><p><?php echo esc_html__('Catalogue synchronisation is in progress. Refresh this page to continue.', 'my-next-wine-woocommerce'); ?></p></div>
+            <?php if ($notice_sync_progress) : ?>
+                <div class="notice notice-info is-dismissible"><p><?php echo esc_html__('Catalogue synchronisation is in progress. Refresh this page to continue.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>
-            <?php if (isset($_GET['mnw_error'])) : ?>
-                <div class="notice notice-error"><p><?php echo esc_html(rawurldecode(sanitize_text_field(wp_unslash($_GET['mnw_error'])))); ?></p></div>
+            <?php if ('' !== $notice_error) : ?>
+                <div class="notice notice-error"><p><?php echo esc_html($notice_error); ?></p></div>
             <?php endif; ?>
             <?php if ('' !== $status_error) : ?>
                 <div class="notice notice-error"><p><?php echo esc_html($status_error); ?></p></div>
             <?php endif; ?>
 
             <div style="max-width:760px;background:#fff;border:1px solid #dcdcde;padding:18px 22px;margin:16px 0;">
-                <h2 style="margin-top:0;"><?php echo esc_html__('Setup status', 'my-next-wine-woocommerce'); ?></h2>
-                <p><strong><?php echo esc_html__('Store connection:', 'my-next-wine-woocommerce'); ?></strong>
-                    <?php echo esc_html($connected ? __('Connected', 'my-next-wine-woocommerce') : ucfirst(strtolower($connection_state))); ?>
+                <h2 style="margin-top:0;"><?php echo esc_html__('Setup status', 'my-next-wine-for-woocommerce'); ?></h2>
+                <p><strong><?php echo esc_html__('Store connection:', 'my-next-wine-for-woocommerce'); ?></strong>
+                    <?php echo esc_html($connected ? __('Connected', 'my-next-wine-for-woocommerce') : ucfirst(strtolower($connection_state))); ?>
                 </p>
                 <?php if (!$connected && !empty($settings['connection_error'])) : ?>
                     <p style="color:#b32d2e;"><?php echo esc_html((string) $settings['connection_error']); ?></p>
                 <?php endif; ?>
                 <?php if (is_array($status)) : ?>
-                    <p><strong><?php echo esc_html__('Catalogue:', 'my-next-wine-woocommerce'); ?></strong>
-                        <?php echo esc_html((string) ($catalogue['statusMessage'] ?? __('Waiting for the first catalogue sync.', 'my-next-wine-woocommerce'))); ?>
+                    <p><strong><?php echo esc_html__('Catalogue:', 'my-next-wine-for-woocommerce'); ?></strong>
+                        <?php echo esc_html((string) ($catalogue['statusMessage'] ?? __('Waiting for the first catalogue sync.', 'my-next-wine-for-woocommerce'))); ?>
                     </p>
-                    <p><strong><?php echo esc_html__('Available mapped wines:', 'my-next-wine-woocommerce'); ?></strong>
+                    <p><strong><?php echo esc_html__('Available mapped wines:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php echo esc_html((string) ((int) ($catalogue['mappedAvailableCount'] ?? 0))); ?>
                     </p>
-                    <p><strong><?php echo esc_html__('Billing:', 'my-next-wine-woocommerce'); ?></strong>
+                    <p><strong><?php echo esc_html__('Billing:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php echo esc_html($this->billing_status_label($billing_status, $billing_trial_days)); ?>
                     </p>
-                    <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-woocommerce'); ?></strong>
+                    <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php
                         /* translators: 1: billing currency code, 2: monthly price. */
-                        echo esc_html(sprintf(__('%1$s %2$s per month, plus tax where applicable', 'my-next-wine-woocommerce'), $billing_currency, $billing_price));
+                        echo esc_html(sprintf(__('%1$s %2$s per month, plus tax where applicable', 'my-next-wine-for-woocommerce'), $billing_currency, $billing_price));
                         ?>
                     </p>
                     <?php if (!empty($status['trialEndsAt'])) : ?>
-                        <p><strong><?php echo esc_html__('Trial ends:', 'my-next-wine-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['trialEndsAt'])); ?></p>
+                        <p><strong><?php echo esc_html__('Trial ends:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['trialEndsAt'])); ?></p>
                     <?php endif; ?>
                     <?php if (!empty($status['nextPaymentAt'])) : ?>
-                        <p><strong><?php echo esc_html__('Next renewal:', 'my-next-wine-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['nextPaymentAt'])); ?></p>
+                        <p><strong><?php echo esc_html__('Next renewal:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['nextPaymentAt'])); ?></p>
                     <?php endif; ?>
                     <?php if (!empty($status['accessEndsAt'])) : ?>
-                        <p><strong><?php echo esc_html__('Access until:', 'my-next-wine-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['accessEndsAt'])); ?></p>
+                        <p><strong><?php echo esc_html__('Access until:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['accessEndsAt'])); ?></p>
                     <?php endif; ?>
                     <?php if (!empty($status['latestInvoiceUrl']) && $this->is_allowed_stripe_url((string) $status['latestInvoiceUrl'])) : ?>
-                        <p><a href="<?php echo esc_url((string) $status['latestInvoiceUrl']); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('View latest Stripe invoice', 'my-next-wine-woocommerce'); ?></a></p>
+                        <p><a href="<?php echo esc_url((string) $status['latestInvoiceUrl']); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('View latest Stripe invoice', 'my-next-wine-for-woocommerce'); ?></a></p>
                     <?php endif; ?>
                     <?php if (empty($status['billingConfigured'])) : ?>
-                        <p style="color:#b32d2e;"><?php echo esc_html__('Stripe subscription billing is not configured on the My Next Wine service. Checkout cannot start.', 'my-next-wine-woocommerce'); ?></p>
+                        <p style="color:#b32d2e;"><?php echo esc_html__('Stripe subscription billing is not configured on the My Next Wine service. Checkout cannot start.', 'my-next-wine-for-woocommerce'); ?></p>
                     <?php elseif ('PAUSED' === strtoupper($billing_status)) : ?>
-                        <p style="color:#b32d2e;"><?php echo esc_html__('Stripe could not collect a renewal payment. The Wine Finder is paused until Stripe confirms a successful retry.', 'my-next-wine-woocommerce'); ?></p>
+                        <p style="color:#b32d2e;"><?php echo esc_html__('Stripe could not collect a renewal payment. The Wine Finder is paused until Stripe confirms a successful retry.', 'my-next-wine-for-woocommerce'); ?></p>
                     <?php endif; ?>
                 <?php endif; ?>
 
                 <?php if (!$connected) : ?>
-                    <p><?php echo esc_html__('No API keys, Somm IDs or installation credentials are required. The store connects only after an authorised administrator agrees below.', 'my-next-wine-woocommerce'); ?></p>
+                    <p><?php echo esc_html__('No API keys, Somm IDs or installation credentials are required. The store connects only after an authorised administrator agrees below.', 'my-next-wine-for-woocommerce'); ?></p>
                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="max-width:720px;">
                         <input type="hidden" name="action" value="mnw_woo_retry_connection">
                         <?php wp_nonce_field('mnw_woo_retry_connection'); ?>
                         <?php if (!$local_terms_current) : ?>
                             <div style="padding:14px 16px;border:1px solid #dcdcde;background:#f6f7f7;margin:14px 0;">
-                                <p style="margin-top:0;"><strong><?php echo esc_html__('Before connecting', 'my-next-wine-woocommerce'); ?></strong></p>
-                                <p><?php echo esc_html__('My Next Wine will receive the store URL, store contact and address details, WordPress/WooCommerce versions, currency and country. It will then receive the product catalogue needed to map and recommend wines.', 'my-next-wine-woocommerce'); ?></p>
-                                <p><label><input type="checkbox" name="mnw_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise this disclosed transfer to the external My Next Wine service.', 'my-next-wine-woocommerce'); ?></label></p>
+                                <p style="margin-top:0;"><strong><?php echo esc_html__('Before connecting', 'my-next-wine-for-woocommerce'); ?></strong></p>
+                                <p><?php echo esc_html__('My Next Wine will receive the store URL, store contact and address details, WordPress/WooCommerce versions, currency and country. It will then receive the product catalogue needed to map and recommend wines.', 'my-next-wine-for-woocommerce'); ?></p>
+                                <p><label><input type="checkbox" name="mnw_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise this disclosed transfer to the external My Next Wine service.', 'my-next-wine-for-woocommerce'); ?></label></p>
                                 <p><label><input type="checkbox" name="mnw_accept_terms" value="1" required> <?php echo wp_kses_post(sprintf(
-                                    __('I am authorised to bind this merchant, agree to the <a href="%1$s" target="_blank" rel="noopener">Merchant Terms</a> and acknowledge the <a href="%2$s" target="_blank" rel="noopener">Privacy Statement</a>.', 'my-next-wine-woocommerce'),
+                                    /* translators: 1: Merchant Terms URL, 2: Privacy Statement URL. */
+                                    __('I am authorised to bind this merchant, agree to the <a href="%1$s" target="_blank" rel="noopener">Merchant Terms</a> and acknowledge the <a href="%2$s" target="_blank" rel="noopener">Privacy Statement</a>.', 'my-next-wine-for-woocommerce'),
                                     esc_url(MNW_WOO_TERMS_URL),
                                     esc_url(MNW_WOO_PRIVACY_URL)
                                 )); ?></label></p>
                             </div>
                         <?php endif; ?>
-                        <?php submit_button($local_terms_current ? __('Retry connection', 'my-next-wine-woocommerce') : __('Agree and connect store', 'my-next-wine-woocommerce'), 'primary', 'submit', false); ?>
+                        <?php submit_button($local_terms_current ? __('Retry connection', 'my-next-wine-for-woocommerce') : __('Agree and connect store', 'my-next-wine-for-woocommerce'), 'primary', 'submit', false); ?>
                     </form>
                 <?php else : ?>
                     <?php if (!$server_terms_current) : ?>
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="max-width:720px;padding:14px 16px;border:1px solid #dcdcde;background:#f6f7f7;margin:14px 0;">
                             <input type="hidden" name="action" value="mnw_woo_retry_connection">
                             <?php wp_nonce_field('mnw_woo_retry_connection'); ?>
-                            <p style="margin-top:0;"><strong><?php echo esc_html__('Updated merchant agreement required', 'my-next-wine-woocommerce'); ?></strong></p>
-                            <p><label><input type="checkbox" name="mnw_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise the disclosed store and catalogue data transfer to My Next Wine.', 'my-next-wine-woocommerce'); ?></label></p>
+                            <p style="margin-top:0;"><strong><?php echo esc_html__('Updated merchant agreement required', 'my-next-wine-for-woocommerce'); ?></strong></p>
+                            <p><label><input type="checkbox" name="mnw_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise the disclosed store and catalogue data transfer to My Next Wine.', 'my-next-wine-for-woocommerce'); ?></label></p>
                             <p><label><input type="checkbox" name="mnw_accept_terms" value="1" required> <?php echo wp_kses_post(sprintf(
-                                __('I am authorised to bind this merchant, agree to the <a href="%1$s" target="_blank" rel="noopener">Merchant Terms</a> and acknowledge the <a href="%2$s" target="_blank" rel="noopener">Privacy Statement</a>.', 'my-next-wine-woocommerce'),
+                                /* translators: 1: Merchant Terms URL, 2: Privacy Statement URL. */
+                                __('I am authorised to bind this merchant, agree to the <a href="%1$s" target="_blank" rel="noopener">Merchant Terms</a> and acknowledge the <a href="%2$s" target="_blank" rel="noopener">Privacy Statement</a>.', 'my-next-wine-for-woocommerce'),
                                 esc_url(MNW_WOO_TERMS_URL),
                                 esc_url(MNW_WOO_PRIVACY_URL)
                             )); ?></label></p>
-                            <?php submit_button(__('Accept and continue', 'my-next-wine-woocommerce'), 'primary', 'submit', false); ?>
+                            <?php submit_button(__('Accept and continue', 'my-next-wine-for-woocommerce'), 'primary', 'submit', false); ?>
                         </form>
                     <?php endif; ?>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                             <input type="hidden" name="action" value="mnw_woo_test">
                             <?php wp_nonce_field('mnw_woo_test'); ?>
-                            <?php submit_button(__('Refresh status', 'my-next-wine-woocommerce'), 'secondary', 'submit', false); ?>
+                            <?php submit_button(__('Refresh status', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                         </form>
                         <?php if ('PLUGIN_PUSH' === ($settings['catalogue_mode'] ?? '')) : ?>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                                 <input type="hidden" name="action" value="mnw_woo_sync_catalogue">
                                 <?php wp_nonce_field('mnw_woo_sync_catalogue'); ?>
-                                <?php submit_button(__('Sync catalogue now', 'my-next-wine-woocommerce'), 'secondary', 'submit', false); ?>
+                                <?php submit_button(__('Sync catalogue now', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                             </form>
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canStartBilling'])) : ?>
@@ -304,7 +320,7 @@ final class MNW_Woo_Settings {
                                 <?php wp_nonce_field('mnw_woo_start_billing'); ?>
                                 <?php
                                 /* translators: 1: trial length in days, 2: billing currency code, 3: monthly price. */
-                                submit_button(sprintf(__('Start %1$d-day trial — %2$s %3$s/month + tax', 'my-next-wine-woocommerce'), $billing_trial_days, $billing_currency, $billing_price), 'primary', 'submit', false);
+                                submit_button(sprintf(__('Start %1$d-day trial — %2$s %3$s/month + tax', 'my-next-wine-for-woocommerce'), $billing_trial_days, $billing_currency, $billing_price), 'primary', 'submit', false);
                                 ?>
                             </form>
                         <?php endif; ?>
@@ -312,7 +328,7 @@ final class MNW_Woo_Settings {
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                                 <input type="hidden" name="action" value="mnw_woo_manage_billing">
                                 <?php wp_nonce_field('mnw_woo_manage_billing'); ?>
-                                <?php submit_button(__('Manage subscription', 'my-next-wine-woocommerce'), 'secondary', 'submit', false); ?>
+                                <?php submit_button(__('Manage subscription', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                             </form>
                         <?php endif; ?>
                     </div>
@@ -323,35 +339,35 @@ final class MNW_Woo_Settings {
                 <input type="hidden" name="action" value="mnw_woo_save">
                 <?php wp_nonce_field('mnw_woo_save'); ?>
                 <table class="form-table" role="presentation">
-                    <tr><th scope="row"><?php echo esc_html__('Enable widget', 'my-next-wine-woocommerce'); ?></th><td><label><input type="checkbox" name="enabled" value="1" <?php checked('yes', $settings['enabled']); ?> <?php disabled(!$operational); ?>> <?php echo esc_html__('Show the wine finder', 'my-next-wine-woocommerce'); ?></label><?php if (!$operational) : ?><p class="description"><?php echo esc_html__('This unlocks after the catalogue is ready and My Next Wine confirms the Stripe trial or paid plan.', 'my-next-wine-woocommerce'); ?></p><?php endif; ?></td></tr>
-                    <tr><th scope="row"><?php echo esc_html__('Automatic display', 'my-next-wine-woocommerce'); ?></th><td><label><input type="checkbox" name="auto_display" value="1" <?php checked('yes', $settings['auto_display']); ?>> <?php echo esc_html__('Add the floating launcher to public shop pages', 'my-next-wine-woocommerce'); ?></label><p class="description"><?php echo esc_html__('The [my_next_wine] shortcode is also available.', 'my-next-wine-woocommerce'); ?></p></td></tr>
-                    <tr><th scope="row"><?php echo esc_html__('Optional aggregate analytics', 'my-next-wine-woocommerce'); ?></th><td><label><input type="checkbox" name="analytics_enabled" value="1" <?php checked('yes', $settings['analytics_enabled']); ?>> <?php echo esc_html__('Allow aggregate Wine Finder events', 'my-next-wine-woocommerce'); ?></label><p class="description"><?php echo esc_html__('Off by default. If the site exposes the WordPress Consent API, events are sent only when wp_has_consent("statistics") returns true. If that API is not present, enabling this setting confirms that the store\'s own privacy and consent setup permits these aggregate events. Recommendation and basket requests continue because they are needed to provide the feature.', 'my-next-wine-woocommerce'); ?></p></td></tr>
-                    <tr><th scope="row"><?php echo esc_html__('Launcher position', 'my-next-wine-woocommerce'); ?></th><td><select name="launcher_position"><option value="left" <?php selected('left', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom left', 'my-next-wine-woocommerce'); ?></option><option value="right" <?php selected('right', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom right', 'my-next-wine-woocommerce'); ?></option></select></td></tr>
-                    <tr><th scope="row"><?php echo esc_html__('Match theme', 'my-next-wine-woocommerce'); ?></th><td><label><input type="checkbox" name="inherit_theme_styles" value="1" <?php checked('yes', $settings['inherit_theme_styles']); ?>> <?php echo esc_html__('Use the active theme colours where they provide sufficient contrast', 'my-next-wine-woocommerce'); ?></label></td></tr>
-                    <tr><th scope="row"><label for="mnw-accent"><?php echo esc_html__('Fallback accent', 'my-next-wine-woocommerce'); ?></label></th><td><input id="mnw-accent" name="accent_color" type="color" value="<?php echo esc_attr($settings['accent_color']); ?>"> <input name="accent_text_color" type="color" value="<?php echo esc_attr($settings['accent_text_color']); ?>"></td></tr>
-                    <tr><th scope="row"><label for="mnw-heading"><?php echo esc_html__('Heading', 'my-next-wine-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-heading" name="heading" type="text" maxlength="80" value="<?php echo esc_attr($settings['heading']); ?>"></td></tr>
-                    <tr><th scope="row"><label for="mnw-intro"><?php echo esc_html__('Popup introduction', 'my-next-wine-woocommerce'); ?></label></th><td><textarea class="large-text" id="mnw-intro" name="intro" rows="3" maxlength="240"><?php echo esc_textarea($settings['intro']); ?></textarea></td></tr>
-                    <tr><th scope="row"><label for="mnw-launcher-label"><?php echo esc_html__('Launcher label', 'my-next-wine-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-launcher-label" name="launcher_label" type="text" maxlength="60" value="<?php echo esc_attr($settings['launcher_label']); ?>"></td></tr>
-                    <tr><th scope="row"><label for="mnw-button-label"><?php echo esc_html__('Basket button', 'my-next-wine-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-button-label" name="button_label" type="text" maxlength="60" value="<?php echo esc_attr($settings['button_label']); ?>"></td></tr>
+                    <tr><th scope="row"><?php echo esc_html__('Enable widget', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="enabled" value="1" <?php checked('yes', $settings['enabled']); ?> <?php disabled(!$operational); ?>> <?php echo esc_html__('Show the wine finder', 'my-next-wine-for-woocommerce'); ?></label><?php if (!$operational) : ?><p class="description"><?php echo esc_html__('This unlocks after the catalogue is ready and My Next Wine confirms the Stripe trial or paid plan.', 'my-next-wine-for-woocommerce'); ?></p><?php endif; ?></td></tr>
+                    <tr><th scope="row"><?php echo esc_html__('Automatic display', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="auto_display" value="1" <?php checked('yes', $settings['auto_display']); ?>> <?php echo esc_html__('Add the floating launcher to public shop pages', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('The [my_next_wine] shortcode is also available.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
+                    <tr><th scope="row"><?php echo esc_html__('Optional aggregate analytics', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="analytics_enabled" value="1" <?php checked('yes', $settings['analytics_enabled']); ?>> <?php echo esc_html__('Allow aggregate Wine Finder events', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('Off by default. If the site exposes the WordPress Consent API, events are sent only when wp_has_consent("statistics") returns true. If that API is not present, enabling this setting confirms that the store\'s own privacy and consent setup permits these aggregate events. Recommendation and basket requests continue because they are needed to provide the feature.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
+                    <tr><th scope="row"><?php echo esc_html__('Launcher position', 'my-next-wine-for-woocommerce'); ?></th><td><select name="launcher_position"><option value="left" <?php selected('left', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom left', 'my-next-wine-for-woocommerce'); ?></option><option value="right" <?php selected('right', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom right', 'my-next-wine-for-woocommerce'); ?></option></select></td></tr>
+                    <tr><th scope="row"><?php echo esc_html__('Match theme', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="inherit_theme_styles" value="1" <?php checked('yes', $settings['inherit_theme_styles']); ?>> <?php echo esc_html__('Use the active theme colours where they provide sufficient contrast', 'my-next-wine-for-woocommerce'); ?></label></td></tr>
+                    <tr><th scope="row"><label for="mnw-accent"><?php echo esc_html__('Fallback accent', 'my-next-wine-for-woocommerce'); ?></label></th><td><input id="mnw-accent" name="accent_color" type="color" value="<?php echo esc_attr($settings['accent_color']); ?>"> <input name="accent_text_color" type="color" value="<?php echo esc_attr($settings['accent_text_color']); ?>"></td></tr>
+                    <tr><th scope="row"><label for="mnw-heading"><?php echo esc_html__('Heading', 'my-next-wine-for-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-heading" name="heading" type="text" maxlength="80" value="<?php echo esc_attr($settings['heading']); ?>"></td></tr>
+                    <tr><th scope="row"><label for="mnw-intro"><?php echo esc_html__('Popup introduction', 'my-next-wine-for-woocommerce'); ?></label></th><td><textarea class="large-text" id="mnw-intro" name="intro" rows="3" maxlength="240"><?php echo esc_textarea($settings['intro']); ?></textarea></td></tr>
+                    <tr><th scope="row"><label for="mnw-launcher-label"><?php echo esc_html__('Launcher label', 'my-next-wine-for-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-launcher-label" name="launcher_label" type="text" maxlength="60" value="<?php echo esc_attr($settings['launcher_label']); ?>"></td></tr>
+                    <tr><th scope="row"><label for="mnw-button-label"><?php echo esc_html__('Basket button', 'my-next-wine-for-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-button-label" name="button_label" type="text" maxlength="60" value="<?php echo esc_attr($settings['button_label']); ?>"></td></tr>
                 </table>
 
-                <h2><?php echo esc_html__('My Next Wine content', 'my-next-wine-woocommerce'); ?></h2>
-                <p><?php echo esc_html__('Both options are off by default. Enable them only when they suit this store’s own product presentation.', 'my-next-wine-woocommerce'); ?></p>
+                <h2><?php echo esc_html__('My Next Wine content', 'my-next-wine-for-woocommerce'); ?></h2>
+                <p><?php echo esc_html__('Both options are off by default. Enable them only when they suit this store’s own product presentation.', 'my-next-wine-for-woocommerce'); ?></p>
                 <table class="form-table" role="presentation">
                     <tr>
-                        <th scope="row"><?php echo esc_html__('Show My Next Wine notes', 'my-next-wine-woocommerce'); ?></th>
+                        <th scope="row"><?php echo esc_html__('Show My Next Wine notes', 'my-next-wine-for-woocommerce'); ?></th>
                         <td>
-                            <label><input type="checkbox" name="show_mnw_notes" value="1" <?php checked($show_mnw_notes); ?>> <?php echo esc_html__('Add our wine note and allow shoppers to open notes for the producer, region, country and grapes.', 'my-next-wine-woocommerce'); ?></label>
+                            <label><input type="checkbox" name="show_mnw_notes" value="1" <?php checked($show_mnw_notes); ?>> <?php echo esc_html__('Add our wine note and allow shoppers to open notes for the producer, region, country and grapes.', 'my-next-wine-for-woocommerce'); ?></label>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php echo esc_html__('Show My Next Wine rating', 'my-next-wine-woocommerce'); ?></th>
+                        <th scope="row"><?php echo esc_html__('Show My Next Wine rating', 'my-next-wine-for-woocommerce'); ?></th>
                         <td>
-                            <label><input type="checkbox" name="show_mnw_rating" value="1" <?php checked($show_mnw_rating); ?>> <?php echo esc_html__('Display the My Next Wine rating in Quick View when a rating is available.', 'my-next-wine-woocommerce'); ?></label>
+                            <label><input type="checkbox" name="show_mnw_rating" value="1" <?php checked($show_mnw_rating); ?>> <?php echo esc_html__('Display the My Next Wine rating in Quick View when a rating is available.', 'my-next-wine-for-woocommerce'); ?></label>
                         </td>
                     </tr>
                 </table>
-                <?php submit_button(__('Save settings', 'my-next-wine-woocommerce')); ?>
+                <?php submit_button(__('Save settings', 'my-next-wine-for-woocommerce')); ?>
             </form>
         </div>
         <?php
@@ -384,15 +400,15 @@ final class MNW_Woo_Settings {
 
     private function billing_status_label(string $status, int $trial_days): string {
         $labels = array(
-            'NOT_STARTED' => __('Not started', 'my-next-wine-woocommerce'),
-            'PENDING_CONFIRMATION' => __('Awaiting Stripe checkout confirmation', 'my-next-wine-woocommerce'),
+            'NOT_STARTED' => __('Not started', 'my-next-wine-for-woocommerce'),
+            'PENDING_CONFIRMATION' => __('Awaiting Stripe checkout confirmation', 'my-next-wine-for-woocommerce'),
             /* translators: %d: trial length in days. */
-            'TRIAL' => sprintf(__('%d-day trial active', 'my-next-wine-woocommerce'), $trial_days),
-            'ACTIVE' => __('Active', 'my-next-wine-woocommerce'),
-            'PAUSED' => __('Paused after failed payment', 'my-next-wine-woocommerce'),
-            'CANCEL_PENDING' => __('Cancellation scheduled — access remains active until the date shown', 'my-next-wine-woocommerce'),
-            'CANCELED' => __('Cancelled', 'my-next-wine-woocommerce'),
-            'REFUNDED' => __('Refunded', 'my-next-wine-woocommerce'),
+            'TRIAL' => sprintf(__('%d-day trial active', 'my-next-wine-for-woocommerce'), $trial_days),
+            'ACTIVE' => __('Active', 'my-next-wine-for-woocommerce'),
+            'PAUSED' => __('Paused after failed payment', 'my-next-wine-for-woocommerce'),
+            'CANCEL_PENDING' => __('Cancellation scheduled — access remains active until the date shown', 'my-next-wine-for-woocommerce'),
+            'CANCELED' => __('Cancelled', 'my-next-wine-for-woocommerce'),
+            'REFUNDED' => __('Refunded', 'my-next-wine-for-woocommerce'),
         );
         $key = strtoupper($status);
         return (string) ($labels[$key] ?? $status);

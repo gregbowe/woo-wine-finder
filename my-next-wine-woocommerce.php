@@ -11,7 +11,7 @@
  * WC requires at least: 8.0
  * WC tested up to: 10.9
  * Requires Plugins: woocommerce
- * Text Domain: my-next-wine-woocommerce
+ * Text Domain: my-next-wine-for-woocommerce
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -25,7 +25,7 @@ define('MNW_WOO_FILE', __FILE__);
 define('MNW_WOO_DIR', plugin_dir_path(__FILE__));
 define('MNW_WOO_URL', plugin_dir_url(__FILE__));
 define('MNW_WOO_OPTION', 'mnw_woo_settings');
-define('MNW_WOO_TERMS_VERSION', '2026-08-04-5');
+define('MNW_WOO_TERMS_VERSION', '2026-08-04-6');
 define('MNW_WOO_TERMS_URL', 'https://mynextwine.ie/woocommerce/terms');
 define('MNW_WOO_PRIVACY_URL', 'https://mynextwine.ie/woocommerce/privacy');
 define('MNW_WOO_USER_TERMS_URL', 'https://mynextwine.ie/woocommerce/user-terms');
@@ -59,7 +59,7 @@ add_action('plugins_loaded', static function () {
     if (!class_exists('WooCommerce')) {
         add_action('admin_notices', static function () {
             echo '<div class="notice notice-error"><p>'
-                . esc_html__('My Next Wine requires WooCommerce to be installed and active.', 'my-next-wine-woocommerce')
+                . esc_html__('My Next Wine requires WooCommerce to be installed and active.', 'my-next-wine-for-woocommerce')
                 . '</p></div>';
         });
         return;

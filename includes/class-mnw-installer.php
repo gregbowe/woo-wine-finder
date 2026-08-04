@@ -110,7 +110,7 @@ final class MNW_Woo_Installer {
 
     public function retry_connection(): void {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You do not have permission to connect My Next Wine.', 'my-next-wine-woocommerce'));
+            wp_die(esc_html__('You do not have permission to connect My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mnw_woo_retry_connection');
         $settings = $this->client->settings();
@@ -120,7 +120,7 @@ final class MNW_Woo_Installer {
             $accepted_terms = isset($_POST['mnw_accept_terms']);
             $accepted_data = isset($_POST['mnw_accept_data_sharing']);
             if (!$accepted_terms || !$accepted_data) {
-                wp_die(esc_html__('Accept the Merchant Terms and data-sharing disclosure to connect My Next Wine.', 'my-next-wine-woocommerce'));
+                wp_die(esc_html__('Accept the Merchant Terms and data-sharing disclosure to connect My Next Wine.', 'my-next-wine-for-woocommerce'));
             }
             $settings['connection_consent'] = 'yes';
             $settings['terms_version'] = MNW_WOO_TERMS_VERSION;
@@ -154,7 +154,7 @@ final class MNW_Woo_Installer {
 
     private function perform_bootstrap(): void {
         if (!class_exists('WooCommerce')) {
-            $this->record_failure(__('WooCommerce must be active before My Next Wine can connect.', 'my-next-wine-woocommerce'));
+            $this->record_failure(__('WooCommerce must be active before My Next Wine can connect.', 'my-next-wine-for-woocommerce'));
             return;
         }
 

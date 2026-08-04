@@ -62,11 +62,11 @@ final class MNW_Woo_REST_Controller {
 
     public function cart(WP_REST_Request $request): WP_REST_Response {
         if (!$this->client->is_enabled()) {
-            return $this->error(__('The wine finder is not enabled.', 'my-next-wine-woocommerce'), 503);
+            return $this->error(__('The wine finder is not enabled.', 'my-next-wine-for-woocommerce'), 503);
         }
         $nonce = (string) $request->get_header('x-wp-nonce');
         if ('' === $nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
-            return $this->error(__('The basket session has expired. Refresh the page and try again.', 'my-next-wine-woocommerce'), 403);
+            return $this->error(__('The basket session has expired. Refresh the page and try again.', 'my-next-wine-for-woocommerce'), 403);
         }
 
         $payload = $this->json_payload($request);
@@ -77,7 +77,7 @@ final class MNW_Woo_REST_Controller {
         $recommendation_token = (string) ($payload['recommendationToken'] ?? '');
         $requested_wines = $payload['wines'] ?? null;
         if ('' === $session_id || !is_array($requested_wines) || count($requested_wines) < 1 || count($requested_wines) > 12) {
-            return $this->error(__('The basket request is incomplete.', 'my-next-wine-woocommerce'), 400);
+            return $this->error(__('The basket request is incomplete.', 'my-next-wine-for-woocommerce'), 400);
         }
 
         $claims = $this->client->verify_recommendation_token($recommendation_token);
@@ -85,7 +85,7 @@ final class MNW_Woo_REST_Controller {
             return $this->from_error($claims, 409);
         }
         if (!isset($claims['sessionId']) || !hash_equals((string) $claims['sessionId'], $session_id)) {
-            return $this->error(__('The wine selection no longer matches this session.', 'my-next-wine-woocommerce'), 409);
+            return $this->error(__('The wine selection no longer matches this session.', 'my-next-wine-for-woocommerce'), 409);
         }
 
         $allowed = array();
@@ -101,7 +101,7 @@ final class MNW_Woo_REST_Controller {
             wc_load_cart();
         }
         if (null === WC()->cart) {
-            return $this->error(__('WooCommerce could not start the basket.', 'my-next-wine-woocommerce'), 503);
+            return $this->error(__('WooCommerce could not start the basket.', 'my-next-wine-for-woocommerce'), 503);
         }
 
         $added_keys = array();
@@ -109,14 +109,14 @@ final class MNW_Woo_REST_Controller {
         foreach ($requested_wines as $requested) {
             if (!is_array($requested)) {
                 $this->rollback($added_keys);
-                return $this->error(__('A selected wine was invalid.', 'my-next-wine-woocommerce'), 400);
+                return $this->error(__('A selected wine was invalid.', 'my-next-wine-for-woocommerce'), 400);
             }
             $somm_wine_id = absint($requested['sommWineId'] ?? 0);
             $external_id = absint($requested['variantId'] ?? 0);
             $key = $somm_wine_id . '|' . $external_id;
             if ($somm_wine_id < 1 || $external_id < 1 || isset($seen[$key]) || !isset($allowed[$key])) {
                 $this->rollback($added_keys);
-                return $this->error(__('The selected wines have changed. Please request a fresh selection.', 'my-next-wine-woocommerce'), 409);
+                return $this->error(__('The selected wines have changed. Please request a fresh selection.', 'my-next-wine-for-woocommerce'), 409);
             }
             $seen[$key] = true;
 
@@ -128,14 +128,14 @@ final class MNW_Woo_REST_Controller {
                 || !$product->has_enough_stock(1)
                 || $product->backorders_allowed()) {
                 $this->rollback($added_keys);
-                return $this->error(__('One recommended wine is no longer available. Please choose your wines again.', 'my-next-wine-woocommerce'), 409);
+                return $this->error(__('One recommended wine is no longer available. Please choose your wines again.', 'my-next-wine-for-woocommerce'), 409);
             }
 
             $current_price = (float) wc_get_price_to_display($product);
             $recommended_price = (float) $allowed[$key]['price'];
             if ($current_price <= 0 || abs($current_price - $recommended_price) > 0.01) {
                 $this->rollback($added_keys);
-                return $this->error(__('A wine price has changed. Please request a fresh selection.', 'my-next-wine-woocommerce'), 409);
+                return $this->error(__('A wine price has changed. Please request a fresh selection.', 'my-next-wine-for-woocommerce'), 409);
             }
 
             $product_id = $product->is_type('variation') ? $product->get_parent_id() : $product->get_id();
@@ -150,7 +150,7 @@ final class MNW_Woo_REST_Controller {
             $cart_key = WC()->cart->add_to_cart($product_id, 1, $variation_id, $variation, $cart_item_data);
             if (false === $cart_key) {
                 $this->rollback($added_keys);
-                return $this->error(__('A recommended wine could not be added to the basket.', 'my-next-wine-woocommerce'), 409);
+                return $this->error(__('A recommended wine could not be added to the basket.', 'my-next-wine-for-woocommerce'), 409);
             }
             $added_keys[] = $cart_key;
         }
@@ -176,7 +176,7 @@ final class MNW_Woo_REST_Controller {
     /** @param array<string,mixed>|null $payload */
     private function proxy(string $method, string $backend_path, ?array $payload): WP_REST_Response {
         if (!$this->client->is_enabled()) {
-            return $this->error(__('The wine finder is not enabled.', 'my-next-wine-woocommerce'), 503);
+            return $this->error(__('The wine finder is not enabled.', 'my-next-wine-for-woocommerce'), 503);
         }
         $result = $this->client->request($method, $backend_path, $payload, $this->client->client_key());
         if (is_wp_error($result)) {
@@ -191,11 +191,11 @@ final class MNW_Woo_REST_Controller {
     private function json_payload(WP_REST_Request $request) {
         $raw = (string) $request->get_body();
         if (strlen($raw) > self::MAX_BODY_BYTES) {
-            return new WP_Error('mnw_too_large', __('The request is too large.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_too_large', __('The request is too large.', 'my-next-wine-for-woocommerce'));
         }
         $payload = $request->get_json_params();
         if (!is_array($payload)) {
-            return new WP_Error('mnw_invalid_json', __('A valid JSON request is required.', 'my-next-wine-woocommerce'));
+            return new WP_Error('mnw_invalid_json', __('A valid JSON request is required.', 'my-next-wine-for-woocommerce'));
         }
         return $payload;
     }
