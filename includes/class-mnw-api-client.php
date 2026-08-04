@@ -131,14 +131,14 @@ final class MNW_Woo_API_Client {
         return $this->request('POST', '/api/woocommerce/widget/merchant/billing/start', array());
     }
 
-    /** Compatibility alias for pre-Marketplace plugin code. @return array<string,mixed>|WP_Error */
+    /** Compatibility alias for older plugin builds. @return array<string,mixed>|WP_Error */
     public function start_trial() {
         return $this->start_billing();
     }
 
     /** @return array<string,mixed>|WP_Error */
-    public function cancel_billing() {
-        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/cancel', array());
+    public function manage_billing() {
+        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/manage', array());
     }
 
     /** @return array<string,mixed>|WP_Error */

@@ -11,7 +11,7 @@ A GPL-licensed WooCommerce connector for the externally hosted My Next Wine B2B 
 5. A new B2B-only merchant account is created automatically, or an existing WooCommerce merchant is safely reused.
 6. For a new B2B-only merchant, the plugin pushes a complete signed catalogue snapshot and keeps it reconciled.
 7. My Next Wine maps or ignores the products.
-8. Once the catalogue is ready, the merchant completes WooCommerce.com checkout to start the 30-day trial and then enables the widget.
+8. Once the catalogue is ready, the merchant completes Stripe-hosted checkout to start the 30-day trial and then enables the widget.
 
 The merchant never handles a Somm ID, installation ID, installation secret, connection code or WooCommerce REST API key.
 
@@ -78,29 +78,29 @@ When the store URL uniquely matches an existing My Next Wine WooCommerce merchan
 
 Ambiguous or conflicting matches are rejected for manual support review rather than linked automatically.
 
-## Woo Marketplace billing
+## Direct Stripe billing
 
-- The backend creates the monthly contract through WooCommerce.com's SaaS Billing API and redirects the merchant to Woo checkout.
-- The Wine Finder is activated only by a valid signed `saas_billing_contract.activated` webhook, never by the browser return alone.
-- Woo handles renewals, payment retries, invoices and tax calculation. Failed renewals pause access until a signed renewal event arrives.
-- Merchants can cancel from **WooCommerce → My Next Wine**; access remains until Woo reports that the prepaid term has ended.
-- Approved refunds are handled in the Woo vendor dashboard and signed refunded/canceled events remove access.
-- Uninstalling the plugin revokes the local service connection but does not silently cancel a WooCommerce.com subscription.
+- The backend creates a Stripe Checkout Session and redirects the merchant to Stripe-hosted subscription checkout.
+- The Wine Finder is activated only from a verified Stripe webhook, never from the browser return alone.
+- Stripe handles card collection, payment authentication, renewals and hosted invoices; payment-card details never pass through the WordPress plugin or My Next Wine backend.
+- The merchant opens Stripe Customer Portal from **WooCommerce → My Next Wine** to update billing details, view invoices or cancel.
+- Cancellation normally keeps access until the end of the paid period reported by Stripe.
+- Uninstalling revokes the plugin connection but does not silently cancel the Stripe subscription.
 
 ## Public-release prerequisites
 
 - Set the sole-trader legal name, genuine geographic business address, CRO business-name registration number and monitored support/privacy email in the backend AWS Secrets Manager record. Leave VAT blank while not VAT registered.
 - Publish the Merchant Terms, Privacy Statement and subprocessor list at the URLs above.
-- Obtain Woo Marketplace sandbox credentials, register the signed webhook URL, complete Woo technical review and then replace the sandbox API host/credentials with production values.
+- Create the Stripe recurring Price, configure Stripe Customer Portal, register the dedicated Stripe webhook endpoint and add separate staging/production Stripe secrets in AWS Secrets Manager.
 - Test against the exact WordPress/WooCommerce/PHP versions claimed in `readme.txt` and update `Tested up to` before submission.
-- Prepare support, security, accessibility, screenshots and reviewer instructions for the selected WordPress.org or Woo Marketplace route.
+- Run Plugin Check and WordPress Coding Standards, prepare repository assets/screenshots, and provide clear WordPress.org reviewer instructions for the external SaaS and Stripe billing flow.
 
 ## Initial limitations
 
 - One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- Woo Marketplace currently settles SaaS Billing API plans in USD; the public plan is therefore USD 29.99/month plus tax unless Woo approves another currency.
+- The default direct subscription is EUR 29.99/month after a 30-day trial; the configured Stripe Price currency and amount must exactly match the backend settings and published terms.
 
 ## Local development
 

@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 0.4.0
+Stable tag: 0.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ My Next Wine is a hosted recommendation service for online wine merchants. This 
 
 My Next Wine provides technology only. The merchant remains the seller of every wine and is responsible for alcohol licensing, age verification, product information and condition, payment, fulfilment, delivery, customer service, refunds and legal compliance.
 
-The hosted service offers a 30-day free trial followed by USD 29.99 per month plus tax where applicable. Marketplace subscription checkout, renewals, payment retries, invoices, cancellation and refunds are handled through WooCommerce.com's SaaS Billing API. Activating the plugin alone does not start the trial, create a charge or transmit store/catalogue data.
+The hosted service offers a 30-day free trial followed by EUR 29.99 per month plus applicable tax. Subscription checkout and account management are hosted by Stripe. My Next Wine activates, renews, pauses or ends access only from verified Stripe billing events. Activating the plugin alone does not start the trial, create a charge or transmit store/catalogue data.
 
 == Installation ==
 
@@ -27,7 +27,7 @@ The hosted service offers a 30-day free trial followed by USD 29.99 per month pl
 4. An authorised administrator ticks both consent boxes and chooses "Agree and connect store".
 5. The plugin proves ownership of the site and securely sends the disclosed store information to My Next Wine.
 6. The catalogue is synchronised and My Next Wine maps or ignores eligible products.
-7. When the catalogue is ready, complete the WooCommerce.com subscription checkout to start the 30-day trial, then enable the Wine Finder.
+7. When the catalogue is ready, complete the Stripe-hosted subscription checkout to start the 30-day trial, then enable the Wine Finder.
 
 No WooCommerce REST key, Somm ID, installation ID or installation secret needs to be entered by the merchant.
 
@@ -54,9 +54,9 @@ After connection, the plugin may send:
 * For orders attributed to the Wine Finder: order identifier, currency, total, selected product/variation references and quantities.
 * Technical request, replay-prevention and security metadata.
 
-The plugin is not designed to send shopper names, customer email addresses, billing/delivery addresses or payment-card details to My Next Wine.
+The plugin is not designed to send shopper names, customer email addresses, billing/delivery addresses or payment-card details to My Next Wine. Merchant subscription checkout is hosted by Stripe; payment-card details are submitted directly to Stripe and are not sent through the WordPress plugin or stored by My Next Wine.
 
-My Next Wine may use contracted hosting, database, monitoring, support and artificial-intelligence providers to operate the service. Full information is available here:
+My Next Wine may use contracted hosting, database, monitoring, support, billing and artificial-intelligence providers, including Stripe for merchant subscription billing, to operate the service. Full information is available here:
 
 * Merchant Terms: https://mynextwine.ie/woocommerce/terms
 * Privacy Statement: https://mynextwine.ie/woocommerce/privacy
@@ -68,7 +68,7 @@ The plugin adds suggested wording to WordPress's Privacy Policy Guide under Sett
 
 Shopper preference answers are used to create the requested recommendation. For attributed orders, My Next Wine receives order and product references but not customer identity, address or payment-card data. Normal security logs may contain network or device metadata.
 
-Uninstall removes local plugin settings and sends a best-effort service revocation request to My Next Wine. Uninstalling does not itself cancel a WooCommerce.com subscription; cancel the plan first from WooCommerce > My Next Wine. A merchant can also contact support@mynextwine.ie to request revocation, access, export or deletion, subject to legal retention requirements.
+Uninstall removes local plugin settings and sends a best-effort service revocation request to My Next Wine. Uninstalling does not itself cancel the Stripe subscription; use Manage subscription in WooCommerce > My Next Wine before uninstalling. A merchant can also contact support@mynextwine.ie to request revocation, access, export or deletion, subject to legal retention requirements.
 
 == Frequently Asked Questions ==
 
@@ -90,9 +90,24 @@ WooCommerce revalidates the selected product or variation, quantity, current pri
 
 = Can I disable it? =
 
-Yes. Disable the storefront widget in WooCommerce > My Next Wine, cancel the connected plan using the disclosed billing route, or uninstall the plugin.
+Yes. Disable the storefront widget in WooCommerce > My Next Wine, use Manage subscription to cancel the connected Stripe plan, or uninstall the plugin.
 
 == Changelog ==
+
+= 0.5.2 =
+* Made storefront analytics delivery compatible with browsers that reject keepalive requests combined with timeout signals.
+* Kept analytics asynchronous and non-blocking.
+
+= 0.5.1 =
+* Fixed optional aggregate analytics on stores that do not expose the WordPress Consent API.
+* Continue to honour statistics consent when the WordPress Consent API is available.
+* Clarified the merchant setting and suggested privacy-policy wording.
+
+= 0.5.0 =
+* Replaced the unavailable Woo Marketplace billing flow with direct Stripe Checkout and Customer Portal subscription management.
+* Added verified Stripe subscription webhooks for trial, renewal, failed-payment, cancellation and invoice state.
+* Kept the existing secure WooCommerce connection, catalogue sync, mapping, widget, cart validation, analytics and attribution flow.
+* Updated the Woo-only Merchant Terms acceptance to version 2026-08-04-5.
 
 = 0.4.0 =
 * Replaced the local trial toggle with Woo Marketplace SaaS Billing API checkout.

@@ -3,7 +3,7 @@
  * Plugin Name: My Next Wine for WooCommerce
  * Plugin URI: https://mynextwine.ie/
  * Description: Adds the My Next Wine recommendation widget to a WooCommerce wine shop.
- * Version: 0.4.0
+ * Version: 0.5.2
  * Author: My Next Wine
  * Author URI: https://mynextwine.ie/
  * Requires at least: 6.5
@@ -20,12 +20,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MNW_WOO_VERSION', '0.4.0');
+define('MNW_WOO_VERSION', '0.5.2');
 define('MNW_WOO_FILE', __FILE__);
 define('MNW_WOO_DIR', plugin_dir_path(__FILE__));
 define('MNW_WOO_URL', plugin_dir_url(__FILE__));
 define('MNW_WOO_OPTION', 'mnw_woo_settings');
-define('MNW_WOO_TERMS_VERSION', '2026-07-30-4');
+define('MNW_WOO_TERMS_VERSION', '2026-08-04-5');
 define('MNW_WOO_TERMS_URL', 'https://mynextwine.ie/woocommerce/terms');
 define('MNW_WOO_PRIVACY_URL', 'https://mynextwine.ie/woocommerce/privacy');
 define('MNW_WOO_USER_TERMS_URL', 'https://mynextwine.ie/woocommerce/user-terms');

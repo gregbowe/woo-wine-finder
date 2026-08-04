@@ -7,7 +7,6 @@
   const REQUEST_TIMEOUT_MS = 30000;
   const CART_TIMEOUT_MS = 15000;
   const SWAP_TIMEOUT_MS = 20000;
-  const ANALYTICS_TIMEOUT_MS = 5000;
   const CONFIGURATION_TIMEOUT_MS = 10000;
 
   const initialiseAllWidgets = () => {
@@ -1217,8 +1216,8 @@
 
   const wordpressStatisticsConsentAllowed = () => {
     try {
-      return typeof window.wp_has_consent === "function"
-        && window.wp_has_consent("statistics") === true;
+      return typeof window.wp_has_consent !== "function"
+        || window.wp_has_consent("statistics") === true;
     } catch (_) {
       return false;
     }
@@ -1232,8 +1231,7 @@
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body,
       cache: "no-store",
-      keepalive: true,
-      signal: window.AbortSignal?.timeout ? window.AbortSignal.timeout(ANALYTICS_TIMEOUT_MS) : undefined
+      credentials: "same-origin"
     }).catch(() => {
       // Analytics must never interrupt the customer's storefront journey.
     });

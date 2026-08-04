@@ -19,7 +19,7 @@ final class MNW_Woo_Privacy {
             '<p>'
             . esc_html__('When the My Next Wine Wine Finder is connected, this store sends product and variation identifiers, names, descriptions, images, categories, attributes, prices and availability to the externally hosted My Next Wine service so wines can be mapped and recommended.', 'my-next-wine-woocommerce')
             . '</p><p>'
-            . esc_html__('Shopper wine-preference answers are sent when a recommendation is requested. Optional aggregate widget analytics are off by default and are sent only when the merchant enables them and this site reports statistics consent through the WordPress Consent API. For attributed orders, the service receives the WooCommerce order identifier, currency, total, product references and quantities, but not the customer name, email, delivery address or payment-card details. Technical security logs may include network and request metadata.', 'my-next-wine-woocommerce')
+            . esc_html__('Shopper wine-preference answers are sent when a recommendation is requested. Optional aggregate widget analytics are off by default and are sent only when the merchant enables them. When this site exposes the WordPress Consent API, those events are additionally suppressed until statistics consent is reported. For attributed orders, the service receives the WooCommerce order identifier, currency, total, product references and quantities, but not the customer name, email, delivery address or payment-card details. Technical security logs may include network and request metadata.', 'my-next-wine-woocommerce')
             . '</p><p>'
             . sprintf(
                 /* translators: 1: privacy URL, 2: shopper terms URL, 3: merchant terms URL */

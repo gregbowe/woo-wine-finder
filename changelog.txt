@@ -1,3 +1,9 @@
+= 0.5.0 =
+* Replaced Woo Marketplace billing with direct Stripe Checkout and Customer Portal subscription management.
+* Added verified Stripe subscription lifecycle handling for trials, renewals, failed payments, cancellation and invoices.
+* Kept the working WooCommerce connection, catalogue sync, mapping, widget, cart validation, analytics and attribution flow unchanged.
+* Updated Woo-only Merchant Terms acceptance to version 2026-08-04-5.
+
 = 0.4.0 =
 * Replaced the local trial/status toggle with Woo Marketplace SaaS Billing API checkout.
 * Added signed lifecycle webhooks for activation, renewal, failed payments, cancellation, prepaid expiry and refunds.
@@ -12,6 +18,15 @@
 * Updated Merchant Terms acceptance to version 2026-07-29-3.
 
 *** My Next Wine for WooCommerce Changelog ***
+
+2026-08-04 - version 0.5.2
+* Removed the fragile keepalive and timeout-signal combination from storefront analytics requests.
+* Kept analytics asynchronous and non-blocking.
+
+2026-08-04 - version 0.5.1
+* Fixed optional aggregate analytics on stores that do not expose the WordPress Consent API.
+* Continue to honour statistics consent when the WordPress Consent API is available.
+* Clarified the merchant setting and suggested privacy-policy wording.
 
 2026-07-29 - version 0.3.1
 * Added separate shopper-facing Wine Finder User Terms and linked them beside the recommendation button.
