@@ -148,8 +148,11 @@ final class MNW_Woo_Catalogue_Controller {
 
     private function tags(WC_Product $product, ?WC_Product_Variation $variation = null): string {
         $values = array();
-        foreach (wp_get_post_terms($product->get_id(), array('product_cat', 'product_tag'), array('fields' => 'names')) as $term) {
-            $values[] = wc_clean($term);
+        $terms = wp_get_post_terms($product->get_id(), array('product_cat', 'product_tag'), array('fields' => 'names'));
+        if (!is_wp_error($terms)) {
+            foreach ($terms as $term) {
+                $values[] = wc_clean($term);
+            }
         }
         foreach ($product->get_attributes() as $attribute) {
             if ($attribute instanceof WC_Product_Attribute) {

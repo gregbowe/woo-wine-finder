@@ -227,7 +227,10 @@ final class MNW_Woo_Settings {
                         <?php echo esc_html($this->billing_status_label($billing_status, $billing_trial_days)); ?>
                     </p>
                     <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-woocommerce'); ?></strong>
-                        <?php echo esc_html(sprintf('%1$s %2$s per month, plus tax where applicable', $billing_currency, $billing_price)); ?>
+                        <?php
+                        /* translators: 1: billing currency code, 2: monthly price. */
+                        echo esc_html(sprintf(__('%1$s %2$s per month, plus tax where applicable', 'my-next-wine-woocommerce'), $billing_currency, $billing_price));
+                        ?>
                     </p>
                     <?php if (!empty($status['trialEndsAt'])) : ?>
                         <p><strong><?php echo esc_html__('Trial ends:', 'my-next-wine-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['trialEndsAt'])); ?></p>
@@ -299,7 +302,10 @@ final class MNW_Woo_Settings {
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                                 <input type="hidden" name="action" value="mnw_woo_start_billing">
                                 <?php wp_nonce_field('mnw_woo_start_billing'); ?>
-                                <?php submit_button(sprintf(__('Start %1$d-day trial — %2$s %3$s/month + tax', 'my-next-wine-woocommerce'), $billing_trial_days, $billing_currency, $billing_price), 'primary', 'submit', false); ?>
+                                <?php
+                                /* translators: 1: trial length in days, 2: billing currency code, 3: monthly price. */
+                                submit_button(sprintf(__('Start %1$d-day trial — %2$s %3$s/month + tax', 'my-next-wine-woocommerce'), $billing_trial_days, $billing_currency, $billing_price), 'primary', 'submit', false);
+                                ?>
                             </form>
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canManageBilling'])) : ?>
@@ -380,10 +386,11 @@ final class MNW_Woo_Settings {
         $labels = array(
             'NOT_STARTED' => __('Not started', 'my-next-wine-woocommerce'),
             'PENDING_CONFIRMATION' => __('Awaiting Stripe checkout confirmation', 'my-next-wine-woocommerce'),
+            /* translators: %d: trial length in days. */
             'TRIAL' => sprintf(__('%d-day trial active', 'my-next-wine-woocommerce'), $trial_days),
             'ACTIVE' => __('Active', 'my-next-wine-woocommerce'),
             'PAUSED' => __('Paused after failed payment', 'my-next-wine-woocommerce'),
-            'CANCEL_PENDING' => __('Cancelled — active until prepaid period ends', 'my-next-wine-woocommerce'),
+            'CANCEL_PENDING' => __('Cancellation scheduled — access remains active until the date shown', 'my-next-wine-woocommerce'),
             'CANCELED' => __('Cancelled', 'my-next-wine-woocommerce'),
             'REFUNDED' => __('Refunded', 'my-next-wine-woocommerce'),
         );

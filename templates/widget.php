@@ -62,17 +62,17 @@ if (!defined('ABSPATH')) { exit; }
                 <path d="M10.3 11h11.4M16 17.3V26M11.5 27h9"/>
               </svg>
             </span>
-            <span>Wine finder</span>
+            <span><?php echo esc_html__('Wine finder', 'my-next-wine-woocommerce'); ?></span>
           </div>
 
           <h2 class="mnw-wine-finder__aside-title">
-            Wine, picked for you.
+            <?php echo esc_html__('Wine, picked for you.', 'my-next-wine-woocommerce'); ?>
           </h2>
           <p class="mnw-wine-finder__aside-copy">
             <?php echo esc_html($intro); ?>
           </p>
           <p class="mnw-wine-finder__aside-copy">
-            Automated, AI-assisted recommendations. Wine is sold and fulfilled by this shop.
+            <?php echo esc_html__('Automated, AI-assisted recommendations. Wine is sold and fulfilled by this shop.', 'my-next-wine-woocommerce'); ?>
           </p>
         </div>
 
@@ -83,7 +83,7 @@ if (!defined('ABSPATH')) { exit; }
           class="mnw-wine-finder__close-button"
           type="button"
           data-mnw-close
-          aria-label="Close wine finder"
+          aria-label="<?php echo esc_attr__('Close wine finder', 'my-next-wine-woocommerce'); ?>"
         >
           <svg viewBox="0 0 20 20" aria-hidden="true">
             <path d="m5 5 10 10M15 5 5 15"/>
@@ -95,12 +95,12 @@ if (!defined('ABSPATH')) { exit; }
             id="mnw-dialog-title-<?php echo esc_attr($widget_id); ?>"
             class="mnw-visually-hidden"
           >
-            Wine finder
+            <?php echo esc_html__('Wine finder', 'my-next-wine-woocommerce'); ?>
           </h2>
 
           <div class="mnw-wine-finder__wizard-progress" data-mnw-wizard-progress>
             <div class="mnw-wine-finder__wizard-progress-copy">
-              <span data-mnw-wizard-count>Question 1 of 4</span>
+              <span data-mnw-wizard-count><?php echo esc_html__('Question 1 of 4', 'my-next-wine-woocommerce'); ?></span>
             </div>
             <div
               class="mnw-wine-finder__wizard-track"
@@ -125,15 +125,15 @@ if (!defined('ABSPATH')) { exit; }
             <fieldset
               class="mnw-wine-finder__fieldset mnw-wine-finder__wizard-step"
               data-mnw-wizard-step
-              data-mnw-wizard-title="Bottle mix"
+              data-mnw-wizard-title="<?php echo esc_attr__('Bottle mix', 'my-next-wine-woocommerce'); ?>"
               data-mnw-wizard-mix
             >
               <legend class="mnw-wine-finder__question-title">
-                What mix would you like?
+                <?php echo esc_html__('What mix would you like?', 'my-next-wine-woocommerce'); ?>
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                Choose 3 to 12 bottles across the four styles.
+                <?php echo esc_html__('Choose 3 to 12 bottles across the four styles.', 'my-next-wine-woocommerce'); ?>
               </p>
 
               <div class="mnw-wine-finder__breakdown-grid">
@@ -142,7 +142,7 @@ if (!defined('ABSPATH')) { exit; }
                     class="mnw-field__label"
                     for="mnw-red-<?php echo esc_attr($widget_id); ?>"
                   >
-                    Red
+                    <?php echo esc_html__('Red', 'my-next-wine-woocommerce'); ?>
                   </label>
 
                   <input
@@ -165,7 +165,7 @@ if (!defined('ABSPATH')) { exit; }
                     class="mnw-field__label"
                     for="mnw-white-<?php echo esc_attr($widget_id); ?>"
                   >
-                    White
+                    <?php echo esc_html__('White', 'my-next-wine-woocommerce'); ?>
                   </label>
 
                   <input
@@ -188,7 +188,7 @@ if (!defined('ABSPATH')) { exit; }
                     class="mnw-field__label"
                     for="mnw-sparkling-<?php echo esc_attr($widget_id); ?>"
                   >
-                    Sparkling
+                    <?php echo esc_html__('Sparkling', 'my-next-wine-woocommerce'); ?>
                   </label>
 
                   <input
@@ -211,7 +211,7 @@ if (!defined('ABSPATH')) { exit; }
                     class="mnw-field__label"
                     for="mnw-dessert-<?php echo esc_attr($widget_id); ?>"
                   >
-                    Dessert
+                    <?php echo esc_html__('Dessert', 'my-next-wine-woocommerce'); ?>
                   </label>
 
                   <input
@@ -235,7 +235,7 @@ if (!defined('ABSPATH')) { exit; }
                 data-mnw-allocation-status
                 aria-live="polite"
               >
-                6 bottles selected.
+                <?php echo esc_html__('6 bottles selected.', 'my-next-wine-woocommerce'); ?>
               </p>
 
               <div class="mnw-wine-finder__wizard-actions mnw-wine-finder__wizard-actions--end">
@@ -244,7 +244,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-wizard-next
                 >
-                  Next
+                  <?php echo esc_html__('Next', 'my-next-wine-woocommerce'); ?>
                   <svg viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M4 10h11M11 6l4 4-4 4"/>
                   </svg>
@@ -255,15 +255,15 @@ if (!defined('ABSPATH')) { exit; }
             <fieldset
               class="mnw-wine-finder__fieldset mnw-wine-finder__wizard-step"
               data-mnw-wizard-step
-              data-mnw-wizard-title="Budget"
+              data-mnw-wizard-title="<?php echo esc_attr__('Budget', 'my-next-wine-woocommerce'); ?>"
               hidden
             >
               <legend class="mnw-wine-finder__question-title">
-                What is your total budget?
+                <?php echo esc_html__('What is your total budget?', 'my-next-wine-woocommerce'); ?>
               </legend>
 
               <p class="mnw-wine-finder__question-help" data-mnw-budget-help>
-                Loading this shop's currency and spend limits.
+                <?php echo esc_html__("Loading this shop's currency and spend limits.", 'my-next-wine-woocommerce'); ?>
               </p>
 
               <div class="mnw-field mnw-field--short">
@@ -286,7 +286,7 @@ if (!defined('ABSPATH')) { exit; }
                     max="1000000000"
                     step="1"
                     inputmode="decimal"
-                    aria-label="Maximum total budget"
+                    aria-label="<?php echo esc_attr__('Maximum total budget', 'my-next-wine-woocommerce'); ?>"
                     required
                     data-mnw-budget
                   >
@@ -299,7 +299,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-wizard-back
                 >
-                  Back
+                  <?php echo esc_html__('Back', 'my-next-wine-woocommerce'); ?>
                 </button>
 
                 <button
@@ -307,7 +307,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-wizard-next
                 >
-                  Next
+                  <?php echo esc_html__('Next', 'my-next-wine-woocommerce'); ?>
                   <svg viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M4 10h11M11 6l4 4-4 4"/>
                   </svg>
@@ -318,15 +318,15 @@ if (!defined('ABSPATH')) { exit; }
             <fieldset
               class="mnw-wine-finder__fieldset mnw-wine-finder__wizard-step"
               data-mnw-wizard-step
-              data-mnw-wizard-title="Your taste"
+              data-mnw-wizard-title="<?php echo esc_attr__('Your taste', 'my-next-wine-woocommerce'); ?>"
               hidden
             >
               <legend class="mnw-wine-finder__question-title">
-                What wines do you like?
+                <?php echo esc_html__('What wines do you like?', 'my-next-wine-woocommerce'); ?>
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                A grape, region, style or dislike is enough. Do not enter names, contact details, allergies, health information or other sensitive personal information.
+                <?php echo esc_html__('A grape, region, style or dislike is enough. Do not enter names, contact details, allergies, health information or other sensitive personal information.', 'my-next-wine-woocommerce'); ?>
               </p>
 
               <div class="mnw-field">
@@ -336,8 +336,8 @@ if (!defined('ABSPATH')) { exit; }
                   name="usualWines"
                   rows="3"
                   maxlength="500"
-                  placeholder="For example: light Pinot Noir, crisp whites, Rioja, or nothing heavily oaked."
-                  aria-label="Wines you usually like"
+                  placeholder="<?php echo esc_attr__('For example: light Pinot Noir, crisp whites, Rioja, or nothing heavily oaked.', 'my-next-wine-woocommerce'); ?>"
+                  aria-label="<?php echo esc_attr__('Wines you usually like', 'my-next-wine-woocommerce'); ?>"
                   required
                 ></textarea>
               </div>
@@ -348,7 +348,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-wizard-back
                 >
-                  Back
+                  <?php echo esc_html__('Back', 'my-next-wine-woocommerce'); ?>
                 </button>
 
                 <button
@@ -356,7 +356,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-wizard-next
                 >
-                  Next
+                  <?php echo esc_html__('Next', 'my-next-wine-woocommerce'); ?>
                   <svg viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M4 10h11M11 6l4 4-4 4"/>
                   </svg>
@@ -367,15 +367,15 @@ if (!defined('ABSPATH')) { exit; }
             <fieldset
               class="mnw-wine-finder__fieldset mnw-wine-finder__wizard-step"
               data-mnw-wizard-step
-              data-mnw-wizard-title="Food"
+              data-mnw-wizard-title="<?php echo esc_attr__('Food', 'my-next-wine-woocommerce'); ?>"
               hidden
             >
               <legend class="mnw-wine-finder__question-title">
-                Pairing with food?
+                <?php echo esc_html__('Pairing with food?', 'my-next-wine-woocommerce'); ?>
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                Optional. Leave blank if it does not matter. Do not enter names, contact details, allergies, health information or other sensitive personal information.
+                <?php echo esc_html__('Optional. Leave blank if it does not matter. Do not enter names, contact details, allergies, health information or other sensitive personal information.', 'my-next-wine-woocommerce'); ?>
               </p>
 
               <div class="mnw-field">
@@ -385,8 +385,8 @@ if (!defined('ABSPATH')) { exit; }
                   name="foodPairings"
                   rows="3"
                   maxlength="500"
-                  placeholder="For example: roast lamb, seafood, spicy food or a cheese board."
-                  aria-label="Food pairing"
+                  placeholder="<?php echo esc_attr__('For example: roast lamb, seafood, spicy food or a cheese board.', 'my-next-wine-woocommerce'); ?>"
+                  aria-label="<?php echo esc_attr__('Food pairing', 'my-next-wine-woocommerce'); ?>"
                 ></textarea>
               </div>
 
@@ -396,7 +396,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-wizard-back
                 >
-                  Back
+                  <?php echo esc_html__('Back', 'my-next-wine-woocommerce'); ?>
                 </button>
 
                 <button
@@ -404,7 +404,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="submit"
                   data-mnw-submit
                 >
-                  <span data-mnw-submit-label>Find my wines</span>
+                  <span data-mnw-submit-label><?php echo esc_html__('Find my wines', 'my-next-wine-woocommerce'); ?></span>
                   <svg viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M4 10h11M11 6l4 4-4 4"/>
                   </svg>
@@ -446,7 +446,7 @@ if (!defined('ABSPATH')) { exit; }
           >
             <div class="mnw-wine-finder__budget-guidance-icon" aria-hidden="true">↗</div>
             <div class="mnw-wine-finder__budget-guidance-content">
-              <strong>A little more budget is needed</strong>
+              <strong><?php echo esc_html__('A little more budget is needed', 'my-next-wine-woocommerce'); ?></strong>
               <p data-mnw-budget-guidance-copy></p>
               <div class="mnw-wine-finder__budget-guidance-actions">
                 <button
@@ -459,7 +459,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-edit-preferences
                 >
-                  Edit my request
+                  <?php echo esc_html__('Edit my request', 'my-next-wine-woocommerce'); ?>
                 </button>
               </div>
             </div>
@@ -474,7 +474,7 @@ if (!defined('ABSPATH')) { exit; }
             <div class="mnw-wine-finder__selection-header">
               <div>
                 <h3 class="mnw-wine-finder__selection-title">
-                  Your wines
+                  <?php echo esc_html__('Your wines', 'my-next-wine-woocommerce'); ?>
                 </h3>
 
                 <p
@@ -507,7 +507,7 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-request-match-unmet
                   hidden
                 >
-                  <span>Not fully matched:</span>
+                  <span><?php echo esc_html__('Not fully matched:', 'my-next-wine-woocommerce'); ?></span>
                   <span data-mnw-request-match-unmet-copy></span>
                 </p>
               </div>
@@ -527,7 +527,7 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-show-budget-alternative
                   hidden
                 >
-                  Show budget-friendly alternatives
+                  <?php echo esc_html__('Show budget-friendly alternatives', 'my-next-wine-woocommerce'); ?>
                 </button>
 
                 <button
@@ -536,7 +536,7 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-show-exact-selection
                   hidden
                 >
-                  Show exact matches
+                  <?php echo esc_html__('Show exact matches', 'my-next-wine-woocommerce'); ?>
                 </button>
 
                 <button
@@ -573,7 +573,7 @@ if (!defined('ABSPATH')) { exit; }
                   type="button"
                   data-mnw-start-again
                 >
-                  Change my answers
+                  <?php echo esc_html__('Change my answers', 'my-next-wine-woocommerce'); ?>
                 </button>
               </div>
             </div>
@@ -581,7 +581,7 @@ if (!defined('ABSPATH')) { exit; }
 
           <p class="mnw-wine-finder__powered-by">
             <?php echo esc_html__('AI-assisted recommendations by', 'my-next-wine-woocommerce'); ?>
-            <span>My Next Wine</span>.
+            <span><?php echo esc_html__('My Next Wine', 'my-next-wine-woocommerce'); ?></span>.
             <?php echo esc_html__('Wine is sold and fulfilled by this shop.', 'my-next-wine-woocommerce'); ?>
           </p>
         </div>
@@ -596,7 +596,7 @@ if (!defined('ABSPATH')) { exit; }
             class="mnw-wine-quick-view__backdrop"
             type="button"
             data-mnw-quick-view-close
-            aria-label="Close wine details"
+            aria-label="<?php echo esc_attr__('Close wine details', 'my-next-wine-woocommerce'); ?>"
           ></button>
 
           <section
@@ -609,7 +609,7 @@ if (!defined('ABSPATH')) { exit; }
               class="mnw-wine-quick-view__close"
               type="button"
               data-mnw-quick-view-close
-              aria-label="Close wine details"
+              aria-label="<?php echo esc_attr__('Close wine details', 'my-next-wine-woocommerce'); ?>"
             >
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <path d="m5 5 10 10M15 5 5 15"/>
@@ -625,7 +625,7 @@ if (!defined('ABSPATH')) { exit; }
                 alt=""
                 hidden
               >
-              <span data-mnw-quick-view-image-fallback>Wine</span>
+              <span data-mnw-quick-view-image-fallback><?php echo esc_html__('Wine', 'my-next-wine-woocommerce'); ?></span>
             </div>
 
             <div class="mnw-wine-quick-view__content">
@@ -648,11 +648,11 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-quick-view-reason-tags
                   hidden
                 ></div>
-                <span data-mnw-quick-view-reason-label>Why it fits</span>
+                <span data-mnw-quick-view-reason-label><?php echo esc_html__('Why it fits', 'my-next-wine-woocommerce'); ?></span>
                 <p data-mnw-quick-view-reason></p>
               </section>
               <p class="mnw-wine-quick-view__rating" data-mnw-quick-view-rating-row hidden>
-                <span>My Next Wine rating</span>
+                <span><?php echo esc_html__('My Next Wine rating', 'my-next-wine-woocommerce'); ?></span>
                 <strong data-mnw-quick-view-rating></strong>
               </p>
               <dl
@@ -661,19 +661,19 @@ if (!defined('ABSPATH')) { exit; }
                 hidden
               >
                 <div class="mnw-wine-quick-view__detail" data-mnw-quick-view-producer-row hidden>
-                  <dt>Producer</dt>
+                  <dt><?php echo esc_html__('Producer', 'my-next-wine-woocommerce'); ?></dt>
                   <dd data-mnw-quick-view-producer></dd>
                 </div>
                 <div class="mnw-wine-quick-view__detail" data-mnw-quick-view-region-row hidden>
-                  <dt>Region</dt>
+                  <dt><?php echo esc_html__('Region', 'my-next-wine-woocommerce'); ?></dt>
                   <dd data-mnw-quick-view-region></dd>
                 </div>
                 <div class="mnw-wine-quick-view__detail" data-mnw-quick-view-country-row hidden>
-                  <dt>Country</dt>
+                  <dt><?php echo esc_html__('Country', 'my-next-wine-woocommerce'); ?></dt>
                   <dd data-mnw-quick-view-country></dd>
                 </div>
                 <div class="mnw-wine-quick-view__detail" data-mnw-quick-view-grapes-row hidden>
-                  <dt>Grapes</dt>
+                  <dt><?php echo esc_html__('Grapes', 'my-next-wine-woocommerce'); ?></dt>
                   <dd data-mnw-quick-view-grapes></dd>
                 </div>
               </dl>
@@ -682,7 +682,7 @@ if (!defined('ABSPATH')) { exit; }
                 data-mnw-quick-view-description
               ></p>
               <section class="mnw-wine-quick-view__mnw-note" data-mnw-quick-view-wine-note-row hidden>
-                <p>My Next Wine note</p>
+                <p><?php echo esc_html__('My Next Wine note', 'my-next-wine-woocommerce'); ?></p>
                 <div data-mnw-quick-view-wine-note></div>
               </section>
             </div>
@@ -692,7 +692,7 @@ if (!defined('ABSPATH')) { exit; }
                 class="mnw-wine-note-popup__backdrop"
                 type="button"
                 data-mnw-note-popup-close
-                aria-label="Close note"
+                aria-label="<?php echo esc_attr__('Close note', 'my-next-wine-woocommerce'); ?>"
               ></button>
               <section
                 class="mnw-wine-note-popup__panel"
@@ -704,13 +704,13 @@ if (!defined('ABSPATH')) { exit; }
                   class="mnw-wine-note-popup__close"
                   type="button"
                   data-mnw-note-popup-close
-                  aria-label="Close note"
+                  aria-label="<?php echo esc_attr__('Close note', 'my-next-wine-woocommerce'); ?>"
                 >
                   <svg viewBox="0 0 20 20" aria-hidden="true">
                     <path d="m5 5 10 10M15 5 5 15"/>
                   </svg>
                 </button>
-                <p class="mnw-wine-note-popup__eyebrow">My Next Wine note</p>
+                <p class="mnw-wine-note-popup__eyebrow"><?php echo esc_html__('My Next Wine note', 'my-next-wine-woocommerce'); ?></p>
                 <h4 id="mnw-note-popup-title-<?php echo esc_attr($widget_id); ?>" data-mnw-note-popup-title></h4>
                 <p data-mnw-note-popup-copy></p>
               </section>

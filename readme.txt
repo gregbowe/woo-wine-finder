@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 0.5.2
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,17 +50,21 @@ After connection, the plugin may send:
 
 * Product and variation identifiers, SKUs, names, descriptions, images, categories, attributes, prices, currency, stock and availability.
 * Shopper bottle mix, budget, wine preferences and food-pairing text when a recommendation is requested.
-* Optional aggregate widget events such as impressions, opens, requests, results, swaps and basket clicks. These are off by default and require both merchant enablement and a positive WordPress statistics-consent signal.
+* Optional aggregate widget events such as impressions, opens, requests, results, swaps and basket clicks. These are off by default. When the WordPress Consent API is available, they are sent only with positive statistics consent. When it is unavailable, enabling analytics confirms that the merchant has another lawful consent or privacy basis for these aggregate events.
 * For orders attributed to the Wine Finder: order identifier, currency, total, selected product/variation references and quantities.
 * Technical request, replay-prevention and security metadata.
 
-The plugin is not designed to send shopper names, customer email addresses, billing/delivery addresses or payment-card details to My Next Wine. Merchant subscription checkout is hosted by Stripe; payment-card details are submitted directly to Stripe and are not sent through the WordPress plugin or stored by My Next Wine.
+The plugin is not designed to send shopper names, customer email addresses, billing/delivery addresses or payment-card details to My Next Wine.
+
+Stripe is used for merchant subscription billing. Stripe is contacted only after the merchant chooses to start the trial or manage the subscription. My Next Wine may provide Stripe with the merchant contact email and subscription metadata; the merchant submits billing and payment details directly on Stripe-hosted pages. Payment-card details are not sent through the WordPress plugin or stored by My Next Wine.
 
 My Next Wine may use contracted hosting, database, monitoring, support, billing and artificial-intelligence providers, including Stripe for merchant subscription billing, to operate the service. Full information is available here:
 
 * Merchant Terms: https://mynextwine.ie/woocommerce/terms
 * Privacy Statement: https://mynextwine.ie/woocommerce/privacy
 * Subprocessors: https://mynextwine.ie/subprocessors
+* Stripe Services Agreement: https://stripe.com/legal/ssa
+* Stripe Privacy Policy: https://stripe.com/privacy
 
 == Privacy ==
 
@@ -94,72 +98,8 @@ Yes. Disable the storefront widget in WooCommerce > My Next Wine, use Manage sub
 
 == Changelog ==
 
-= 0.5.2 =
-* Made storefront analytics delivery compatible with browsers that reject keepalive requests combined with timeout signals.
-* Kept analytics asynchronous and non-blocking.
-
-= 0.5.1 =
-* Fixed optional aggregate analytics on stores that do not expose the WordPress Consent API.
-* Continue to honour statistics consent when the WordPress Consent API is available.
-* Clarified the merchant setting and suggested privacy-policy wording.
-
-= 0.5.0 =
-* Replaced the unavailable Woo Marketplace billing flow with direct Stripe Checkout and Customer Portal subscription management.
-* Added verified Stripe subscription webhooks for trial, renewal, failed-payment, cancellation and invoice state.
-* Kept the existing secure WooCommerce connection, catalogue sync, mapping, widget, cart validation, analytics and attribution flow.
-* Updated the Woo-only Merchant Terms acceptance to version 2026-08-04-5.
-
-= 0.4.0 =
-* Replaced the local trial toggle with Woo Marketplace SaaS Billing API checkout.
-* Added signed webhook handling for activation, renewal, failed payment pauses, cancellation, prepaid-term expiry and refunds.
-* Added Woo invoice links and in-plugin plan cancellation.
-* Changed the default launcher position to bottom left.
-* Added the Shopify-equivalent popup introduction setting.
-* Added optional My Next Wine notes and rating controls matching the Shopify merchant display options.
-* Updated Woo-only Merchant Terms acceptance to version 2026-07-30-4.
-
-= 0.3.1 =
-* Added separate shopper-facing Wine Finder User Terms and linked them beside the recommendation button.
-* Strengthened merchant/customer ownership, AI transparency, platform-review, no-conversion-guarantee and privacy disclosures.
-* Updated the Merchant Terms acceptance version to 2026-07-29-3.
-
-= 0.3.0 =
-* Changed activation to a consent-based connection: no account or catalogue data is sent until an administrator explicitly agrees and connects the store.
-* Added versioned Merchant Terms acceptance and Privacy Statement acknowledgement.
-* Added a clear external-service and data-transfer disclosure to the setup screen and plugin readme.
-* Added suggested text to the WordPress Privacy Policy Guide.
-* Changed the distributed plugin code licence to GPLv2 or later; the separately hosted service remains subject to the Merchant Terms.
-* Added the WooCommerce dependency header.
-
-= 0.2.2 =
-* Fixed automatic installation verification when wp-cron and an admin retry overlap.
-* Added a short bootstrap lock so only one connection attempt runs at a time.
-
-= 0.2.0 =
-* Added ownership-verified store registration.
-* Creates or safely reuses the correct My Next Wine merchant account.
-* Added signed outbound catalogue snapshots and scheduled reconciliation.
-* Added setup, mapping and trial progress to the WooCommerce admin screen.
-* Locks widget activation until catalogue mapping and trial activation are complete.
-* Existing My Next Wine WooCommerce merchants reuse their established catalogue connection.
-
-= 0.1.3 =
-* Kept theme-matched pill rounding on buttons without applying it to text fields and textareas.
-
-= 0.1.2 =
-* Fixed the mapped available wine count shown on the connection status screen.
-
-= 0.1.1 =
-* Added an explicit local-development switch for self-signed backend certificates.
-* Connection tests now show the underlying WordPress HTTP error.
-
-= 0.1.0 =
-* Initial manually provisioned WooCommerce pilot.
-
-
-== Wine Finder legal pages ==
-* Merchant installation terms: https://mynextwine.ie/woocommerce/terms (B2B click-wrap before connection).
-* WooCommerce Wine Finder privacy statement: https://mynextwine.ie/woocommerce/privacy.
-* Shopper Wine Finder user terms: https://mynextwine.ie/woocommerce/user-terms (linked beside the recommendation button).
-* The storefront disclosure states that recommendations are AI-assisted and that wine is sold and fulfilled by the merchant.
-* These pages are separate from the Irish My Next Wine B2C terms and privacy policy.
+= 1.0.0 =
+* Initial public WordPress.org release.
+* Added consent-based store connection, secure catalogue synchronisation and the storefront Wine Finder.
+* Added direct Stripe-hosted trial and subscription management.
+* Added live WooCommerce price, stock and basket validation, optional aggregate analytics and attributed-order reporting.

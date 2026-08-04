@@ -755,7 +755,6 @@
         selectionElement.focus({ preventScroll: true });
         selectionElement.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
-        console.error("Wine finder recommendation error", error);
         currentRecommendation = null;
         if (error?.details?.code === "BUDGET_INCREASE_REQUIRED") {
           showBudgetGuidance(error.details);
@@ -820,7 +819,6 @@
         restoreSelectedWineIds(resultsElement, selectedIds, response.wine.sommWineId, wineToReplace.sommWineId);
         sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "SWAP");
       } catch (error) {
-        console.error("Wine finder swap error", error);
         showError(error.message || "That wine could not be swapped. Please try again.");
       } finally {
         swapInFlight = false;
@@ -855,7 +853,6 @@
           selectedWines
         );
       } catch (error) {
-        console.error("Wine finder cart error", error);
         setPhase("results");
         showError(error.message || "The wines could not be added to the basket. Please try again.");
       } finally {
@@ -945,7 +942,6 @@
         openButton.title = error?.message || "This shop's Wine Finder configuration is unavailable.";
         budgetHelp.textContent = "This shop's currency and spend limits are not configured.";
         if (budgetCurrencyElement) budgetCurrencyElement.textContent = "—";
-        console.error("Wine Finder configuration failed", error);
       });
     bottleCountInput.value = String(readBreakdownTotal(form));
     updateBreakdownMaximums(breakdownInputs);
@@ -1467,10 +1463,6 @@
       let type = String(item?.type || "").trim().toUpperCase();
       let label = String(item?.label || "").replace(/\s+/g, " ").trim();
       if (!label || (type !== "MATCH" && type !== "SUBSTITUTE")) return;
-      if (/rioja/i.test(label)) {
-        type = "MATCH";
-        label = "Rioja style";
-      }
       tags.set(`${type}:${label.toLowerCase()}`, { type, label });
     });
     return Array.from(tags.values()).slice(0, 6);
@@ -1493,79 +1485,16 @@
     });
   };
 
-  const recommendationTagsForWine = (wine, request) => {
-    const explicit = normaliseRecommendationTags(wine?.recommendationTags)
-      .filter((tag) => recommendationTagMatchesRequest(tag, request));
+  const recommendationTagsForWine = (wine) =>
+    normaliseRecommendationTags(wine?.recommendationTags);
 
-    const label = String(wine?.recommendationLabel || "").replace(/\s+/g, " ").trim();
-    const reason = String(wine?.recommendationReason || "").replace(/\s+/g, " ").trim();
-    const inferred = [];
-    const explicitPairing = label.match(/^(.+?)\s+pairing$/i);
-    const foodMatch = label.match(/^For\s+(.+)$/i);
-    if (explicitPairing) {
-      inferred.push({ type: "MATCH", label: `${explicitPairing[1]} pairing` });
-    } else if (foodMatch) {
-      inferred.push({ type: "MATCH", label: `${foodMatch[1]} pairing` });
-    }
-    if (/sauv(?:ignon)?\s+blanc/i.test(label)) {
-      inferred.push({ type: "MATCH", label: "Sauvignon Blanc" });
-    }
-    if (/dry\s+sparkling/i.test(label)) {
-      inferred.push({ type: "MATCH", label: "Dry sparkling" });
-    }
-    if (/interesting/i.test(label)) {
-      inferred.push({ type: "MATCH", label: "Interesting" });
-    }
-    if (/big.*oaky|oaky.*red/i.test(label)) {
-      inferred.push({ type: "MATCH", label: "Big, oaky red" });
-    }
-    if (/rioja/i.test(label) || /rioja/i.test(reason)) {
-      inferred.push({ type: "MATCH", label: "Rioja style" });
-    }
-
-    return normaliseRecommendationTags([...explicit, ...inferred])
-      .filter((tag) => recommendationTagMatchesRequest(tag, request));
-  };
-
-  const recommendationTagMatchesRequest = (tag, request) => {
-    if (!tag?.label || !request) return false;
-    const label = normaliseComparisonText(tag.label);
-    if (label.includes("rioja")) {
-      return normaliseComparisonText(request.usualWines).includes("rioja");
-    }
-    const source = label.endsWith(" pairing")
-      ? request.foodPairings
-      : request.usualWines;
-    return hasMeaningfulTokenOverlap(label, source);
-  };
-
-  const assessmentMatchesTag = (assessment, tagLabel) =>
-    hasMeaningfulTokenOverlap(assessment, tagLabel);
-
-  const hasMeaningfulTokenOverlap = (left, right) => {
-    const leftTokens = meaningfulTokens(left);
-    const rightTokens = meaningfulTokens(right);
-    return leftTokens.some((token) => rightTokens.includes(token));
-  };
-
-  const meaningfulTokens = (value) => {
-    const ignored = new Set([
-      "pairing", "style", "wine", "wines", "preference", "requested",
-      "clearly", "exact", "closest", "alternative", "substitute",
-      "substituted", "with", "your", "from", "this", "that", "have",
-      "more", "than", "white", "red"
-    ]);
-    const normalised = normaliseComparisonText(value);
-    const tokens = normalised
-      .split(" ")
-      .filter((token) => token.length >= 4 && !ignored.has(token));
-    if (tokens.includes("riojas")) tokens.push("rioja");
-    if (normalised.includes("bolognese")
-        || normalised.includes("spag bol")
-        || normalised.includes("spagbol")) {
-      tokens.push("spaghettibolognese");
-    }
-    return Array.from(new Set(tokens));
+  const assessmentMatchesTag = (assessment, tagLabel) => {
+    const assessmentText = normaliseComparisonText(assessment);
+    const tagText = normaliseComparisonText(tagLabel);
+    if (!assessmentText || !tagText) return false;
+    return assessmentText === tagText
+      || assessmentText.includes(tagText)
+      || tagText.includes(assessmentText);
   };
 
   const normaliseComparisonText = (value) => String(value || "")

@@ -32,10 +32,10 @@ final class MNW_Woo_API_Client {
             'inherit_theme_styles' => 'yes',
             'accent_color' => '#722f37',
             'accent_text_color' => '#ffffff',
-            'heading' => 'Need help choosing wine?',
-            'intro' => "Answer a few questions and get a selection from this shop's current range.",
-            'launcher_label' => 'Find my wines',
-            'button_label' => 'Add selected to basket',
+            'heading' => __('Need help choosing wine?', 'my-next-wine-woocommerce'),
+            'intro' => __("Answer a few questions and get a selection from this shop's current range.", 'my-next-wine-woocommerce'),
+            'launcher_label' => __('Find my wines', 'my-next-wine-woocommerce'),
+            'button_label' => __('Add selected to basket', 'my-next-wine-woocommerce'),
             'show_mnw_notes' => 'no',
             'show_mnw_rating' => 'no',
         );
@@ -310,13 +310,11 @@ final class MNW_Woo_API_Client {
             return new WP_Error('mnw_json_error', __('The request could not be encoded.', 'my-next-wine-woocommerce'));
         }
         $url = untrailingslashit($this->default_api_base_url()) . '/' . ltrim($path, '/');
-        $allow_insecure_local_ssl = defined('MNW_WOO_ALLOW_INSECURE_LOCAL_SSL')
-            && true === MNW_WOO_ALLOW_INSECURE_LOCAL_SSL;
         $response = wp_remote_request($url, array(
             'method' => strtoupper($method),
             'timeout' => 40,
             'redirection' => 0,
-            'sslverify' => !$allow_insecure_local_ssl,
+            'sslverify' => true,
             'headers' => array_merge(array(
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',

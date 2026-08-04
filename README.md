@@ -111,14 +111,13 @@ WOOCOMMERCE_WIDGET_BOOTSTRAP_ALLOW_HTTP=true
 WOOCOMMERCE_WIDGET_BOOTSTRAP_ALLOW_PRIVATE_HOSTS=true
 ```
 
-Add these to the local WordPress site's `wp-config.php` before the `That's all, stop editing` line:
+A local backend override can be set in the local WordPress site's `wp-config.php` before the `That's all, stop editing` line:
 
 ```php
-define('MNW_WOO_API_BASE_URL', 'https://192.168.68.106:8443');
-define('MNW_WOO_ALLOW_INSECURE_LOCAL_SSL', true);
+define('MNW_WOO_API_BASE_URL', 'https://local-backend.example.test');
 ```
 
-Never enable those local-development exceptions in production.
+The backend certificate must be trusted by the WordPress host. Distributed plugin builds always use normal TLS certificate verification.
 
 
 Wine Finder legal pages
