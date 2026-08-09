@@ -8,6 +8,7 @@ if (!defined('ABSPATH')) {
 final class MNW_Woo_REST_Controller {
     private const NAMESPACE = 'my-next-wine/v1';
     private const MAX_BODY_BYTES = 65536;
+    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 9;
 
     private MNW_Woo_API_Client $client;
 
@@ -178,7 +179,16 @@ final class MNW_Woo_REST_Controller {
         if (!$this->client->is_enabled()) {
             return $this->error(__('The wine finder is not enabled.', 'my-next-wine-for-woocommerce'), 503);
         }
-        $result = $this->client->request($method, $backend_path, $payload, $this->client->client_key());
+        $timeout_seconds = '/api/woocommerce/widget/recommendations' === $backend_path
+            ? self::RECOMMENDATION_PROXY_TIMEOUT_SECONDS
+            : 40;
+        $result = $this->client->request(
+            $method,
+            $backend_path,
+            $payload,
+            $this->client->client_key(),
+            $timeout_seconds
+        );
         if (is_wp_error($result)) {
             $data = $result->get_error_data();
             $status = is_array($data) && isset($data['status']) ? (int) $data['status'] : 502;

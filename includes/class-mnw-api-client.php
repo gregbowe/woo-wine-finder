@@ -29,11 +29,12 @@ final class MNW_Woo_API_Client {
             'auto_display' => 'yes',
             'analytics_enabled' => 'no',
             'launcher_position' => 'left',
+            'launcher_image_id' => 0,
             'inherit_theme_styles' => 'yes',
             'accent_color' => '#722f37',
             'accent_text_color' => '#ffffff',
             'heading' => __('Need help choosing wine?', 'my-next-wine-for-woocommerce'),
-            'intro' => __("Answer a few questions and get a selection from this shop's current range.", 'my-next-wine-for-woocommerce'),
+            'intro' => __('Four quick questions and we will pick the perfect wines from our cellar', 'my-next-wine-for-woocommerce'),
             'launcher_label' => __('Find my wines', 'my-next-wine-for-woocommerce'),
             'button_label' => __('Add selected to basket', 'my-next-wine-for-woocommerce'),
             'show_mnw_notes' => 'no',
@@ -41,6 +42,16 @@ final class MNW_Woo_API_Client {
         );
         $saved = get_option(MNW_WOO_OPTION, array());
         $settings = wp_parse_args(is_array($saved) ? $saved : array(), $defaults);
+        if (in_array(
+            ($settings['intro'] ?? ''),
+            array(
+                "Answer a few questions and get a selection from this shop's current range.",
+                'Four quick questions. We will choose from our cellar.',
+            ),
+            true
+        )) {
+            $settings['intro'] = __('Four quick questions and we will pick the perfect wines from our cellar', 'my-next-wine-for-woocommerce');
+        }
         $settings['api_base_url'] = $this->default_api_base_url();
         $settings['installation_secret'] = $this->unprotect_secret((string) ($settings['installation_secret'] ?? ''));
         return $settings;
@@ -88,7 +99,13 @@ final class MNW_Woo_API_Client {
      * @param array<string,mixed>|null $payload
      * @return array<string,mixed>|WP_Error
      */
-    public function request(string $method, string $path, ?array $payload = null, string $client_key = '') {
+    public function request(
+        string $method,
+        string $path,
+        ?array $payload = null,
+        string $client_key = '',
+        int $timeout_seconds = 40
+    ) {
         if (!$this->is_configured()) {
             return new WP_Error('mnw_not_configured', __('My Next Wine is still connecting this store.', 'my-next-wine-for-woocommerce'));
         }
@@ -118,7 +135,7 @@ final class MNW_Woo_API_Client {
             $headers['X-MNW-Client-Key'] = substr($client_key, 0, 128);
         }
 
-        return $this->raw_request($method, $path, $payload, $headers, $raw_body);
+        return $this->raw_request($method, $path, $payload, $headers, $raw_body, $timeout_seconds);
     }
 
     /** @return array<string,mixed>|WP_Error */
@@ -302,7 +319,14 @@ final class MNW_Woo_API_Client {
      * @param array<string,string> $headers
      * @return array<string,mixed>|WP_Error
      */
-    private function raw_request(string $method, string $path, ?array $payload, array $headers, ?string $preencoded_body = null) {
+    private function raw_request(
+        string $method,
+        string $path,
+        ?array $payload,
+        array $headers,
+        ?string $preencoded_body = null,
+        int $timeout_seconds = 40
+    ) {
         $raw_body = null !== $preencoded_body
             ? $preencoded_body
             : (null === $payload ? '' : wp_json_encode($payload, JSON_UNESCAPED_SLASHES));
@@ -312,7 +336,7 @@ final class MNW_Woo_API_Client {
         $url = untrailingslashit($this->default_api_base_url()) . '/' . ltrim($path, '/');
         $response = wp_remote_request($url, array(
             'method' => strtoupper($method),
-            'timeout' => 40,
+            'timeout' => max(1, min(40, $timeout_seconds)),
             'redirection' => 0,
             'sslverify' => true,
             'headers' => array_merge(array(

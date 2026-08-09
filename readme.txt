@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,12 @@ WooCommerce revalidates the selected product or variation, quantity, current pri
 Yes. Disable the storefront widget in WooCommerce > My Next Wine, use Manage subscription to cancel the connected Stripe plan, or uninstall the plugin.
 
 == Changelog ==
+
+= 1.0.2 =
+* Added a bounded recommendation timeout chain while retaining the existing longer timeouts for catalogue, billing, cart, swap and configuration operations.
+
+= 1.0.1 =
+* Updated the Merchant Terms and explicit re-acceptance version for worldwide B2B availability, service-level and catalogue-freshness targets, the Fair Usage Policy, mapping and subjective-recommendation disclaimers, and product-quality responsibility.
 
 = 1.0.0 =
 * Initial public WordPress.org release.

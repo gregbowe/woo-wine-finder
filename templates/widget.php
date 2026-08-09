@@ -28,10 +28,14 @@ if (!defined('ABSPATH')) { exit; }
     disabled
   >
     <span class="mnw-wine-finder__launcher-icon" aria-hidden="true">
-      <svg viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M9 4h14l-1.2 8.2A5.9 5.9 0 0 1 16 17.3a5.9 5.9 0 0 1-5.8-5.1L9 4Z"/>
-        <path d="M10.3 11h11.4M16 17.3V26M11.5 27h9"/>
-      </svg>
+      <?php if ($launcher_image_url) : ?>
+        <img class="mnw-wine-finder__brand-image" src="<?php echo esc_url($launcher_image_url); ?>" alt="">
+      <?php else : ?>
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M9 4h14l-1.2 8.2A5.9 5.9 0 0 1 16 17.3a5.9 5.9 0 0 1-5.8-5.1L9 4Z"/>
+          <path d="M10.3 11h11.4M16 17.3V26M11.5 27h9"/>
+        </svg>
+      <?php endif; ?>
     </span>
 
     <span class="mnw-wine-finder__launcher-copy">
@@ -57,10 +61,14 @@ if (!defined('ABSPATH')) { exit; }
         <div>
           <div class="mnw-wine-finder__brand-lockup">
             <span class="mnw-wine-finder__brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 32 32" aria-hidden="true">
-                <path d="M9 4h14l-1.2 8.2A5.9 5.9 0 0 1 16 17.3a5.9 5.9 0 0 1-5.8-5.1L9 4Z"/>
-                <path d="M10.3 11h11.4M16 17.3V26M11.5 27h9"/>
-              </svg>
+              <?php if ($launcher_image_url) : ?>
+                <img class="mnw-wine-finder__brand-image" src="<?php echo esc_url($launcher_image_url); ?>" alt="">
+              <?php else : ?>
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M9 4h14l-1.2 8.2A5.9 5.9 0 0 1 16 17.3a5.9 5.9 0 0 1-5.8-5.1L9 4Z"/>
+                  <path d="M10.3 11h11.4M16 17.3V26M11.5 27h9"/>
+                </svg>
+              <?php endif; ?>
             </span>
             <span><?php echo esc_html__('Wine finder', 'my-next-wine-for-woocommerce'); ?></span>
           </div>
@@ -70,9 +78,6 @@ if (!defined('ABSPATH')) { exit; }
           </h2>
           <p class="mnw-wine-finder__aside-copy">
             <?php echo esc_html($intro); ?>
-          </p>
-          <p class="mnw-wine-finder__aside-copy">
-            <?php echo esc_html__('Automated, AI-assisted recommendations. Wine is sold and fulfilled by this shop.', 'my-next-wine-for-woocommerce'); ?>
           </p>
         </div>
 

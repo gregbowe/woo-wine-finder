@@ -2351,8 +2351,8 @@ body.mnw-wine-finder-open {
 
 .mnw-wine-finder__powered-by {
   margin: 1.15rem 0 0;
-  color: color-mix(in srgb, var(--mnw-theme-text) 58%, transparent);
-  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--mnw-theme-text) 68%, transparent);
+  font-size: 0.9rem;
   line-height: 1.3;
   text-align: center;
 }

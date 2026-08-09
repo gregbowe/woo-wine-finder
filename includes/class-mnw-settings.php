@@ -17,7 +17,22 @@ final class MNW_Woo_Settings {
         add_action('admin_post_mnw_woo_test', array($this, 'refresh_status'));
         add_action('admin_post_mnw_woo_start_billing', array($this, 'start_billing'));
         add_action('admin_post_mnw_woo_manage_billing', array($this, 'manage_billing'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_filter('plugin_action_links_' . plugin_basename(MNW_WOO_FILE), array($this, 'action_links'));
+    }
+
+    public function enqueue_admin_assets(string $hook_suffix): void {
+        if ('woocommerce_page_my-next-wine' !== $hook_suffix) {
+            return;
+        }
+        wp_enqueue_media();
+        wp_enqueue_script(
+            'mnw-wine-finder-admin',
+            MNW_WOO_URL . 'assets/js/admin-settings.js',
+            array('jquery'),
+            MNW_WOO_VERSION,
+            true
+        );
     }
 
     public function admin_menu(): void {
@@ -56,6 +71,7 @@ final class MNW_Woo_Settings {
         $current['auto_display'] = isset($_POST['auto_display']) ? 'yes' : 'no';
         $current['analytics_enabled'] = isset($_POST['analytics_enabled']) ? 'yes' : 'no';
         $current['launcher_position'] = $position;
+        $current['launcher_image_id'] = absint($_POST['launcher_image_id'] ?? 0);
         $current['inherit_theme_styles'] = isset($_POST['inherit_theme_styles']) ? 'yes' : 'no';
         $current['accent_color'] = sanitize_hex_color((string) wp_unslash($_POST['accent_color'] ?? '')) ?: '#722f37';
         $current['accent_text_color'] = sanitize_hex_color((string) wp_unslash($_POST['accent_text_color'] ?? '')) ?: '#ffffff';
@@ -343,6 +359,22 @@ final class MNW_Woo_Settings {
                     <tr><th scope="row"><?php echo esc_html__('Automatic display', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="auto_display" value="1" <?php checked('yes', $settings['auto_display']); ?>> <?php echo esc_html__('Add the floating launcher to public shop pages', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('The [my_next_wine] shortcode is also available.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
                     <tr><th scope="row"><?php echo esc_html__('Optional aggregate analytics', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="analytics_enabled" value="1" <?php checked('yes', $settings['analytics_enabled']); ?>> <?php echo esc_html__('Allow aggregate Wine Finder events', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('Off by default. If the site exposes the WordPress Consent API, events are sent only when wp_has_consent("statistics") returns true. If that API is not present, enabling this setting confirms that the store\'s own privacy and consent setup permits these aggregate events. Recommendation and basket requests continue because they are needed to provide the feature.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
                     <tr><th scope="row"><?php echo esc_html__('Launcher position', 'my-next-wine-for-woocommerce'); ?></th><td><select name="launcher_position"><option value="left" <?php selected('left', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom left', 'my-next-wine-for-woocommerce'); ?></option><option value="right" <?php selected('right', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom right', 'my-next-wine-for-woocommerce'); ?></option></select></td></tr>
+                    <?php
+                    $launcher_image_id = absint($settings['launcher_image_id'] ?? 0);
+                    $launcher_image_url = $launcher_image_id ? wp_get_attachment_image_url($launcher_image_id, 'thumbnail') : '';
+                    ?>
+                    <tr>
+                        <th scope="row"><?php echo esc_html__('Launcher image', 'my-next-wine-for-woocommerce'); ?></th>
+                        <td>
+                            <input id="mnw-launcher-image-id" name="launcher_image_id" type="hidden" value="<?php echo esc_attr((string) $launcher_image_id); ?>">
+                            <img id="mnw-launcher-image-preview" src="<?php echo esc_url($launcher_image_url ?: ''); ?>" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:12px;<?php echo $launcher_image_url ? '' : 'display:none;'; ?>">
+                            <p>
+                                <button class="button" id="mnw-select-launcher-image" type="button"><?php echo esc_html__('Choose image', 'my-next-wine-for-woocommerce'); ?></button>
+                                <button class="button" id="mnw-remove-launcher-image" type="button" <?php disabled(!$launcher_image_url); ?>><?php echo esc_html__('Use default wine glass', 'my-next-wine-for-woocommerce'); ?></button>
+                            </p>
+                            <p class="description"><?php echo esc_html__('Choose a square image from the Media Library. It replaces the wine glass in the launcher and popup.', 'my-next-wine-for-woocommerce'); ?></p>
+                        </td>
+                    </tr>
                     <tr><th scope="row"><?php echo esc_html__('Match theme', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="inherit_theme_styles" value="1" <?php checked('yes', $settings['inherit_theme_styles']); ?>> <?php echo esc_html__('Use the active theme colours where they provide sufficient contrast', 'my-next-wine-for-woocommerce'); ?></label></td></tr>
                     <tr><th scope="row"><label for="mnw-accent"><?php echo esc_html__('Fallback accent', 'my-next-wine-for-woocommerce'); ?></label></th><td><input id="mnw-accent" name="accent_color" type="color" value="<?php echo esc_attr($settings['accent_color']); ?>"> <input name="accent_text_color" type="color" value="<?php echo esc_attr($settings['accent_text_color']); ?>"></td></tr>
                     <tr><th scope="row"><label for="mnw-heading"><?php echo esc_html__('Heading', 'my-next-wine-for-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-heading" name="heading" type="text" maxlength="80" value="<?php echo esc_attr($settings['heading']); ?>"></td></tr>

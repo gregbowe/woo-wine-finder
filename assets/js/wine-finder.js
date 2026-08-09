@@ -4,7 +4,9 @@
   const MIN_BOTTLE_COUNT = 3;
   const MAX_BOTTLE_COUNT = 12;
   const MAX_FREE_TEXT_LENGTH = 500;
-  const REQUEST_TIMEOUT_MS = 30000;
+  // Leave headroom below the configured 10-second recommendation target so
+  // the shopper receives a deterministic error instead of a hanging request.
+  const REQUEST_TIMEOUT_MS = 9500;
   const CART_TIMEOUT_MS = 15000;
   const SWAP_TIMEOUT_MS = 20000;
   const CONFIGURATION_TIMEOUT_MS = 10000;
