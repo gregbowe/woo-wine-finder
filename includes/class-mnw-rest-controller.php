@@ -5,14 +5,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_REST_Controller {
+final class MyNextWine_Woo_REST_Controller {
     private const NAMESPACE = 'my-next-wine/v1';
     private const MAX_BODY_BYTES = 65536;
-    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 9;
+    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 29;
 
-    private MNW_Woo_API_Client $client;
+    private MyNextWine_Woo_API_Client $client;
 
-    public function __construct(MNW_Woo_API_Client $client) {
+    public function __construct(MyNextWine_Woo_API_Client $client) {
         $this->client = $client;
         add_action('rest_api_init', array($this, 'register_routes'));
     }
@@ -143,10 +143,10 @@ final class MNW_Woo_REST_Controller {
             $variation_id = $product->is_type('variation') ? $product->get_id() : 0;
             $variation = $variation_id > 0 ? wc_get_product_variation_attributes($variation_id) : array();
             $cart_item_data = array(
-                '_mnw_session_id' => $session_id,
-                '_mnw_somm_wine_id' => (string) $somm_wine_id,
-                '_mnw_source' => 'wine_finder',
-                '_mnw_recommendation_id' => $session_id,
+                '_mynextwine_woo_session_id' => $session_id,
+                '_mynextwine_woo_somm_wine_id' => (string) $somm_wine_id,
+                '_mynextwine_woo_source' => 'wine_finder',
+                '_mynextwine_woo_recommendation_id' => $session_id,
             );
             $cart_key = WC()->cart->add_to_cart($product_id, 1, $variation_id, $variation, $cart_item_data);
             if (false === $cart_key) {
@@ -201,11 +201,11 @@ final class MNW_Woo_REST_Controller {
     private function json_payload(WP_REST_Request $request) {
         $raw = (string) $request->get_body();
         if (strlen($raw) > self::MAX_BODY_BYTES) {
-            return new WP_Error('mnw_too_large', __('The request is too large.', 'my-next-wine-for-woocommerce'));
+            return new WP_Error('mynextwine_woo_too_large', __('The request is too large.', 'my-next-wine-for-woocommerce'));
         }
         $payload = $request->get_json_params();
         if (!is_array($payload)) {
-            return new WP_Error('mnw_invalid_json', __('A valid JSON request is required.', 'my-next-wine-for-woocommerce'));
+            return new WP_Error('mynextwine_woo_invalid_json', __('A valid JSON request is required.', 'my-next-wine-for-woocommerce'));
         }
         return $payload;
     }

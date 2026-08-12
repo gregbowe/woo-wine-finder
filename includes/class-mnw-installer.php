@@ -5,34 +5,34 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_Installer {
-    private const BOOTSTRAP_HOOK = 'mnw_woo_bootstrap_installation';
+final class MyNextWine_Woo_Installer {
+    private const BOOTSTRAP_HOOK = 'mynextwine_woo_bootstrap_installation';
     private const PROOF_NAMESPACE = 'my-next-wine/v1';
     private const PROOF_ROUTE = '/bootstrap-proof';
     private const CHALLENGE_LIFETIME = 600;
-    private const BOOTSTRAP_LOCK_OPTION = 'mnw_woo_bootstrap_lock';
+    private const BOOTSTRAP_LOCK_OPTION = 'mynextwine_woo_bootstrap_lock';
     private const BOOTSTRAP_LOCK_SECONDS = 90;
 
-    private MNW_Woo_API_Client $client;
-    private ?MNW_Woo_Catalogue_Sync $catalogue_sync = null;
+    private MyNextWine_Woo_API_Client $client;
+    private ?MyNextWine_Woo_Catalogue_Sync $catalogue_sync = null;
 
-    public function __construct(MNW_Woo_API_Client $client) {
+    public function __construct(MyNextWine_Woo_API_Client $client) {
         $this->client = $client;
         add_action('rest_api_init', array($this, 'register_proof_route'));
         add_action(self::BOOTSTRAP_HOOK, array($this, 'bootstrap'));
         add_action('admin_init', array($this, 'maybe_bootstrap_in_admin'));
-        add_action('admin_post_mnw_woo_retry_connection', array($this, 'retry_connection'));
+        add_action('admin_post_mynextwine_woo_retry_connection', array($this, 'retry_connection'));
     }
 
-    public function set_catalogue_sync(MNW_Woo_Catalogue_Sync $catalogue_sync): void {
+    public function set_catalogue_sync(MyNextWine_Woo_Catalogue_Sync $catalogue_sync): void {
         $this->catalogue_sync = $catalogue_sync;
     }
 
     public static function activate(): void {
-        if (!class_exists('MNW_Woo_API_Client')) {
+        if (!class_exists('MyNextWine_Woo_API_Client')) {
             return;
         }
-        $client = new MNW_Woo_API_Client();
+        $client = new MyNextWine_Woo_API_Client();
         $settings = $client->settings();
         if (empty($settings['installation_id'])) {
             $settings['installation_id'] = wp_generate_uuid4();
@@ -112,18 +112,18 @@ final class MNW_Woo_Installer {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You do not have permission to connect My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
-        check_admin_referer('mnw_woo_retry_connection');
+        check_admin_referer('mynextwine_woo_retry_connection');
         $settings = $this->client->settings();
         $already_consented = 'yes' === ($settings['connection_consent'] ?? 'no')
-            && MNW_WOO_TERMS_VERSION === ($settings['terms_version'] ?? '');
+            && MYNEXTWINE_WOO_TERMS_VERSION === ($settings['terms_version'] ?? '');
         if (!$already_consented) {
-            $accepted_terms = isset($_POST['mnw_accept_terms']);
-            $accepted_data = isset($_POST['mnw_accept_data_sharing']);
+            $accepted_terms = isset($_POST['mynextwine_woo_accept_terms']);
+            $accepted_data = isset($_POST['mynextwine_woo_accept_data_sharing']);
             if (!$accepted_terms || !$accepted_data) {
                 wp_die(esc_html__('Accept the Merchant Terms and data-sharing disclosure to connect My Next Wine.', 'my-next-wine-for-woocommerce'));
             }
             $settings['connection_consent'] = 'yes';
-            $settings['terms_version'] = MNW_WOO_TERMS_VERSION;
+            $settings['terms_version'] = MYNEXTWINE_WOO_TERMS_VERSION;
             $settings['terms_accepted_at'] = gmdate('c');
         }
         $settings['connection_state'] = 'PENDING';
@@ -131,14 +131,14 @@ final class MNW_Woo_Installer {
         $settings['bootstrap_next_attempt'] = 0;
         $this->client->save_settings($settings);
         $this->bootstrap();
-        wp_safe_redirect(add_query_arg(array('page' => 'my-next-wine'), admin_url('admin.php')));
+        wp_safe_redirect(add_query_arg(array('page' => 'mynextwine-woo-settings'), admin_url('admin.php')));
         exit;
     }
 
     public function bootstrap(): void {
         $settings = $this->client->settings();
         if ('yes' !== ($settings['connection_consent'] ?? 'no')
-            || MNW_WOO_TERMS_VERSION !== ($settings['terms_version'] ?? '')) {
+            || MYNEXTWINE_WOO_TERMS_VERSION !== ($settings['terms_version'] ?? '')) {
             return;
         }
         if (!$this->acquire_bootstrap_lock()) {
@@ -191,11 +191,11 @@ final class MNW_Woo_Installer {
             'postcode' => sanitize_text_field((string) get_option('woocommerce_store_postcode', '')),
             'phone' => sanitize_text_field((string) get_option('woocommerce_store_phone', '')),
             'locale' => determine_locale(),
-            'pluginVersion' => MNW_WOO_VERSION,
+            'pluginVersion' => MYNEXTWINE_WOO_VERSION,
             'wordpressVersion' => get_bloginfo('version'),
             'woocommerceVersion' => defined('WC_VERSION') ? WC_VERSION : '',
             'termsAccepted' => true,
-            'termsVersion' => MNW_WOO_TERMS_VERSION,
+            'termsVersion' => MYNEXTWINE_WOO_TERMS_VERSION,
         );
 
         $result = $this->client->bootstrap($payload);
@@ -215,7 +215,7 @@ final class MNW_Woo_Installer {
         $settings['onboarding_status'] = sanitize_text_field((string) ($result['onboardingStatus'] ?? 'PENDING_CATALOGUE'));
         $this->client->save_settings($settings);
 
-        if ('PLUGIN_PUSH' === $settings['catalogue_mode'] && $this->catalogue_sync instanceof MNW_Woo_Catalogue_Sync) {
+        if ('PLUGIN_PUSH' === $settings['catalogue_mode'] && $this->catalogue_sync instanceof MyNextWine_Woo_Catalogue_Sync) {
             $this->catalogue_sync->schedule_full_sync(2);
         }
     }

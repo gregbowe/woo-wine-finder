@@ -1,12 +1,14 @@
 (() => {
   "use strict";
 
-  const MIN_BOTTLE_COUNT = 3;
+  const MIN_BOTTLE_COUNT = 1;
   const MAX_BOTTLE_COUNT = 12;
   const MAX_FREE_TEXT_LENGTH = 500;
-  // Leave headroom below the configured 10-second recommendation target so
+  const DEFAULT_BUDGET_MULTIPLIER = 1.2;
+  const DEFAULT_BUDGET_ROUNDING_UNIT = 10;
+  // Leave headroom below the configured 30-second recommendation target so
   // the shopper receives a deterministic error instead of a hanging request.
-  const REQUEST_TIMEOUT_MS = 9500;
+  const REQUEST_TIMEOUT_MS = 29500;
   const CART_TIMEOUT_MS = 15000;
   const SWAP_TIMEOUT_MS = 20000;
   const CONFIGURATION_TIMEOUT_MS = 10000;
@@ -121,7 +123,7 @@
     let suggestedBudget = null;
     const pageSessionId = createPageSessionId();
 
-    const refreshBudgetMinimum = (bottleCount, defaultBudget = null) => {
+    const refreshBudgetMinimum = (bottleCount) => {
       if (!configurationReady) return;
       updateBudgetMinimum(
         budgetInput,
@@ -134,7 +136,7 @@
         storeCurrency,
         storeCurrencySymbol,
         currencyPrecision,
-        defaultBudget
+        !budgetEdited
       );
     };
 
@@ -300,7 +302,8 @@
     };
 
     const setPhase = (phase) => {
-      root.dataset.mnwPhase = phase;
+      // Preserve the full results layout while the basket request hands off to the cart page.
+      root.dataset.mnwPhase = phase === "cart" ? "results" : phase;
       [progressForm, progressResults, progressCart].forEach((step) => {
         if (step) step.classList.remove("mnw-wine-finder__journey-step--active", "mnw-wine-finder__journey-step--complete");
       });
@@ -844,17 +847,39 @@
       addSelectedButton.disabled = true;
       addSelectedLabel.textContent = "Adding to basket…";
       setPhase("cart");
+      const cartEventId = createEventId("cart");
+      const cartItems = interactionItemsForWines(selectedWines);
+      const selectionTotal = interactionSelectionTotal(cartItems);
+      const cartStartedAt = performance.now();
 
       try {
-        sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "ADD_TO_CART");
-        await addWinesToCart(
+        sendAnalytics(analyticsEnabled, eventsEndpoint, currentRecommendation.sessionId, "ADD_TO_CART_ATTEMPT", {
+          eventId: `${cartEventId}:attempt`,
+          selectionTotal,
+          items: cartItems
+        });
+        const cartUrl = await addWinesToCart(
           cartEndpoint,
           wpNonce,
           currentRecommendation.sessionId,
           currentRecommendation.recommendationToken,
           selectedWines
         );
+        sendAnalytics(analyticsEnabled, eventsEndpoint, currentRecommendation.sessionId, "ADD_TO_CART_SUCCEEDED", {
+          eventId: `${cartEventId}:success`,
+          selectionTotal,
+          latencyMs: elapsedMilliseconds(cartStartedAt),
+          items: cartItems
+        });
+        window.location.assign(cartUrl);
       } catch (error) {
+        sendAnalytics(analyticsEnabled, eventsEndpoint, currentRecommendation.sessionId, "ADD_TO_CART_FAILED", {
+          eventId: `${cartEventId}:failure`,
+          selectionTotal,
+          errorCode: cartFailureCode(error),
+          latencyMs: elapsedMilliseconds(cartStartedAt),
+          items: cartItems
+        });
         setPhase("results");
         showError(error.message || "The wines could not be added to the basket. Please try again.");
       } finally {
@@ -925,11 +950,7 @@
         }
 
         configurationReady = true;
-        const configuredDefault = Number(configuration.defaultBudget);
-        refreshBudgetMinimum(
-          normaliseBottleCount(bottleCountInput.value),
-          !budgetEdited && Number.isFinite(configuredDefault) ? configuredDefault : null
-        );
+        refreshBudgetMinimum(normaliseBottleCount(bottleCountInput.value));
         root.hidden = false;
         openButton.disabled = false;
         openButton.setAttribute("aria-busy", "false");
@@ -980,7 +1001,8 @@
     const minimumBudget = Math.max(payload.bottleCount * minimumBottlePrice, minimumOrder);
     const formatter = createCurrencyFormatter(currency, currencyPrecision);
     if (!Number.isFinite(payload.budget) || payload.budget < minimumBudget) {
-      throw new Error(`The minimum budget for ${payload.bottleCount} bottles is ${formatter.format(minimumBudget)}.`);
+      const bottleLabel = payload.bottleCount === 1 ? "bottle" : "bottles";
+      throw new Error(`The minimum budget for ${payload.bottleCount} ${bottleLabel} is ${formatter.format(minimumBudget)}.`);
     }
     if (payload.budget > maximumBudget) {
       throw new Error(`The maximum supported budget is ${formatter.format(maximumBudget)}.`);
@@ -1212,6 +1234,37 @@
     return `wf-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   };
 
+  const createEventId = (prefix) => `${String(prefix || "event")}:${createPageSessionId()}`.slice(0, 100);
+
+  const interactionItemsForWines = (wines) => (Array.isArray(wines) ? wines : [])
+    .map((wine, index) => ({
+      sommWineId: Number(wine?.sommWineId),
+      externalProductId: String(wine?.variantId || "").trim() || null,
+      positionNumber: index + 1,
+      quantity: 1,
+      value: Number(wine?.price || 0)
+    }))
+    .filter((item) => Number.isInteger(item.sommWineId)
+      && item.sommWineId > 0
+      && Number.isFinite(item.value)
+      && item.value >= 0);
+
+  const interactionSelectionTotal = (items) => Number((items || [])
+    .reduce((total, item) => total + Number(item.value || 0), 0)
+    .toFixed(4));
+
+  const elapsedMilliseconds = (startedAt) => Math.max(
+    0,
+    Math.min(3600000, Math.round(performance.now() - startedAt))
+  );
+
+  const cartFailureCode = (error) => {
+    const status = Number(error?.status);
+    if (Number.isInteger(status) && status >= 400 && status <= 599) return `HTTP_${status}`;
+    if (/too long|timed out|timeout/i.test(String(error?.message || ""))) return "CART_TIMEOUT";
+    return "CART_REQUEST_FAILED";
+  };
+
   const wordpressStatisticsConsentAllowed = () => {
     try {
       return typeof window.wp_has_consent !== "function"
@@ -1222,16 +1275,18 @@
   };
 
   const sendAnalytics = (enabled, endpoint, sessionId, type, details = {}) => {
-    if (!enabled || !endpoint || !wordpressStatisticsConsentAllowed()) return;
+    if (!enabled || !endpoint || !wordpressStatisticsConsentAllowed()) return Promise.resolve(false);
     const body = JSON.stringify({ type, sessionId, ...details });
-    fetch(endpoint, {
+    return fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body,
       cache: "no-store",
-      credentials: "same-origin"
-    }).catch(() => {
+      credentials: "same-origin",
+      keepalive: true
+    }).then((response) => response.ok).catch(() => {
       // Analytics must never interrupt the customer's storefront journey.
+      return false;
     });
   };
 
@@ -1418,7 +1473,7 @@
       }),
       cache: "no-store"
     }, CART_TIMEOUT_MS, "The basket took too long to respond. Please try again.");
-    window.location.assign(result.cartUrl || "/cart/");
+    return result.cartUrl || "/cart/";
   };
 
   const fetchJson = async (url, options, timeoutMs, timeoutMessage) => {
@@ -1520,6 +1575,17 @@
     return Math.max(MIN_BOTTLE_COUNT, Math.min(MAX_BOTTLE_COUNT, parsed));
   };
 
+  const calculateDefaultBudget = (minimumBudget, maximumBudget, currencyPrecision) => {
+    const upliftedBudget = roundMoney(
+      minimumBudget * DEFAULT_BUDGET_MULTIPLIER,
+      currencyPrecision
+    );
+    const roundedUpBudget = Math.ceil(
+      upliftedBudget / DEFAULT_BUDGET_ROUNDING_UNIT
+    ) * DEFAULT_BUDGET_ROUNDING_UNIT;
+    return roundMoney(Math.min(roundedUpBudget, maximumBudget), currencyPrecision);
+  };
+
   const updateBudgetMinimum = (
     budgetInput,
     budgetHelp,
@@ -1531,7 +1597,7 @@
     currency,
     configuredSymbol,
     currencyPrecision,
-    defaultBudget = null
+    useSuggestedDefault = false
   ) => {
     const minimumBudget = roundMoney(
       Math.max(bottleCount * minimumBottlePrice, minimumOrder),
@@ -1543,7 +1609,9 @@
     budgetInput.step = moneyStep(currencyPrecision);
 
     const currentValue = Number(budgetInput.value);
-    const preferredValue = Number(defaultBudget);
+    const preferredValue = useSuggestedDefault
+      ? calculateDefaultBudget(minimumBudget, maximumBudget, currencyPrecision)
+      : Number.NaN;
     if (Number.isFinite(preferredValue) && preferredValue >= minimumBudget && preferredValue <= maximumBudget) {
       budgetInput.value = String(roundMoney(preferredValue, currencyPrecision));
     } else if (!Number.isFinite(currentValue) || currentValue < minimumBudget) {
@@ -1555,7 +1623,8 @@
     if (budgetCurrencyElement) {
       budgetCurrencyElement.textContent = configuredSymbol || currencySymbol(currency, currencyPrecision);
     }
-    budgetHelp.textContent = `Minimum ${formatter.format(minimumBudget)} for ${bottleCount} bottles.`;
+    const bottleLabel = bottleCount === 1 ? "bottle" : "bottles";
+    budgetHelp.textContent = `Minimum ${formatter.format(minimumBudget)} for ${bottleCount} ${bottleLabel}.`;
   };
 
   const readBreakdownTotal = (form) => ["numberRed", "numberWhite", "numberSparkling", "numberDessert"]

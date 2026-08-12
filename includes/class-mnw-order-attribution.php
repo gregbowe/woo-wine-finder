@@ -5,12 +5,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_Order_Attribution {
-    private const RETRY_HOOK = 'mnw_woo_retry_order_attribution';
+final class MyNextWine_Woo_Order_Attribution {
+    private const RETRY_HOOK = 'mynextwine_woo_retry_order_attribution';
 
-    private MNW_Woo_API_Client $client;
+    private MyNextWine_Woo_API_Client $client;
 
-    public function __construct(MNW_Woo_API_Client $client) {
+    public function __construct(MyNextWine_Woo_API_Client $client) {
         $this->client = $client;
         add_action('woocommerce_checkout_create_order_line_item', array($this, 'copy_line_metadata'), 10, 4);
         add_action('woocommerce_checkout_order_processed', array($this, 'classic_order_processed'), 20, 3);
@@ -25,10 +25,10 @@ final class MNW_Woo_Order_Attribution {
      * @param WC_Order $order
      */
     public function copy_line_metadata($item, $cart_item_key, $values, $order): void {
-        if (!isset($values['_mnw_source']) || 'wine_finder' !== $values['_mnw_source']) {
+        if (!isset($values['_mynextwine_woo_source']) || 'wine_finder' !== $values['_mynextwine_woo_source']) {
             return;
         }
-        foreach (array('_mnw_session_id', '_mnw_somm_wine_id', '_mnw_source', '_mnw_recommendation_id') as $key) {
+        foreach (array('_mynextwine_woo_session_id', '_mynextwine_woo_somm_wine_id', '_mynextwine_woo_source', '_mynextwine_woo_recommendation_id') as $key) {
             if (isset($values[$key]) && '' !== (string) $values[$key]) {
                 $item->add_meta_data($key, wc_clean((string) $values[$key]), true);
             }
@@ -57,22 +57,22 @@ final class MNW_Woo_Order_Attribution {
         if (!$order instanceof WC_Order || !$this->client->is_configured()) {
             return;
         }
-        if ('yes' === $order->get_meta('_mnw_attribution_sent', true)) {
+        if ('yes' === $order->get_meta('_mynextwine_woo_attribution_sent', true)) {
             return;
         }
 
         $lines = array();
         $recommendation_ids = array();
         foreach ($order->get_items('line_item') as $item) {
-            if (!$item instanceof WC_Order_Item_Product || 'wine_finder' !== $item->get_meta('_mnw_source', true)) {
+            if (!$item instanceof WC_Order_Item_Product || 'wine_finder' !== $item->get_meta('_mynextwine_woo_source', true)) {
                 continue;
             }
             $external_id = $item->get_variation_id() > 0 ? $item->get_variation_id() : $item->get_product_id();
-            $somm_wine_id = absint($item->get_meta('_mnw_somm_wine_id', true));
+            $somm_wine_id = absint($item->get_meta('_mynextwine_woo_somm_wine_id', true));
             if ($external_id < 1 || $somm_wine_id < 1) {
                 continue;
             }
-            $recommendation_id = sanitize_text_field((string) $item->get_meta('_mnw_recommendation_id', true));
+            $recommendation_id = sanitize_text_field((string) $item->get_meta('_mynextwine_woo_recommendation_id', true));
             if ('' !== $recommendation_id) {
                 $recommendation_ids[] = $recommendation_id;
             }
@@ -96,9 +96,9 @@ final class MNW_Woo_Order_Attribution {
         ));
 
         if (is_wp_error($result)) {
-            $retry_count = (int) $order->get_meta('_mnw_attribution_retry_count', true);
+            $retry_count = (int) $order->get_meta('_mynextwine_woo_attribution_retry_count', true);
             if ($retry_count < 12) {
-                $order->update_meta_data('_mnw_attribution_retry_count', (string) ($retry_count + 1));
+                $order->update_meta_data('_mynextwine_woo_attribution_retry_count', (string) ($retry_count + 1));
                 if (0 === $retry_count) {
                     $order->add_order_note(__('My Next Wine attribution will be retried automatically.', 'my-next-wine-for-woocommerce'));
                 }
@@ -107,9 +107,9 @@ final class MNW_Woo_Order_Attribution {
             }
             return;
         }
-        $order->update_meta_data('_mnw_attribution_sent', 'yes');
-        $order->update_meta_data('_mnw_attribution_sent_at', gmdate('c'));
-        $order->delete_meta_data('_mnw_attribution_retry_count');
+        $order->update_meta_data('_mynextwine_woo_attribution_sent', 'yes');
+        $order->update_meta_data('_mynextwine_woo_attribution_sent_at', gmdate('c'));
+        $order->delete_meta_data('_mynextwine_woo_attribution_retry_count');
         $order->save();
     }
 

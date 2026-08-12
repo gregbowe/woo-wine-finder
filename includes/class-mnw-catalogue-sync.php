@@ -5,23 +5,23 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_Catalogue_Sync {
-    private const START_HOOK = 'mnw_woo_start_catalogue_sync';
-    private const PAGE_HOOK = 'mnw_woo_sync_catalogue_page';
-    private const RECONCILE_HOOK = 'mnw_woo_catalogue_reconcile';
+final class MyNextWine_Woo_Catalogue_Sync {
+    private const START_HOOK = 'mynextwine_woo_start_catalogue_sync';
+    private const PAGE_HOOK = 'mynextwine_woo_sync_catalogue_page';
+    private const RECONCILE_HOOK = 'mynextwine_woo_catalogue_reconcile';
     private const PAGE_SIZE = 50;
-    private const SYNC_LOCK_OPTION = 'mnw_woo_catalogue_sync_lock';
-    private const SYNC_REQUESTED_OPTION = 'mnw_woo_catalogue_sync_requested_at';
+    private const SYNC_LOCK_OPTION = 'mynextwine_woo_catalogue_sync_lock';
+    private const SYNC_REQUESTED_OPTION = 'mynextwine_woo_catalogue_sync_requested_at';
     private const SYNC_LOCK_SECONDS = 120;
 
-    private MNW_Woo_API_Client $client;
+    private MyNextWine_Woo_API_Client $client;
 
-    public function __construct(MNW_Woo_API_Client $client) {
+    public function __construct(MyNextWine_Woo_API_Client $client) {
         $this->client = $client;
         add_action(self::START_HOOK, array($this, 'start_sync'));
         add_action(self::PAGE_HOOK, array($this, 'sync_page'), 10, 2);
         add_action(self::RECONCILE_HOOK, array($this, 'schedule_full_sync'));
-        add_action('admin_post_mnw_woo_sync_catalogue', array($this, 'manual_sync'));
+        add_action('admin_post_mynextwine_woo_sync_catalogue', array($this, 'manual_sync'));
         add_action('admin_init', array($this, 'maybe_process_queued_sync'), 20);
 
         add_action('woocommerce_update_product', array($this, 'product_changed'));
@@ -72,7 +72,7 @@ final class MNW_Woo_Catalogue_Sync {
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         if (!current_user_can('manage_woocommerce')
-            || 'my-next-wine' !== $current_page
+            || 'mynextwine-woo-settings' !== $current_page
             || 'admin-post.php' === $pagenow) {
             return;
         }
@@ -86,15 +86,15 @@ final class MNW_Woo_Catalogue_Sync {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You do not have permission to synchronise My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
-        check_admin_referer('mnw_woo_sync_catalogue');
+        check_admin_referer('mynextwine_woo_sync_catalogue');
         $result = $this->run_inline_sync(20, 25, true);
-        $args = array('page' => 'my-next-wine');
+        $args = array('page' => 'mynextwine-woo-settings');
         if (is_wp_error($result)) {
-            $args['mnw_error'] = rawurlencode($result->get_error_message());
+            $args['mynextwine_woo_error'] = rawurlencode($result->get_error_message());
         } elseif (!empty($result['complete'])) {
-            $args['mnw_sync_complete'] = '1';
+            $args['mynextwine_woo_sync_complete'] = '1';
         } else {
-            $args['mnw_sync_progress'] = '1';
+            $args['mynextwine_woo_sync_progress'] = '1';
         }
         wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
         exit;
@@ -128,7 +128,7 @@ final class MNW_Woo_Catalogue_Sync {
     public function run_inline_sync(int $max_pages = 2, int $time_budget_seconds = 20, bool $force_new = false) {
         $settings = $this->client->settings();
         if (!$this->client->is_configured() || 'PLUGIN_PUSH' !== ($settings['catalogue_mode'] ?? '')) {
-            return new WP_Error('mnw_sync_not_configured', __('My Next Wine is not ready to synchronise this catalogue.', 'my-next-wine-for-woocommerce'));
+            return new WP_Error('mynextwine_woo_sync_not_configured', __('My Next Wine is not ready to synchronise this catalogue.', 'my-next-wine-for-woocommerce'));
         }
         if (!$this->acquire_sync_lock()) {
             return array('complete' => false, 'page' => 0, 'total_pages' => 0);
@@ -138,7 +138,7 @@ final class MNW_Woo_Catalogue_Sync {
             wp_clear_scheduled_hook(self::START_HOOK);
             if ($force_new) {
                 wp_clear_scheduled_hook(self::PAGE_HOOK);
-                delete_option('mnw_woo_catalogue_sync_state');
+                delete_option('mynextwine_woo_catalogue_sync_state');
             }
 
             $state = $this->state();
@@ -190,7 +190,7 @@ final class MNW_Woo_Catalogue_Sync {
     private function process_page(string $sync_id, int $page) {
         $state = $this->state();
         if (empty($state['sync_id']) || !hash_equals((string) $state['sync_id'], $sync_id)) {
-            return new WP_Error('mnw_sync_superseded', __('A newer catalogue synchronisation has started.', 'my-next-wine-for-woocommerce'));
+            return new WP_Error('mynextwine_woo_sync_superseded', __('A newer catalogue synchronisation has started.', 'my-next-wine-for-woocommerce'));
         }
 
         $page_data = $this->product_page(max(1, $page));
@@ -237,7 +237,7 @@ final class MNW_Woo_Catalogue_Sync {
         $this->save_state($state);
 
         if ($complete) {
-            delete_option('mnw_woo_catalogue_sync_state');
+            delete_option('mynextwine_woo_catalogue_sync_state');
             delete_option(self::SYNC_REQUESTED_OPTION);
             wp_clear_scheduled_hook(self::PAGE_HOOK);
             $settings = $this->client->settings();
@@ -432,13 +432,13 @@ final class MNW_Woo_Catalogue_Sync {
 
     /** @return array<string,mixed> */
     private function state(): array {
-        $state = get_option('mnw_woo_catalogue_sync_state', array());
+        $state = get_option('mynextwine_woo_catalogue_sync_state', array());
         return is_array($state) ? $state : array();
     }
 
     /** @param array<string,mixed> $state */
     private function save_state(array $state): void {
-        update_option('mnw_woo_catalogue_sync_state', $state, false);
+        update_option('mynextwine_woo_catalogue_sync_state', $state, false);
     }
 
     private function truncate(string $value, int $length): string {

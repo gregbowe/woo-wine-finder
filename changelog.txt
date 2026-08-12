@@ -19,6 +19,16 @@
 
 *** My Next Wine for WooCommerce Changelog ***
 
+2026-08-10 - version 1.0.5
+* Added idempotent item-level basket attempt, success and failure attribution.
+* A successful basket addition is the only recommendation-usefulness signal; no shopper rating is requested.
+* Preserved recommendation-session attribution after wine swaps.
+
+2026-08-09 - version 1.0.4
+* Allowed recommendations for 1 to 12 bottles.
+* Set the suggested budget 20% above the minimum and rounded it up to the nearest 10.
+* Refreshed the preference and food-pairing prompts and kept the desktop legal copy on one line.
+
 2026-08-04 - version 0.5.2
 * Removed the fragile keepalive and timeout-signal combination from storefront analytics requests.
 * Kept analytics asynchronous and non-blocking.

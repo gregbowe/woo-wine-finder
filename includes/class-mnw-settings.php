@@ -5,33 +5,41 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_Settings {
-    private MNW_Woo_API_Client $client;
-    private MNW_Woo_Catalogue_Sync $catalogue_sync;
+final class MyNextWine_Woo_Settings {
+    private MyNextWine_Woo_API_Client $client;
+    private MyNextWine_Woo_Catalogue_Sync $catalogue_sync;
 
-    public function __construct(MNW_Woo_API_Client $client, MNW_Woo_Catalogue_Sync $catalogue_sync) {
+    public function __construct(MyNextWine_Woo_API_Client $client, MyNextWine_Woo_Catalogue_Sync $catalogue_sync) {
         $this->client = $client;
         $this->catalogue_sync = $catalogue_sync;
         add_action('admin_menu', array($this, 'admin_menu'));
-        add_action('admin_post_mnw_woo_save', array($this, 'save'));
-        add_action('admin_post_mnw_woo_test', array($this, 'refresh_status'));
-        add_action('admin_post_mnw_woo_start_billing', array($this, 'start_billing'));
-        add_action('admin_post_mnw_woo_manage_billing', array($this, 'manage_billing'));
+        add_action('admin_post_mynextwine_woo_save', array($this, 'save'));
+        add_action('admin_post_mynextwine_woo_test', array($this, 'refresh_status'));
+        add_action('admin_post_mynextwine_woo_start_billing', array($this, 'start_billing'));
+        add_action('admin_post_mynextwine_woo_manage_billing', array($this, 'manage_billing'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
-        add_filter('plugin_action_links_' . plugin_basename(MNW_WOO_FILE), array($this, 'action_links'));
+        add_filter('plugin_action_links_' . plugin_basename(MYNEXTWINE_WOO_FILE), array($this, 'action_links'));
     }
 
     public function enqueue_admin_assets(string $hook_suffix): void {
-        if ('woocommerce_page_my-next-wine' !== $hook_suffix) {
+        if ('woocommerce_page_mynextwine-woo-settings' !== $hook_suffix) {
             return;
         }
         wp_enqueue_media();
         wp_enqueue_script(
-            'mnw-wine-finder-admin',
-            MNW_WOO_URL . 'assets/js/admin-settings.js',
+            'mynextwine-wine-finder-admin',
+            MYNEXTWINE_WOO_URL . 'assets/js/admin-settings.js',
             array('jquery'),
-            MNW_WOO_VERSION,
+            MYNEXTWINE_WOO_VERSION,
             true
+        );
+        wp_localize_script(
+            'mynextwine-wine-finder-admin',
+            'MyNextWineWooAdmin',
+            array(
+                'chooseLauncherImage' => __('Choose launcher image', 'my-next-wine-for-woocommerce'),
+                'useThisImage' => __('Use this image', 'my-next-wine-for-woocommerce'),
+            )
         );
     }
 
@@ -41,14 +49,14 @@ final class MNW_Woo_Settings {
             __('My Next Wine', 'my-next-wine-for-woocommerce'),
             __('My Next Wine', 'my-next-wine-for-woocommerce'),
             'manage_woocommerce',
-            'my-next-wine',
+            'mynextwine-woo-settings',
             array($this, 'render')
         );
     }
 
     /** @param array<int,string> $links */
     public function action_links(array $links): array {
-        array_unshift($links, '<a href="' . esc_url(admin_url('admin.php?page=my-next-wine')) . '">' . esc_html__('Setup', 'my-next-wine-for-woocommerce') . '</a>');
+        array_unshift($links, '<a href="' . esc_url(admin_url('admin.php?page=mynextwine-woo-settings')) . '">' . esc_html__('Setup', 'my-next-wine-for-woocommerce') . '</a>');
         return $links;
     }
 
@@ -56,7 +64,7 @@ final class MNW_Woo_Settings {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You do not have permission to manage My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
-        check_admin_referer('mnw_woo_save');
+        check_admin_referer('mynextwine_woo_save');
 
         $current = $this->client->settings();
         $position = isset($_POST['launcher_position']) ? sanitize_key(wp_unslash($_POST['launcher_position'])) : 'left';
@@ -71,7 +79,7 @@ final class MNW_Woo_Settings {
         $current['auto_display'] = isset($_POST['auto_display']) ? 'yes' : 'no';
         $current['analytics_enabled'] = isset($_POST['analytics_enabled']) ? 'yes' : 'no';
         $current['launcher_position'] = $position;
-        $current['launcher_image_id'] = absint($_POST['launcher_image_id'] ?? 0);
+        $current['launcher_image_id'] = absint(wp_unslash($_POST['launcher_image_id'] ?? '0'));
         $current['inherit_theme_styles'] = isset($_POST['inherit_theme_styles']) ? 'yes' : 'no';
         $current['accent_color'] = sanitize_hex_color((string) wp_unslash($_POST['accent_color'] ?? '')) ?: '#722f37';
         $current['accent_text_color'] = sanitize_hex_color((string) wp_unslash($_POST['accent_text_color'] ?? '')) ?: '#ffffff';
@@ -92,15 +100,15 @@ final class MNW_Woo_Settings {
             if (is_wp_error($display_result)) {
                 $display_error = $display_result;
             } else {
-                delete_transient('mnw_woo_last_status_' . get_current_user_id());
+                delete_transient('mynextwine_woo_last_status_' . get_current_user_id());
             }
         }
 
-        $args = array('page' => 'my-next-wine', 'mnw_saved' => '1');
+        $args = array('page' => 'mynextwine-woo-settings', 'mynextwine_woo_saved' => '1');
         if ($display_error instanceof WP_Error) {
-            $args['mnw_error'] = rawurlencode($this->error_message($display_error));
+            $args['mynextwine_woo_error'] = rawurlencode($this->error_message($display_error));
         } elseif ($requested_enabled && !$operational) {
-            $args['mnw_error'] = rawurlencode(__('The Wine Finder cannot be enabled until the catalogue is ready and My Next Wine confirms an active trial or paid plan.', 'my-next-wine-for-woocommerce'));
+            $args['mynextwine_woo_error'] = rawurlencode(__('The Wine Finder cannot be enabled until the catalogue is ready and My Next Wine confirms an active trial or paid plan.', 'my-next-wine-for-woocommerce'));
         }
         wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
         exit;
@@ -110,14 +118,14 @@ final class MNW_Woo_Settings {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You do not have permission to manage My Next Wine.', 'my-next-wine-for-woocommerce'));
         }
-        check_admin_referer('mnw_woo_test');
+        check_admin_referer('mynextwine_woo_test');
         $result = $this->client->status();
-        $args = array('page' => 'my-next-wine');
+        $args = array('page' => 'mynextwine-woo-settings');
         if (is_wp_error($result)) {
-            $args['mnw_error'] = rawurlencode($this->error_message($result));
+            $args['mynextwine_woo_error'] = rawurlencode($this->error_message($result));
         } else {
-            set_transient('mnw_woo_last_status_' . get_current_user_id(), $result, 60);
-            $args['mnw_tested'] = '1';
+            set_transient('mynextwine_woo_last_status_' . get_current_user_id(), $result, 60);
+            $args['mynextwine_woo_tested'] = '1';
         }
         wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
         exit;
@@ -127,7 +135,7 @@ final class MNW_Woo_Settings {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You do not have permission to start My Next Wine billing.', 'my-next-wine-for-woocommerce'));
         }
-        check_admin_referer('mnw_woo_start_billing');
+        check_admin_referer('mynextwine_woo_start_billing');
         $result = $this->client->start_billing();
         if (is_wp_error($result)) {
             $this->redirect_with_error($result);
@@ -137,7 +145,7 @@ final class MNW_Woo_Settings {
         if (!$this->is_allowed_stripe_url($checkout_url)) {
             $this->redirect_with_message(__('My Next Wine did not return a valid Stripe checkout URL.', 'my-next-wine-for-woocommerce'));
         }
-        delete_transient('mnw_woo_last_status_' . get_current_user_id());
+        delete_transient('mynextwine_woo_last_status_' . get_current_user_id());
         wp_redirect($checkout_url); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- validated Stripe HTTPS URL.
         exit;
     }
@@ -146,7 +154,7 @@ final class MNW_Woo_Settings {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You do not have permission to manage My Next Wine billing.', 'my-next-wine-for-woocommerce'));
         }
-        check_admin_referer('mnw_woo_manage_billing');
+        check_admin_referer('mynextwine_woo_manage_billing');
         $result = $this->client->manage_billing();
         if (is_wp_error($result)) {
             $this->redirect_with_error($result);
@@ -165,7 +173,7 @@ final class MNW_Woo_Settings {
             return;
         }
         $settings = $this->client->settings();
-        $status = get_transient('mnw_woo_last_status_' . get_current_user_id());
+        $status = get_transient('mynextwine_woo_last_status_' . get_current_user_id());
         $status_error = '';
         if ($this->client->is_configured() && !is_array($status)) {
             $fresh = $this->client->status();
@@ -173,7 +181,7 @@ final class MNW_Woo_Settings {
                 $status_error = $this->error_message($fresh);
             } else {
                 $status = $fresh;
-                set_transient('mnw_woo_last_status_' . get_current_user_id(), $status, 60);
+                set_transient('mynextwine_woo_last_status_' . get_current_user_id(), $status, 60);
             }
         }
         $connected = $this->client->is_configured();
@@ -181,12 +189,12 @@ final class MNW_Woo_Settings {
         $catalogue = is_array($status) && isset($status['catalogue']) && is_array($status['catalogue']) ? $status['catalogue'] : array();
         $connection_state = (string) ($settings['connection_state'] ?? 'PENDING');
         $local_terms_current = 'yes' === ($settings['connection_consent'] ?? 'no')
-            && MNW_WOO_TERMS_VERSION === ($settings['terms_version'] ?? '');
+            && MYNEXTWINE_WOO_TERMS_VERSION === ($settings['terms_version'] ?? '');
         $server_terms_current = is_array($status) && !empty($status['termsAccepted']);
         $billing_status = is_array($status) ? (string) ($status['billingStatus'] ?? 'NOT_STARTED') : 'NOT_STARTED';
         $billing_currency = is_array($status) ? (string) ($status['billingCurrency'] ?? 'EUR') : 'EUR';
         $billing_price = is_array($status) ? (string) ($status['billingPrice'] ?? '29.99') : '29.99';
-        $billing_trial_days = is_array($status) ? max(0, (int) ($status['billingTrialDays'] ?? 30)) : 30;
+        $billing_trial_days = is_array($status) ? max(0, (int) ($status['billingTrialDays'] ?? 14)) : 14;
         $show_mnw_notes = is_array($status)
             ? !empty($status['showMyNextWineNotes'])
             : 'yes' === ($settings['show_mnw_notes'] ?? 'no');
@@ -196,15 +204,15 @@ final class MNW_Woo_Settings {
 
         // These read-only flags are set by nonce-protected admin-post handlers and only control notices.
         // phpcs:disable WordPress.Security.NonceVerification.Recommended
-        $notice_saved = isset($_GET['mnw_saved']);
-        $notice_tested = isset($_GET['mnw_tested']);
-        $notice_billing_returned = isset($_GET['mnw_billing_returned']);
-        $notice_billing_cancelled = isset($_GET['mnw_billing_cancelled']);
-        $notice_portal_returned = isset($_GET['mnw_portal_returned']);
-        $notice_sync_complete = isset($_GET['mnw_sync_complete']);
-        $notice_sync_progress = isset($_GET['mnw_sync_progress']);
-        $notice_error = isset($_GET['mnw_error'])
-            ? rawurldecode(sanitize_text_field(wp_unslash($_GET['mnw_error'])))
+        $notice_saved = isset($_GET['mynextwine_woo_saved']);
+        $notice_tested = isset($_GET['mynextwine_woo_tested']);
+        $notice_billing_returned = isset($_GET['mynextwine_woo_billing_returned']);
+        $notice_billing_cancelled = isset($_GET['mynextwine_woo_billing_cancelled']);
+        $notice_portal_returned = isset($_GET['mynextwine_woo_portal_returned']);
+        $notice_sync_complete = isset($_GET['mynextwine_woo_sync_complete']);
+        $notice_sync_progress = isset($_GET['mynextwine_woo_sync_progress']);
+        $notice_error = isset($_GET['mynextwine_woo_error'])
+            ? rawurldecode(sanitize_text_field(wp_unslash($_GET['mynextwine_woo_error'])))
             : '';
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
         ?>
@@ -284,18 +292,18 @@ final class MNW_Woo_Settings {
                 <?php if (!$connected) : ?>
                     <p><?php echo esc_html__('No API keys, Somm IDs or installation credentials are required. The store connects only after an authorised administrator agrees below.', 'my-next-wine-for-woocommerce'); ?></p>
                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="max-width:720px;">
-                        <input type="hidden" name="action" value="mnw_woo_retry_connection">
-                        <?php wp_nonce_field('mnw_woo_retry_connection'); ?>
+                        <input type="hidden" name="action" value="mynextwine_woo_retry_connection">
+                        <?php wp_nonce_field('mynextwine_woo_retry_connection'); ?>
                         <?php if (!$local_terms_current) : ?>
                             <div style="padding:14px 16px;border:1px solid #dcdcde;background:#f6f7f7;margin:14px 0;">
                                 <p style="margin-top:0;"><strong><?php echo esc_html__('Before connecting', 'my-next-wine-for-woocommerce'); ?></strong></p>
                                 <p><?php echo esc_html__('My Next Wine will receive the store URL, store contact and address details, WordPress/WooCommerce versions, currency and country. It will then receive the product catalogue needed to map and recommend wines.', 'my-next-wine-for-woocommerce'); ?></p>
-                                <p><label><input type="checkbox" name="mnw_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise this disclosed transfer to the external My Next Wine service.', 'my-next-wine-for-woocommerce'); ?></label></p>
-                                <p><label><input type="checkbox" name="mnw_accept_terms" value="1" required> <?php echo wp_kses_post(sprintf(
+                                <p><label><input type="checkbox" name="mynextwine_woo_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise this disclosed transfer to the external My Next Wine service.', 'my-next-wine-for-woocommerce'); ?></label></p>
+                                <p><label><input type="checkbox" name="mynextwine_woo_accept_terms" value="1" required> <?php echo wp_kses_post(sprintf(
                                     /* translators: 1: Merchant Terms URL, 2: Privacy Statement URL. */
                                     __('I am authorised to bind this merchant, agree to the <a href="%1$s" target="_blank" rel="noopener">Merchant Terms</a> and acknowledge the <a href="%2$s" target="_blank" rel="noopener">Privacy Statement</a>.', 'my-next-wine-for-woocommerce'),
-                                    esc_url(MNW_WOO_TERMS_URL),
-                                    esc_url(MNW_WOO_PRIVACY_URL)
+                                    esc_url(MYNEXTWINE_WOO_TERMS_URL),
+                                    esc_url(MYNEXTWINE_WOO_PRIVACY_URL)
                                 )); ?></label></p>
                             </div>
                         <?php endif; ?>
@@ -304,36 +312,36 @@ final class MNW_Woo_Settings {
                 <?php else : ?>
                     <?php if (!$server_terms_current) : ?>
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="max-width:720px;padding:14px 16px;border:1px solid #dcdcde;background:#f6f7f7;margin:14px 0;">
-                            <input type="hidden" name="action" value="mnw_woo_retry_connection">
-                            <?php wp_nonce_field('mnw_woo_retry_connection'); ?>
+                            <input type="hidden" name="action" value="mynextwine_woo_retry_connection">
+                            <?php wp_nonce_field('mynextwine_woo_retry_connection'); ?>
                             <p style="margin-top:0;"><strong><?php echo esc_html__('Updated merchant agreement required', 'my-next-wine-for-woocommerce'); ?></strong></p>
-                            <p><label><input type="checkbox" name="mnw_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise the disclosed store and catalogue data transfer to My Next Wine.', 'my-next-wine-for-woocommerce'); ?></label></p>
-                            <p><label><input type="checkbox" name="mnw_accept_terms" value="1" required> <?php echo wp_kses_post(sprintf(
+                            <p><label><input type="checkbox" name="mynextwine_woo_accept_data_sharing" value="1" required> <?php echo esc_html__('I authorise the disclosed store and catalogue data transfer to My Next Wine.', 'my-next-wine-for-woocommerce'); ?></label></p>
+                            <p><label><input type="checkbox" name="mynextwine_woo_accept_terms" value="1" required> <?php echo wp_kses_post(sprintf(
                                 /* translators: 1: Merchant Terms URL, 2: Privacy Statement URL. */
                                 __('I am authorised to bind this merchant, agree to the <a href="%1$s" target="_blank" rel="noopener">Merchant Terms</a> and acknowledge the <a href="%2$s" target="_blank" rel="noopener">Privacy Statement</a>.', 'my-next-wine-for-woocommerce'),
-                                esc_url(MNW_WOO_TERMS_URL),
-                                esc_url(MNW_WOO_PRIVACY_URL)
+                                esc_url(MYNEXTWINE_WOO_TERMS_URL),
+                                esc_url(MYNEXTWINE_WOO_PRIVACY_URL)
                             )); ?></label></p>
                             <?php submit_button(__('Accept and continue', 'my-next-wine-for-woocommerce'), 'primary', 'submit', false); ?>
                         </form>
                     <?php endif; ?>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                            <input type="hidden" name="action" value="mnw_woo_test">
-                            <?php wp_nonce_field('mnw_woo_test'); ?>
+                            <input type="hidden" name="action" value="mynextwine_woo_test">
+                            <?php wp_nonce_field('mynextwine_woo_test'); ?>
                             <?php submit_button(__('Refresh status', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                         </form>
                         <?php if ('PLUGIN_PUSH' === ($settings['catalogue_mode'] ?? '')) : ?>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                                <input type="hidden" name="action" value="mnw_woo_sync_catalogue">
-                                <?php wp_nonce_field('mnw_woo_sync_catalogue'); ?>
+                                <input type="hidden" name="action" value="mynextwine_woo_sync_catalogue">
+                                <?php wp_nonce_field('mynextwine_woo_sync_catalogue'); ?>
                                 <?php submit_button(__('Sync catalogue now', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                             </form>
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canStartBilling'])) : ?>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                                <input type="hidden" name="action" value="mnw_woo_start_billing">
-                                <?php wp_nonce_field('mnw_woo_start_billing'); ?>
+                                <input type="hidden" name="action" value="mynextwine_woo_start_billing">
+                                <?php wp_nonce_field('mynextwine_woo_start_billing'); ?>
                                 <?php
                                 /* translators: 1: trial length in days, 2: billing currency code, 3: monthly price. */
                                 submit_button(sprintf(__('Start %1$d-day trial — %2$s %3$s/month + tax', 'my-next-wine-for-woocommerce'), $billing_trial_days, $billing_currency, $billing_price), 'primary', 'submit', false);
@@ -342,8 +350,8 @@ final class MNW_Woo_Settings {
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canManageBilling'])) : ?>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                                <input type="hidden" name="action" value="mnw_woo_manage_billing">
-                                <?php wp_nonce_field('mnw_woo_manage_billing'); ?>
+                                <input type="hidden" name="action" value="mynextwine_woo_manage_billing">
+                                <?php wp_nonce_field('mynextwine_woo_manage_billing'); ?>
                                 <?php submit_button(__('Manage subscription', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                             </form>
                         <?php endif; ?>
@@ -352,11 +360,11 @@ final class MNW_Woo_Settings {
             </div>
 
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action" value="mnw_woo_save">
-                <?php wp_nonce_field('mnw_woo_save'); ?>
+                <input type="hidden" name="action" value="mynextwine_woo_save">
+                <?php wp_nonce_field('mynextwine_woo_save'); ?>
                 <table class="form-table" role="presentation">
                     <tr><th scope="row"><?php echo esc_html__('Enable widget', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="enabled" value="1" <?php checked('yes', $settings['enabled']); ?> <?php disabled(!$operational); ?>> <?php echo esc_html__('Show the wine finder', 'my-next-wine-for-woocommerce'); ?></label><?php if (!$operational) : ?><p class="description"><?php echo esc_html__('This unlocks after the catalogue is ready and My Next Wine confirms the Stripe trial or paid plan.', 'my-next-wine-for-woocommerce'); ?></p><?php endif; ?></td></tr>
-                    <tr><th scope="row"><?php echo esc_html__('Automatic display', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="auto_display" value="1" <?php checked('yes', $settings['auto_display']); ?>> <?php echo esc_html__('Add the floating launcher to public shop pages', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('The [my_next_wine] shortcode is also available.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
+                    <tr><th scope="row"><?php echo esc_html__('Automatic display', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="auto_display" value="1" <?php checked('yes', $settings['auto_display']); ?>> <?php echo esc_html__('Add the floating launcher to public shop pages', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('The [mynextwine_wine_finder] shortcode is also available.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
                     <tr><th scope="row"><?php echo esc_html__('Optional aggregate analytics', 'my-next-wine-for-woocommerce'); ?></th><td><label><input type="checkbox" name="analytics_enabled" value="1" <?php checked('yes', $settings['analytics_enabled']); ?>> <?php echo esc_html__('Allow aggregate Wine Finder events', 'my-next-wine-for-woocommerce'); ?></label><p class="description"><?php echo esc_html__('Off by default. If the site exposes the WordPress Consent API, events are sent only when wp_has_consent("statistics") returns true. If that API is not present, enabling this setting confirms that the store\'s own privacy and consent setup permits these aggregate events. Recommendation and basket requests continue because they are needed to provide the feature.', 'my-next-wine-for-woocommerce'); ?></p></td></tr>
                     <tr><th scope="row"><?php echo esc_html__('Launcher position', 'my-next-wine-for-woocommerce'); ?></th><td><select name="launcher_position"><option value="left" <?php selected('left', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom left', 'my-next-wine-for-woocommerce'); ?></option><option value="right" <?php selected('right', $settings['launcher_position']); ?>><?php echo esc_html__('Bottom right', 'my-next-wine-for-woocommerce'); ?></option></select></td></tr>
                     <?php
@@ -411,8 +419,8 @@ final class MNW_Woo_Settings {
 
     private function redirect_with_message(string $message): void {
         wp_safe_redirect(add_query_arg(array(
-            'page' => 'my-next-wine',
-            'mnw_error' => rawurlencode($message),
+            'page' => 'mynextwine-woo-settings',
+            'mynextwine_woo_error' => rawurlencode($message),
         ), admin_url('admin.php')));
         exit;
     }

@@ -5,13 +5,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_Catalogue_Controller {
+final class MyNextWine_Woo_Catalogue_Controller {
     private const NAMESPACE = 'my-next-wine/v1';
     private const SIGNED_PATH = '/wp-json/my-next-wine/v1/catalogue';
 
-    private MNW_Woo_API_Client $client;
+    private MyNextWine_Woo_API_Client $client;
 
-    public function __construct(MNW_Woo_API_Client $client) {
+    public function __construct(MyNextWine_Woo_API_Client $client) {
         $this->client = $client;
         add_action('rest_api_init', array($this, 'register_routes'));
     }

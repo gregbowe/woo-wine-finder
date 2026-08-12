@@ -5,13 +5,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-final class MNW_Woo_Widget {
+final class MyNextWine_Woo_Widget {
     private bool $rendered = false;
 
     public function __construct() {
         add_action('wp_enqueue_scripts', array($this, 'enqueue'));
         add_action('wp_footer', array($this, 'render_automatic'), 30);
-        add_shortcode('my_next_wine', array($this, 'shortcode'));
+        add_shortcode('mynextwine_wine_finder', array($this, 'shortcode'));
     }
 
     public function enqueue(): void {
@@ -20,16 +20,16 @@ final class MNW_Woo_Widget {
             return;
         }
         wp_enqueue_style(
-            'mnw-wine-finder',
-            MNW_WOO_URL . 'assets/css/wine-finder.css',
+            'mynextwine-wine-finder',
+            MYNEXTWINE_WOO_URL . 'assets/css/wine-finder.css',
             array(),
-            MNW_WOO_VERSION
+            MYNEXTWINE_WOO_VERSION
         );
         wp_enqueue_script(
-            'mnw-wine-finder',
-            MNW_WOO_URL . 'assets/js/wine-finder.js',
+            'mynextwine-wine-finder',
+            MYNEXTWINE_WOO_URL . 'assets/js/wine-finder.js',
             array(),
-            MNW_WOO_VERSION,
+            MYNEXTWINE_WOO_VERSION,
             true
         );
     }
@@ -47,8 +47,8 @@ final class MNW_Woo_Widget {
         if (!$this->is_frontend_enabled($settings)) {
             return '';
         }
-        wp_enqueue_style('mnw-wine-finder');
-        wp_enqueue_script('mnw-wine-finder');
+        wp_enqueue_style('mynextwine-wine-finder');
+        wp_enqueue_script('mynextwine-wine-finder');
         return $this->render();
     }
 
@@ -60,7 +60,7 @@ final class MNW_Woo_Widget {
         $settings = $this->settings();
         $widget_id = 'woo-' . wp_generate_uuid4();
         $heading = (string) ($settings['heading'] ?? 'Need help choosing wine?');
-        $launcher_label = (string) ($settings['launcher_label'] ?? 'Find my wines');
+        $launcher_label = (string) ($settings['launcher_label'] ?? 'Use our wine matcher');
         $intro = (string) ($settings['intro'] ?? __('Four quick questions and we will pick the perfect wines from our cellar', 'my-next-wine-for-woocommerce'));
         $button_label = (string) ($settings['button_label'] ?? 'Add selected to basket');
         $launcher_position = 'right' === ($settings['launcher_position'] ?? 'left') ? 'right' : 'left';
@@ -78,13 +78,13 @@ final class MNW_Woo_Widget {
         $wp_nonce = wp_create_nonce('wp_rest');
 
         ob_start();
-        include MNW_WOO_DIR . 'templates/widget.php';
+        include MYNEXTWINE_WOO_DIR . 'templates/widget.php';
         return (string) ob_get_clean();
     }
 
     /** @return array<string,mixed> */
     private function settings(): array {
-        $client = new MNW_Woo_API_Client();
+        $client = new MyNextWine_Woo_API_Client();
         return $client->settings();
     }
 

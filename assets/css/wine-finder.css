@@ -1796,6 +1796,13 @@ body.mnw-wine-finder-open {
   text-align: right;
 }
 
+@media (min-width: 981px) {
+  .mnw-wine-finder__wizard-step .mnw-wine-finder__legal-copy {
+    font-size: clamp(10px, 1.08vw, 12px);
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 980px) {
   .mnw-wine-finder__dialog-shell {
     grid-template-columns: 215px minmax(0, 1fr);
@@ -2303,8 +2310,7 @@ body.mnw-wine-finder-open {
 .mnw-wine-finder__launcher-action,
 .mnw-wine-finder__eyebrow,
 .mnw-wine-card__price,
-.mnw-wine-card__quick-view-label,
-.mnw-wine-finder__powered-by span {
+.mnw-wine-card__quick-view-label {
   color: var(--mnw-theme-accent);
 }
 
@@ -2347,18 +2353,6 @@ body.mnw-wine-finder-open {
 .mnw-wine-card__swap-button:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--mnw-theme-accent) 30%, transparent);
   outline-offset: 2px;
-}
-
-.mnw-wine-finder__powered-by {
-  margin: 1.15rem 0 0;
-  color: color-mix(in srgb, var(--mnw-theme-text) 68%, transparent);
-  font-size: 0.9rem;
-  line-height: 1.3;
-  text-align: center;
-}
-
-.mnw-wine-finder__powered-by span {
-  font-weight: 700;
 }
 
 /* Keep the first question focused: one visible question heading, not stacked titles. */

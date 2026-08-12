@@ -138,7 +138,7 @@ if (!defined('ABSPATH')) { exit; }
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                <?php echo esc_html__('Choose 3 to 12 bottles across the four styles.', 'my-next-wine-for-woocommerce'); ?>
+                <?php echo esc_html__('Choose 1 to 12 bottles across the four styles.', 'my-next-wine-for-woocommerce'); ?>
               </p>
 
               <div class="mnw-wine-finder__breakdown-grid">
@@ -327,11 +327,11 @@ if (!defined('ABSPATH')) { exit; }
               hidden
             >
               <legend class="mnw-wine-finder__question-title">
-                <?php echo esc_html__('What wines do you like?', 'my-next-wine-for-woocommerce'); ?>
+                <?php echo esc_html__('Tell us more...', 'my-next-wine-for-woocommerce'); ?>
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                <?php echo esc_html__('A grape, region, style or dislike is enough. Do not enter names, contact details, allergies, health information or other sensitive personal information.', 'my-next-wine-for-woocommerce'); ?>
+                <?php echo esc_html__('What do you like? What do you usually drink? Shopping for a gift or a special occasion?', 'my-next-wine-for-woocommerce'); ?>
               </p>
 
               <div class="mnw-field">
@@ -380,7 +380,7 @@ if (!defined('ABSPATH')) { exit; }
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                <?php echo esc_html__('Optional. Leave blank if it does not matter. Do not enter names, contact details, allergies, health information or other sensitive personal information.', 'my-next-wine-for-woocommerce'); ?>
+                <?php echo esc_html__('Add any meals or snacks you would like a bottle paired with.', 'my-next-wine-for-woocommerce'); ?>
               </p>
 
               <div class="mnw-field">
@@ -417,10 +417,12 @@ if (!defined('ABSPATH')) { exit; }
               </div>
 
               <p class="mnw-wine-finder__legal-copy">
+                <?php echo esc_html__('Recommendations are automated and may be AI-assisted. Wine is sold and fulfilled by this shop.', 'my-next-wine-for-woocommerce'); ?>
+                <br>
                 <?php echo esc_html__('By selecting “Find my wines”, you agree to the', 'my-next-wine-for-woocommerce'); ?>
-                <a href="<?php echo esc_url(MNW_WOO_USER_TERMS_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Wine Finder User Terms', 'my-next-wine-for-woocommerce'); ?></a>
+                <a href="<?php echo esc_url(MYNEXTWINE_WOO_USER_TERMS_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Wine Finder User Terms', 'my-next-wine-for-woocommerce'); ?></a>
                 <?php echo esc_html__('and acknowledge the', 'my-next-wine-for-woocommerce'); ?>
-                <a href="<?php echo esc_url(MNW_WOO_PRIVACY_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Privacy Statement', 'my-next-wine-for-woocommerce'); ?></a>.
+                <a href="<?php echo esc_url(MYNEXTWINE_WOO_PRIVACY_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Privacy Statement', 'my-next-wine-for-woocommerce'); ?></a>.
               </p>
             </fieldset>
           </form>
@@ -479,7 +481,7 @@ if (!defined('ABSPATH')) { exit; }
             <div class="mnw-wine-finder__selection-header">
               <div>
                 <h3 class="mnw-wine-finder__selection-title">
-                  <?php echo esc_html__('Your wines', 'my-next-wine-for-woocommerce'); ?>
+                  <?php echo esc_html__('Wines picked for you', 'my-next-wine-for-woocommerce'); ?>
                 </h3>
 
                 <p
@@ -582,13 +584,9 @@ if (!defined('ABSPATH')) { exit; }
                 </button>
               </div>
             </div>
+
           </div>
 
-          <p class="mnw-wine-finder__powered-by">
-            <?php echo esc_html__('AI-assisted recommendations by', 'my-next-wine-for-woocommerce'); ?>
-            <span><?php echo esc_html__('My Next Wine', 'my-next-wine-for-woocommerce'); ?></span>.
-            <?php echo esc_html__('Wine is sold and fulfilled by this shop.', 'my-next-wine-for-woocommerce'); ?>
-          </p>
         </div>
 
         <div
@@ -726,4 +724,3 @@ if (!defined('ABSPATH')) { exit; }
     </div>
   </dialog>
 </div>
-

@@ -11,7 +11,7 @@ A GPL-licensed WooCommerce connector for the externally hosted My Next Wine B2B 
 5. A new B2B-only merchant account is created automatically, or an existing WooCommerce merchant is safely reused.
 6. For a new B2B-only merchant, the plugin pushes a complete signed catalogue snapshot and keeps it reconciled.
 7. My Next Wine maps or ignores the products.
-8. Once the catalogue is ready, the merchant completes Stripe-hosted checkout to start the 30-day trial and then enables the widget.
+8. Once the catalogue is ready, the merchant completes Stripe-hosted checkout to start the 14-day trial and then enables the widget.
 
 The merchant never handles a Somm ID, installation ID, installation secret, connection code or WooCommerce REST API key.
 
@@ -100,7 +100,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- The default direct subscription is EUR 29.99/month after a 30-day trial; the configured Stripe Price currency and amount must exactly match the backend settings and published terms.
+- The default direct subscription is EUR 29.99/month after a 14-day trial; the configured Stripe Price currency and amount must exactly match the backend settings and published terms.
 
 ## Local development
 
@@ -114,7 +114,7 @@ WOOCOMMERCE_WIDGET_BOOTSTRAP_ALLOW_PRIVATE_HOSTS=true
 A local backend override can be set in the local WordPress site's `wp-config.php` before the `That's all, stop editing` line:
 
 ```php
-define('MNW_WOO_API_BASE_URL', 'https://local-backend.example.test');
+define('MYNEXTWINE_WOO_API_BASE_URL', 'https://local-backend.example.test');
 ```
 
 The backend certificate must be trusted by the WordPress host. Distributed plugin builds always use normal TLS certificate verification.
