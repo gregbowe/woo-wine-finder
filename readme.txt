@@ -1,23 +1,48 @@
 === My Next Wine for WooCommerce ===
 Contributors: mynextwine
-Tags: woocommerce, wine, recommendations, product recommendations
+Tags: woocommerce, wine, recommendations, product recommendations, artificial intelligence
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.2
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Adds the My Next Wine wine recommendation widget and a consent-based, secure catalogue connector to WooCommerce.
+Adds a guided Wine Finder that builds complete selections from your live catalogue using structured wine knowledge, budget, tastes and food.
 
 == Description ==
 
-My Next Wine is a hosted recommendation service for online wine merchants. This plugin displays a theme-aware Wine Finder, securely synchronises eligible catalogue information and validates selected products against live WooCommerce price and stock before adding them to the basket.
+Most wine websites work well when the shopper already knows what they want. My Next Wine helps everyone else.
+
+The plugin adds a guided, theme-aware Wine Finder to your WooCommerce store. In four quick questions, shoppers choose a bottle mix and total budget, then describe any tastes, dislikes, food, gift or occasion they want considered.
+
+My Next Wine builds a complete 1-to-12-bottle selection from the mapped wines currently available in your own catalogue.
+
+= What makes it different =
+
+Each eligible product is mapped to structured data about its wine, producer, country, region, subregion, grapes, style and concise notes. Recommendations therefore use more context than product titles and descriptions alone.
+
+* Handles grapes, regions, styles, dislikes, meals, gifts and occasions in natural language.
+* Keeps the requested red, white, sparkling and dessert mix within the total order budget.
+* Recommends only mapped wines currently available from your store.
+* Explains each bottle and clearly identifies compromises or alternatives.
+* Lets shoppers swap or remove individual bottles without restarting.
+* Adds selected products and quantities directly to the WooCommerce basket.
+* Requires no shopper account or email address to show recommendations.
+* Uses your existing basket and checkout, so you keep the customer relationship, payment and fulfilment.
+
+Artificial intelligence interprets the shopper's request. Structured catalogue data and deterministic checks enforce the bottle count, wine mix, budget and eligible product pool. At basket time, WooCommerce revalidates each product or variation, quantity, current price, stock and purchase eligibility.
+
+Non-wine products can be excluded. The initial eligible catalogue is mapped or reviewed before the trial begins. The launcher, introduction and presentation can be configured for your storefront, and optional aggregate analytics can measure Wine Finder activity and attributed orders.
+
+= Pricing =
+
+The hosted My Next Wine service includes a 14-day free trial followed by EUR 29.99 per month plus applicable tax. There is no commission or per-order fee.
+
+Subscription checkout and account management are hosted by Stripe. The trial begins only when the catalogue is ready and the merchant chooses to start it. Activating the plugin alone does not start the trial, create a charge or transmit store or catalogue data.
 
 My Next Wine provides technology only. The merchant remains the seller of every wine and is responsible for alcohol licensing, age verification, product information and condition, payment, fulfilment, delivery, customer service, refunds and legal compliance.
-
-The hosted service offers a 30-day free trial followed by EUR 29.99 per month plus applicable tax. Subscription checkout and account management are hosted by Stripe. My Next Wine activates, renews, pauses or ends access only from verified Stripe billing events. Activating the plugin alone does not start the trial, create a charge or transmit store/catalogue data.
 
 == Installation ==
 
@@ -26,8 +51,9 @@ The hosted service offers a 30-day free trial followed by EUR 29.99 per month pl
 3. Review the external-service data disclosure and the linked Merchant Terms and Privacy Statement.
 4. An authorised administrator ticks both consent boxes and chooses "Agree and connect store".
 5. The plugin proves ownership of the site and securely sends the disclosed store information to My Next Wine.
-6. The catalogue is synchronised and My Next Wine maps or ignores eligible products.
-7. When the catalogue is ready, complete the Stripe-hosted subscription checkout to start the 30-day trial, then enable the Wine Finder.
+6. The catalogue is synchronised and eligible products are mapped or excluded.
+7. When the catalogue is ready, complete the Stripe-hosted subscription checkout to start the 14-day trial.
+8. Configure and enable the Wine Finder from WooCommerce > My Next Wine.
 
 No WooCommerce REST key, Somm ID, installation ID or installation secret needs to be entered by the merchant.
 
@@ -50,7 +76,7 @@ After connection, the plugin may send:
 
 * Product and variation identifiers, SKUs, names, descriptions, images, categories, attributes, prices, currency, stock and availability.
 * Shopper bottle mix, budget, wine preferences and food-pairing text when a recommendation is requested.
-* Optional aggregate widget events such as impressions, opens, requests, results, swaps and basket clicks. These are off by default. When the WordPress Consent API is available, they are sent only with positive statistics consent. When it is unavailable, enabling analytics confirms that the merchant has another lawful consent or privacy basis for these aggregate events.
+* Optional widget events such as impressions, opens, requests, results, swaps and basket attempts/outcomes. These are off by default. When the WordPress Consent API is available, they are sent only with positive statistics consent. When it is unavailable, enabling analytics confirms that the merchant has another lawful consent or privacy basis for these events. A successful basket addition is the only recommendation-usefulness signal; the widget does not ask shoppers to rate recommendations.
 * For orders attributed to the Wine Finder: order identifier, currency, total, selected product/variation references and quantities.
 * Technical request, replay-prevention and security metadata.
 
@@ -76,36 +102,35 @@ Uninstall removes local plugin settings and sends a best-effort service revocati
 
 == Frequently Asked Questions ==
 
+= What makes this different from a normal product recommender? =
+
+My Next Wine builds a complete selection around the requested bottle mix and total budget. It uses mapped wine, producer, grape, region, style and note data rather than depending on product titles alone. It also explains compromises and lets the shopper swap one bottle without restarting.
+
+= Does it recommend wines from other shops? =
+
+No. Recommendations are restricted to mapped wines currently available from the connected WooCommerce store.
+
+= What happens if the exact request cannot be met? =
+
+The results identify requirements that could not be fully satisfied and may offer relevant substitutions or a sensible budget alternative. The Wine Finder does not silently present a weaker match as an exact one.
+
 = Does activation send my catalogue? =
 
 No. An authorised administrator must first review the disclosure, accept the Merchant Terms and explicitly connect the store.
+
+= When does the free trial start? =
+
+The trial starts only after the initial catalogue has been prepared and the merchant completes the Stripe-hosted subscription checkout.
 
 = Does My Next Wine sell or fulfil the wine? =
 
 No. My Next Wine provides recommendation and catalogue technology. The WooCommerce merchant is the seller of record and remains responsible for product quality, defects, licensing, age checks, payment, fulfilment, delivery, returns and customer claims.
 
-= Does the plugin need WooCommerce REST API keys? =
-
-No. The plugin uses an ownership challenge and signed server-to-server requests. The installation secret is generated automatically and is not displayed to the merchant or storefront browser.
-
 = What happens before recommendations go into the basket? =
 
-WooCommerce revalidates the selected product or variation, quantity, current price and stock before basket insertion.
-
-= Can I disable it? =
-
-Yes. Disable the storefront widget in WooCommerce > My Next Wine, use Manage subscription to cancel the connected Stripe plan, or uninstall the plugin.
+WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
 
-= 1.0.2 =
-* Added a bounded recommendation timeout chain while retaining the existing longer timeouts for catalogue, billing, cart, swap and configuration operations.
-
-= 1.0.1 =
-* Updated the Merchant Terms and explicit re-acceptance version for worldwide B2B availability, service-level and catalogue-freshness targets, the Fair Usage Policy, mapping and subjective-recommendation disclaimers, and product-quality responsibility.
-
-= 1.0.0 =
-* Initial public WordPress.org release.
-* Added consent-based store connection, secure catalogue synchronisation and the storefront Wine Finder.
-* Added direct Stripe-hosted trial and subscription management.
-* Added live WooCommerce price, stock and basket validation, optional aggregate analytics and attributed-order reporting.
+= 1.0.5 =
+* Added idempotent item-level basket attempt, success and failure attribution. A successful basket addition is the only recommendation-usefulness signal.
