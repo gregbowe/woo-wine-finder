@@ -59,9 +59,9 @@ final class MyNextWine_Woo_Widget {
         $this->rendered = true;
         $settings = $this->settings();
         $widget_id = 'woo-' . wp_generate_uuid4();
-        $heading = (string) ($settings['heading'] ?? 'Need help choosing wine?');
-        $launcher_label = (string) ($settings['launcher_label'] ?? 'Use our wine matcher');
-        $intro = (string) ($settings['intro'] ?? __('Four quick questions and we will pick the perfect wines from our cellar', 'my-next-wine-for-woocommerce'));
+        $heading = (string) ($settings['heading'] ?? 'Not sure what to choose?');
+        $launcher_label = (string) ($settings['launcher_label'] ?? 'Build my wine selection');
+        $intro = (string) ($settings['intro'] ?? __('A complete selection from our available wines, built around your budget, preferences and occasion.', 'my-next-wine-for-woocommerce'));
         $button_label = (string) ($settings['button_label'] ?? 'Add selected to basket');
         $launcher_position = 'right' === ($settings['launcher_position'] ?? 'left') ? 'right' : 'left';
         $launcher_image_id = absint($settings['launcher_image_id'] ?? 0);
@@ -73,6 +73,7 @@ final class MyNextWine_Woo_Widget {
         $configuration_endpoint = rest_url('my-next-wine/v1/configuration');
         $recommendations_endpoint = rest_url('my-next-wine/v1/recommendations');
         $swap_endpoint = rest_url('my-next-wine/v1/swap');
+        $refine_endpoint = rest_url('my-next-wine/v1/refine');
         $events_endpoint = rest_url('my-next-wine/v1/events');
         $cart_endpoint = rest_url('my-next-wine/v1/cart');
         $wp_nonce = wp_create_nonce('wp_rest');

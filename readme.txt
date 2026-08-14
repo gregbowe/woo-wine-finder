@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.6
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -131,6 +131,30 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.12 =
+* Replaced the token over-budget retry with meaningful budget choices approximately 10% below and above the displayed selection total.
+
+= 1.0.11 =
+* Clarified genuine refinement budget errors while keeping the existing selection intact.
+* Added storefront support for AI-interpreted natural-language refinement changes.
+
+= 1.0.10 =
+* Made all Wine Finder bottle categories mutually exclusive using structured wine data plus specialist evidence from mapped names and imported descriptions.
+* Replaced category-stock dead ends with clearly explained, style-aware alternatives from mapped, currently available wines.
+
+= 1.0.9 =
+* Added merchant-configurable Wine Finder bottle categories with a minimum of two and nine supported choices.
+* Passed the configured category mix through recommendations, swaps and refinements while preserving legacy request fields.
+
+= 1.0.8 =
+* Removed the decorative example selection from the opening panel.
+* Clarified the refinement example for exact bottle-mix changes.
+
+= 1.0.7 =
+* Polished the launcher, opening panel, loading states, recommendation cards, quick view and responsive results layout.
+* Added safe server-side selection refinement with one-step undo while preserving existing inventory, mapping, budget and basket validation.
+* Fixed the add-to-basket close animation so the modal keeps its dimensions until closing completes.
 
 = 1.0.5 =
 * Added idempotent item-level basket attempt, success and failure attribution. A successful basket addition is the only recommendation-usefulness signal.

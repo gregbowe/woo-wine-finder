@@ -4,6 +4,7 @@
   const MIN_BOTTLE_COUNT = 1;
   const MAX_BOTTLE_COUNT = 12;
   const MAX_FREE_TEXT_LENGTH = 500;
+  const MAX_REFINEMENT_LENGTH = 240;
   const DEFAULT_BUDGET_MULTIPLIER = 1.2;
   const DEFAULT_BUDGET_ROUNDING_UNIT = 10;
   // Leave headroom below the configured 30-second recommendation target so
@@ -12,6 +13,25 @@
   const CART_TIMEOUT_MS = 15000;
   const SWAP_TIMEOUT_MS = 20000;
   const CONFIGURATION_TIMEOUT_MS = 10000;
+  const MODAL_CLOSE_ANIMATION_MS = 190;
+  const LOADING_MESSAGES = [
+    "Understanding your preferences…",
+    "Checking our available wines…",
+    "Balancing your bottle mix and budget…",
+    "Building your selection…"
+  ];
+  const CATEGORY_DEFINITIONS = Object.freeze([
+    { key: "red", label: "Red", plural: "reds" },
+    { key: "white", label: "White", plural: "whites" },
+    { key: "rose", label: "Rosé", plural: "rosés" },
+    { key: "sparkling", label: "Sparkling", plural: "sparkling wines" },
+    { key: "orange", label: "Orange/Skin-contact", plural: "orange wines" },
+    { key: "petNat", label: "Pét-nat", plural: "pét-nats" },
+    { key: "sherry", label: "Sherry", plural: "sherries" },
+    { key: "otherFortified", label: "Other fortified", plural: "fortified wines" },
+    { key: "dessert", label: "Dessert", plural: "dessert wines" }
+  ]);
+  const LEGACY_WINE_CATEGORIES = Object.freeze(["red", "white", "sparkling", "dessert"]);
 
   const initialiseAllWidgets = () => {
     document.querySelectorAll("[data-mnw-widget]").forEach(initialiseWidget);
@@ -24,6 +44,7 @@
     const endpoint = root.dataset.endpoint;
     const configEndpoint = root.dataset.configEndpoint;
     const swapEndpoint = root.dataset.swapEndpoint;
+    const refineEndpoint = root.dataset.refineEndpoint;
     const eventsEndpoint = root.dataset.eventsEndpoint;
     const analyticsEnabled = root.dataset.mnwAnalyticsEnabled === "true";
     const cartEndpoint = root.dataset.cartEndpoint;
@@ -61,11 +82,19 @@
     const budgetNoticeCopy = root.querySelector("[data-mnw-budget-notice-copy]");
     const showBudgetAlternativeButton = root.querySelector("[data-mnw-show-budget-alternative]");
     const showExactSelectionButton = root.querySelector("[data-mnw-show-exact-selection]");
-    const retryWithBudgetButton = root.querySelector("[data-mnw-retry-with-budget]");
+    const retryWithLowerBudgetButton = root.querySelector("[data-mnw-retry-lower-budget]");
+    const retryWithHigherBudgetButton = root.querySelector("[data-mnw-retry-higher-budget]");
     const selectedCountElement = root.querySelector("[data-mnw-selected-count]");
     const selectedTotalElement = root.querySelector("[data-mnw-selected-total]");
     const addSelectedButton = root.querySelector("[data-mnw-add-selected]");
     const addSelectedLabel = root.querySelector("[data-mnw-add-selected-label]");
+    const refineForm = root.querySelector("[data-mnw-refine-form]");
+    const refineInput = root.querySelector("[data-mnw-refine-input]");
+    const refineSubmit = root.querySelector("[data-mnw-refine-submit]");
+    const refineLabel = root.querySelector("[data-mnw-refine-label]");
+    const refineStatus = root.querySelector("[data-mnw-refine-status]");
+    const refineUndo = root.querySelector("[data-mnw-refine-undo]");
+    const refineExamples = root.querySelector("[data-mnw-refine-examples]");
     const startAgainButton = root.querySelector("[data-mnw-start-again]");
     const progressForm = root.querySelector("[data-mnw-progress-form]");
     const progressResults = root.querySelector("[data-mnw-progress-results]");
@@ -111,7 +140,9 @@
     let currentSelectionMode = "exact";
     let recommendationInFlight = false;
     let swapInFlight = false;
+    let refinementInFlight = false;
     let cartInFlight = false;
+    let previousRefinement = null;
     let storeCurrency = null;
     let storeCurrencySymbol = null;
     let currencyPrecision = 2;
@@ -119,9 +150,16 @@
     let minimumOrder = null;
     let maximumBudget = null;
     let configurationReady = false;
+    let configuredCategories = Array.from(LEGACY_WINE_CATEGORIES);
     let budgetEdited = false;
     let suggestedBudget = null;
+    let retryBudgets = { lower: null, higher: null };
+    let destroyed = false;
     const pageSessionId = createPageSessionId();
+    const loadingMessages = createLoadingMessageController(
+      statusElement,
+      LOADING_MESSAGES
+    );
 
     const refreshBudgetMinimum = (bottleCount) => {
       if (!configurationReady) return;
@@ -303,7 +341,7 @@
 
     const setPhase = (phase) => {
       // Preserve the full results layout while the basket request hands off to the cart page.
-      root.dataset.mnwPhase = phase === "cart" ? "results" : phase;
+      root.dataset.mnwPhase = stableVisualPhase(phase);
       [progressForm, progressResults, progressCart].forEach((step) => {
         if (step) step.classList.remove("mnw-wine-finder__journey-step--active", "mnw-wine-finder__journey-step--complete");
       });
@@ -337,6 +375,7 @@
 
       const currentStep = wizardSteps[currentWizardStep];
       const displayIndex = currentWizardStep + 1;
+      root.dataset.mnwQuestion = String(displayIndex);
       const percentage = (displayIndex / wizardSteps.length) * 100;
       if (wizardCount) wizardCount.textContent = `Question ${displayIndex} of ${wizardSteps.length}`;
       if (wizardBar) wizardBar.style.width = `${percentage}%`;
@@ -367,7 +406,7 @@
         bottleCountInput.value = String(bottleCount);
         if (!Number.isInteger(bottleCount) || bottleCount < MIN_BOTTLE_COUNT || bottleCount > MAX_BOTTLE_COUNT) {
           allocationStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          breakdownInputs[0]?.focus({ preventScroll: true });
+          breakdownInputs.find((input) => !input.disabled)?.focus({ preventScroll: true });
           return false;
         }
       }
@@ -395,6 +434,7 @@
     };
 
     const closeDialog = () => {
+      loadingMessages.stop();
       closeQuickView({ restoreFocus: false });
       if (typeof dialog.close === "function" && dialog.open) dialog.close();
       else dialog.removeAttribute("open");
@@ -403,6 +443,11 @@
       document.body.classList.remove("mnw-wine-finder-open");
       openButton.focus({ preventScroll: true });
     };
+
+    const requestInFlight = () => recommendationInFlight
+      || refinementInFlight
+      || swapInFlight
+      || cartInFlight;
 
     const showError = (message) => {
       statusElement.hidden = true;
@@ -430,7 +475,43 @@
       budgetEdited = true;
       budgetInput.value = String(suggestedBudget);
       if (budgetGuidance) budgetGuidance.hidden = true;
-      if (retryWithBudgetButton) retryWithBudgetButton.hidden = true;
+      form.requestSubmit();
+    };
+
+    const hideRetryBudgetChoices = () => {
+      retryBudgets = { lower: null, higher: null };
+      if (retryWithLowerBudgetButton) retryWithLowerBudgetButton.hidden = true;
+      if (retryWithHigherBudgetButton) retryWithHigherBudgetButton.hidden = true;
+    };
+
+    const setRetryBudgetChoices = (selectionTotal) => {
+      retryBudgets = calculateRetryBudgetChoices(
+        selectionTotal,
+        budgetInput.min,
+        budgetInput.max
+      );
+      const formatter = createCurrencyFormatter(storeCurrency, currencyPrecision);
+      const choices = [
+        [retryWithLowerBudgetButton, retryBudgets.lower, "-10%"],
+        [retryWithHigherBudgetButton, retryBudgets.higher, "+10%"]
+      ];
+      choices.forEach(([button, amount, change]) => {
+        if (!button) return;
+        if (!Number.isFinite(amount) || amount <= 0) {
+          button.hidden = true;
+          return;
+        }
+        button.textContent = `Try ${formatter.format(amount)} (${change})`;
+        button.hidden = false;
+      });
+    };
+
+    const applyRetryBudget = (direction) => {
+      const amount = Number(retryBudgets[direction]);
+      if (!Number.isFinite(amount) || amount <= 0) return;
+      budgetEdited = true;
+      budgetInput.value = String(amount);
+      hideRetryBudgetChoices();
       form.requestSubmit();
     };
 
@@ -538,11 +619,13 @@
         selectionStatus
       );
       summaryElement.textContent = selection.summary || "Chosen from wines currently in stock.";
-      totalElement.textContent = `Total: ${formatter.format(Number(selection.total || 0))}`;
       attachSelectionListeners({
         resultsElement,
         wines: selection.wines,
         currency,
+        currencyPrecision,
+        requestedBudget,
+        resultSummaryElement: totalElement,
         selectedCountElement,
         selectedTotalElement,
         addSelectedButton,
@@ -558,9 +641,12 @@
         budgetNotice.hidden = false;
         budgetNotice.dataset.mnwBudgetState = "alternative";
         budgetNoticeTitle.textContent = "Closest alternatives";
-        budgetNoticeCopy.textContent = `We replaced unavailable or expensive exact matches with similar styles. Total ${formatter.format(alternativeTotal)}${underBudget > 0.0001 ? ` — ${formatter.format(underBudget)} under budget.` : "."}`;
+        budgetNoticeCopy.textContent = recommendationNoticeCopy(
+          selection,
+          `We replaced unavailable or expensive exact matches with similar styles. Total ${formatter.format(alternativeTotal)}${underBudget > 0.0001 ? ` — ${formatter.format(underBudget)} under budget.` : "."}`
+        );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
-        if (retryWithBudgetButton) retryWithBudgetButton.hidden = true;
+        hideRetryBudgetChoices();
         if (showExactSelectionButton) {
           showExactSelectionButton.hidden = false;
           showExactSelectionButton.textContent = `Show exact ${formatter.format(exactTotal)} selection`;
@@ -574,12 +660,15 @@
         budgetNoticeTitle.textContent = exactOverBudget
           ? "Closest complete selection"
           : "Considered substitutions";
-        budgetNoticeCopy.textContent = exactOverBudget
-          ? `We do not have enough exact matches in stock. This selection is ${formatter.format(Number(selection.total || 0))} — ${formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))} over your ${formatter.format(requestedBudget)} budget.`
-          : "We could not match every preference exactly, so we chose the closest suitable alternatives within budget.";
+        budgetNoticeCopy.textContent = recommendationNoticeCopy(
+          selection,
+          exactOverBudget
+            ? `We do not have enough exact matches in stock. This selection is ${formatter.format(Number(selection.total || 0))} — ${formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))} over your ${formatter.format(requestedBudget)} budget.`
+            : "We could not match every preference exactly, so we chose the closest suitable alternatives within budget."
+        );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        setSuggestedBudget(exactOverBudget ? Number(selection.total || 0) : 0, retryWithBudgetButton);
+        setRetryBudgetChoices(exactOverBudget ? Number(selection.total || 0) : 0);
         return;
       }
 
@@ -587,12 +676,15 @@
         budgetNotice.hidden = false;
         budgetNotice.dataset.mnwBudgetState = exactOverBudget ? "over" : "alternative";
         budgetNoticeTitle.textContent = "Considered substitutions";
-        budgetNoticeCopy.textContent = exactOverBudget
-          ? `These are the closest suitable alternatives from current stock. The total is ${formatter.format(Number(selection.total || 0))} — ${formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))} over budget.`
-          : "Some exact matches were unavailable, so we chose the closest suitable alternatives and stayed within budget.";
+        budgetNoticeCopy.textContent = recommendationNoticeCopy(
+          selection,
+          exactOverBudget
+            ? `These are the closest suitable alternatives from current stock. The total is ${formatter.format(Number(selection.total || 0))} — ${formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))} over budget.`
+            : "Some exact matches were unavailable, so we chose the closest suitable alternatives and stayed within budget."
+        );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        setSuggestedBudget(exactOverBudget ? Number(selection.total || 0) : 0, retryWithBudgetButton);
+        setRetryBudgetChoices(exactOverBudget ? Number(selection.total || 0) : 0);
         return;
       }
 
@@ -600,7 +692,7 @@
         budgetNotice.hidden = true;
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        if (retryWithBudgetButton) retryWithBudgetButton.hidden = true;
+        hideRetryBudgetChoices();
         return;
       }
 
@@ -623,13 +715,37 @@
         }
       }
       if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-      setSuggestedBudget(exactTotal, retryWithBudgetButton);
+      setRetryBudgetChoices(exactTotal);
     };
 
     openButton.addEventListener("click", openDialog);
     closeButton.addEventListener("click", closeDialog);
     quickViewCloseButtons.forEach((button) => button.addEventListener("click", () => closeQuickView()));
     notePopupCloseButtons.forEach((button) => button.addEventListener("click", () => closeNotePopup()));
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (notePopup && !notePopup.hidden) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeNotePopup();
+          return;
+        }
+        if (quickView && !quickView.hidden) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeQuickView();
+          return;
+        }
+      }
+      if (event.key !== "Tab") return;
+      if (notePopup && !notePopup.hidden) {
+        trapModalFocus(event, notePopup);
+      } else if (quickView && !quickView.hidden) {
+        trapModalFocus(event, quickView);
+      } else {
+        trapModalFocus(event, dialog);
+      }
+    });
     dialog.addEventListener("cancel", (event) => {
       event.preventDefault();
       if (notePopup && !notePopup.hidden) {
@@ -640,16 +756,34 @@
         closeQuickView();
         return;
       }
-      if (!recommendationInFlight && !cartInFlight) closeDialog();
+      if (!requestInFlight()) closeDialog();
     });
     dialog.addEventListener("click", (event) => {
-      if (event.target === dialog && !recommendationInFlight && !cartInFlight) closeDialog();
+      if (event.target === dialog && !requestInFlight()) closeDialog();
     });
     dialog.addEventListener("close", () => {
+      loadingMessages.stop();
       openButton.setAttribute("aria-expanded", "false");
       document.documentElement.classList.remove("mnw-wine-finder-open");
       document.body.classList.remove("mnw-wine-finder-open");
     });
+
+    let removalObserver = null;
+    const cleanupWidget = () => {
+      if (destroyed) return;
+      destroyed = true;
+      loadingMessages.stop();
+      removalObserver?.disconnect();
+      removalObserver = null;
+    };
+    root.addEventListener("mnw:destroy", cleanupWidget, { once: true });
+    window.addEventListener("pagehide", cleanupWidget, { once: true });
+    if (typeof MutationObserver === "function") {
+      removalObserver = new MutationObserver(() => {
+        if (!root.isConnected) cleanupWidget();
+      });
+      removalObserver.observe(document.documentElement, { childList: true, subtree: true });
+    }
 
     root.querySelectorAll("[data-mnw-wizard-next]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -703,14 +837,14 @@
       errorElement.hidden = true;
       if (budgetGuidance) budgetGuidance.hidden = true;
       selectionElement.hidden = true;
-      statusElement.textContent = "Building your wine selection…";
       statusElement.hidden = false;
+      loadingMessages.start();
       statusElement.focus({ preventScroll: true });
       submitButton.disabled = true;
       submitLabel.textContent = "Finding wines…";
 
       try {
-        const payload = readRecommendationForm(form);
+        const payload = readRecommendationForm(form, configuredCategories);
         validateRecommendationPayload(
           payload,
           minimumBottlePrice,
@@ -768,6 +902,7 @@
           showError(error.message || "We could not build the wine selection.");
         }
       } finally {
+        loadingMessages.stop();
         recommendationInFlight = false;
         setBusy(false);
         submitButton.disabled = false;
@@ -775,6 +910,22 @@
         updateAllocationStatus(form, allocationStatus, submitButton);
       }
     });
+
+    const refreshCurrentSelectedState = () => {
+      if (!currentRecommendation) return;
+      updateSelectedState({
+        resultsElement,
+        wines: currentRecommendation.wines,
+        currency: currentRecommendation.currency || storeCurrency,
+        currencyPrecision,
+        requestedBudget: Number(currentRecommendation.requestedBudget || currentRequest?.budget || 0),
+        resultSummaryElement: totalElement,
+        selectedCountElement,
+        selectedTotalElement,
+        addSelectedButton,
+        addSelectedLabel
+      });
+    };
 
     const swapWine = async (wineToReplace, trigger) => {
       if (!swapEndpoint || !currentRecommendation || !currentRequest || swapInFlight || cartInFlight) return;
@@ -822,6 +973,7 @@
         };
         showRecommendationSelection("exact");
         restoreSelectedWineIds(resultsElement, selectedIds, response.wine.sommWineId, wineToReplace.sommWineId);
+        refreshCurrentSelectedState();
         sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "SWAP");
       } catch (error) {
         showError(error.message || "That wine could not be swapped. Please try again.");
@@ -834,6 +986,102 @@
         }
       }
     };
+
+    const announceRefinement = (message, isError = false) => {
+      if (!refineStatus) return;
+      refineStatus.textContent = message;
+      refineStatus.hidden = false;
+      refineStatus.classList.toggle("mnw-wine-finder__refinement-status--error", isError);
+      refineStatus.setAttribute("role", isError ? "alert" : "status");
+      refineStatus.setAttribute("aria-live", isError ? "assertive" : "polite");
+    };
+
+    refineForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!refineEndpoint || !currentRecommendation || !currentRequest
+          || refinementInFlight || recommendationInFlight || cartInFlight) return;
+
+      const instruction = String(refineInput?.value || "").replace(/\s+/g, " ").trim();
+      if (!instruction) {
+        announceRefinement("Tell us what you want to change.", true);
+        refineInput?.focus({ preventScroll: true });
+        return;
+      }
+      if (instruction.length > MAX_REFINEMENT_LENGTH) {
+        announceRefinement(`Keep the refinement to ${MAX_REFINEMENT_LENGTH} characters or fewer.`, true);
+        refineInput?.focus({ preventScroll: true });
+        return;
+      }
+
+      const snapshot = createRefinementSnapshot(
+        currentRecommendation,
+        currentRequest,
+        currentSelectionMode,
+        getSelectedWineIds(resultsElement)
+      );
+      refinementInFlight = true;
+      setBusy(true);
+      const originalLabel = refineLabel?.textContent || "Refine selection";
+      if (refineSubmit) refineSubmit.disabled = true;
+      if (refineLabel) refineLabel.textContent = "Refining…";
+      announceRefinement("Refining your current selection…");
+
+      try {
+        const result = await fetchJson(refineEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(createRefinementRequestPayload(
+            currentRequest,
+            currentRecommendation,
+            instruction
+          )),
+          cache: "no-store"
+        }, REQUEST_TIMEOUT_MS, "The refinement took too long. Your current selection has been kept.");
+
+        validateRefinementResponse(result, configuredCategories);
+        storeCurrency = normaliseCurrencyCode(result.currency || storeCurrency);
+        result.currency = storeCurrency;
+        result.exactSelection = {
+          summary: result.summary,
+          total: result.total,
+          explanation: String(result.customerMessage || "").trim(),
+          matchedPreferences: result.matchedPreferences,
+          unmetPreferences: result.unmetPreferences,
+          wines: result.wines
+        };
+
+        previousRefinement = snapshot;
+        currentRequest = result.refinedRequest;
+        currentRecommendation = result;
+        showRecommendationSelection("exact");
+        refineInput.value = "";
+        if (refineUndo) refineUndo.hidden = false;
+        announceRefinement(result.refinementSummary || "Your selection has been refined.");
+      } catch (error) {
+        announceRefinement(
+          refinementFailureMessage(error, storeCurrency, currencyPrecision),
+          true
+        );
+      } finally {
+        refinementInFlight = false;
+        setBusy(false);
+        if (refineSubmit) refineSubmit.disabled = false;
+        if (refineLabel) refineLabel.textContent = originalLabel;
+      }
+    });
+
+    refineUndo?.addEventListener("click", () => {
+      if (!previousRefinement || refinementInFlight || cartInFlight) return;
+      const snapshot = previousRefinement;
+      previousRefinement = null;
+      currentRecommendation = snapshot.recommendation;
+      currentRequest = snapshot.request;
+      showRecommendationSelection(snapshot.selectionMode);
+      restoreSelectedWineIds(resultsElement, snapshot.selectedIds);
+      refreshCurrentSelectedState();
+      refineUndo.hidden = true;
+      announceRefinement("The most recent refinement was undone.");
+    });
 
     addSelectedButton.addEventListener("click", async () => {
       if (!currentRecommendation || cartInFlight) return;
@@ -871,6 +1119,7 @@
           latencyMs: elapsedMilliseconds(cartStartedAt),
           items: cartItems
         });
+        await closeDialogAfterCartSuccess(root, dialog, MODAL_CLOSE_ANIMATION_MS);
         window.location.assign(cartUrl);
       } catch (error) {
         sendAnalytics(analyticsEnabled, eventsEndpoint, currentRecommendation.sessionId, "ADD_TO_CART_FAILED", {
@@ -891,6 +1140,9 @@
           resultsElement,
           wines: currentRecommendation.wines,
           currency: currentRecommendation.currency || storeCurrency,
+          currencyPrecision,
+          requestedBudget: Number(currentRecommendation.requestedBudget || currentRequest?.budget || 0),
+          resultSummaryElement: totalElement,
           selectedCountElement,
           selectedTotalElement,
           addSelectedButton,
@@ -910,9 +1162,13 @@
     });
 
     trySuggestedBudgetButton?.addEventListener("click", applySuggestedBudget);
-    retryWithBudgetButton?.addEventListener("click", applySuggestedBudget);
+    retryWithLowerBudgetButton?.addEventListener("click", () => applyRetryBudget("lower"));
+    retryWithHigherBudgetButton?.addEventListener("click", () => applyRetryBudget("higher"));
     editPreferencesButton?.addEventListener("click", () => {
       currentRecommendation = null;
+      previousRefinement = null;
+      if (refineUndo) refineUndo.hidden = true;
+      if (refineStatus) refineStatus.hidden = true;
       selectionElement.hidden = true;
       if (budgetGuidance) budgetGuidance.hidden = true;
       form.hidden = false;
@@ -925,10 +1181,13 @@
       currentRecommendation = null;
       currentRequest = null;
       currentSelectionMode = "exact";
+      previousRefinement = null;
+      if (refineUndo) refineUndo.hidden = true;
+      if (refineStatus) refineStatus.hidden = true;
       selectionElement.hidden = true;
       if (budgetNotice) budgetNotice.hidden = true;
       if (budgetGuidance) budgetGuidance.hidden = true;
-      if (retryWithBudgetButton) retryWithBudgetButton.hidden = true;
+      hideRetryBudgetChoices();
       errorElement.hidden = true;
       statusElement.hidden = true;
       form.hidden = false;
@@ -949,8 +1208,17 @@
           throw new Error("The linked merchant currency range is invalid.");
         }
 
+        configuredCategories = normaliseConfiguredCategories(configuration.wineCategories);
+        applyCategoryConfiguration(root, breakdownInputs, configuredCategories);
+        bottleCountInput.value = String(readBreakdownTotal(form));
+        updateAllocationStatus(form, allocationStatus, submitButton);
+        updateBreakdownMaximums(breakdownInputs);
+        if (refineExamples) refineExamples.textContent = refinementExamples(configuredCategories);
         configurationReady = true;
         refreshBudgetMinimum(normaliseBottleCount(bottleCountInput.value));
+        if (refineInput) {
+          refineInput.placeholder = `For example: Make it ${createCurrencyFormatter(storeCurrency, currencyPrecision).format(10)} cheaper.`;
+        }
         root.hidden = false;
         openButton.disabled = false;
         openButton.setAttribute("aria-busy", "false");
@@ -973,17 +1241,23 @@
     showWizardStep(0, { focus: false });
   };
 
-  const readRecommendationForm = (form) => {
+  const readRecommendationForm = (form, configuredCategories = LEGACY_WINE_CATEGORIES) => {
     const data = new FormData(form);
+    const categoryCounts = {};
+    configuredCategories.forEach((category) => {
+      const input = form.querySelector(`[data-mnw-category="${category}"]`);
+      categoryCounts[category] = Number(input?.value || 0);
+    });
     return {
       bottleCount: Number(data.get("bottleCount")),
       budget: Number(data.get("budget")),
-      numberRed: Number(data.get("numberRed")),
-      numberWhite: Number(data.get("numberWhite")),
-      numberSparkling: Number(data.get("numberSparkling")),
-      numberDessert: Number(data.get("numberDessert")),
+      numberRed: Number(categoryCounts.red || 0),
+      numberWhite: Number(categoryCounts.white || 0),
+      numberSparkling: Number(categoryCounts.sparkling || 0),
+      numberDessert: Number(categoryCounts.dessert || 0),
       usualWines: String(data.get("usualWines") || "").trim(),
-      foodPairings: String(data.get("foodPairings") || "").trim()
+      foodPairings: String(data.get("foodPairings") || "").trim(),
+      categoryCounts
     };
   };
 
@@ -1007,7 +1281,17 @@
     if (payload.budget > maximumBudget) {
       throw new Error(`The maximum supported budget is ${formatter.format(maximumBudget)}.`);
     }
-    const counts = [payload.numberRed, payload.numberWhite, payload.numberSparkling, payload.numberDessert];
+    const categoryKeys = payload.categoryCounts && typeof payload.categoryCounts === "object"
+      ? Object.keys(payload.categoryCounts)
+      : [];
+    const allowedCategoryKeys = new Set(CATEGORY_DEFINITIONS.map((category) => category.key));
+    if (categoryKeys.length > 0
+        && (categoryKeys.length < 2 || categoryKeys.some((key) => !allowedCategoryKeys.has(key)))) {
+      throw new Error("The available bottle categories are invalid. Refresh and try again.");
+    }
+    const counts = categoryKeys.length > 0
+      ? Object.values(payload.categoryCounts)
+      : [payload.numberRed, payload.numberWhite, payload.numberSparkling, payload.numberDessert];
     if (counts.some((count) => !Number.isInteger(count) || count < 0)) {
       throw new Error("Every bottle mix value must be a whole number of zero or more.");
     }
@@ -1058,6 +1342,7 @@
       const card = document.createElement("article");
       card.className = "mnw-wine-card mnw-wine-card--selected";
       card.dataset.mnwWineCard = "true";
+      card.dataset.mnwSelected = "true";
 
       const selectionRow = document.createElement("div");
       selectionRow.className = "mnw-wine-card__selection-row";
@@ -1186,7 +1471,7 @@
     options.resultsElement.querySelectorAll("[data-mnw-wine-checkbox]").forEach((checkbox) => {
       checkbox.addEventListener("change", () => {
         const card = checkbox.closest("[data-mnw-wine-card]");
-        card?.classList.toggle("mnw-wine-card--selected", checkbox.checked);
+        updateWineCardSelectionState(card, checkbox);
         updateSelectedState(options);
       });
     });
@@ -1194,17 +1479,222 @@
   };
 
   const updateSelectedState = ({
-    resultsElement, wines, currency, selectedCountElement,
+    resultsElement, wines, currency, currencyPrecision, requestedBudget,
+    resultSummaryElement, selectedCountElement,
     selectedTotalElement, addSelectedButton, addSelectedLabel
   }) => {
     const selectedWines = getSelectedWines(resultsElement, wines);
-    const total = selectedWines.reduce((sum, wine) => sum + Number(wine.price || 0), 0);
-    selectedCountElement.textContent = `${selectedWines.length} wine${selectedWines.length === 1 ? "" : "s"} selected`;
-    selectedTotalElement.textContent = `Selected total: ${createCurrencyFormatter(currency).format(total)}`;
-    addSelectedButton.disabled = selectedWines.length === 0;
-    addSelectedLabel.textContent = selectedWines.length === 0
-      ? "Select at least one wine"
-      : `Add ${selectedWines.length} selected wine${selectedWines.length === 1 ? "" : "s"}`;
+    const summary = calculateSelectionSummary(
+      selectedWines,
+      currency,
+      requestedBudget,
+      currencyPrecision
+    );
+    selectedCountElement.textContent = `${summary.count} wine${summary.count === 1 ? "" : "s"} selected`;
+    selectedTotalElement.textContent = `Selected total: ${summary.formattedTotal}`;
+    if (resultSummaryElement) {
+      resultSummaryElement.textContent = `${summary.count} wine${summary.count === 1 ? "" : "s"} selected · ${summary.formattedTotal} of ${summary.formattedBudget}`;
+    }
+    const action = selectionActionState(summary.count);
+    addSelectedButton.disabled = action.disabled;
+    addSelectedButton.setAttribute("aria-disabled", String(action.disabled));
+    addSelectedLabel.textContent = action.label;
+  };
+
+  const selectionActionState = (count) => {
+    const selectedCount = Number.isInteger(Number(count)) ? Math.max(0, Number(count)) : 0;
+    return {
+      disabled: selectedCount === 0,
+      label: selectedCount === 0
+        ? "Select at least one wine"
+        : `Add ${selectedCount} selected wine${selectedCount === 1 ? "" : "s"}`
+    };
+  };
+
+  const updateWineCardSelectionState = (card, checkbox) => {
+    if (!card || !checkbox) return;
+    const selected = Boolean(checkbox.checked);
+    card.classList.toggle("mnw-wine-card--selected", selected);
+    card.dataset.mnwSelected = String(selected);
+    const label = card.querySelector(".mnw-wine-card__checkbox-label");
+    if (label) label.textContent = selected ? "Selected" : "Not selected";
+  };
+
+  const calculateSelectionSummary = (
+    selectedWines,
+    currency,
+    requestedBudget,
+    currencyPrecision = null,
+    locale = null
+  ) => {
+    const wines = Array.isArray(selectedWines) ? selectedWines : [];
+    const total = wines.reduce((sum, wine) => sum + Number(wine?.price || 0), 0);
+    const budget = Number(requestedBudget || 0);
+    const formatter = createCurrencyFormatter(currency, currencyPrecision, locale);
+    return {
+      count: wines.length,
+      total,
+      budget,
+      formattedTotal: formatter.format(total),
+      formattedBudget: formatter.format(budget)
+    };
+  };
+
+  const createLoadingMessageController = (
+    element,
+    messages,
+    intervalMilliseconds = 1800,
+    scheduler = globalThis
+  ) => {
+    const safeMessages = Array.isArray(messages) && messages.length > 0
+      ? messages.map((message) => String(message))
+      : ["Building your selection…"];
+    let timer = null;
+    let index = 0;
+    const stop = () => {
+      if (timer !== null) scheduler.clearInterval(timer);
+      timer = null;
+    };
+    const start = () => {
+      stop();
+      index = 0;
+      if (element) element.textContent = safeMessages[index];
+      timer = scheduler.setInterval(() => {
+        index = (index + 1) % safeMessages.length;
+        if (element) element.textContent = safeMessages[index];
+      }, intervalMilliseconds);
+    };
+    return { start, stop, isRunning: () => timer !== null };
+  };
+
+  const clonePlainData = (value) => {
+    if (typeof structuredClone === "function") return structuredClone(value);
+    return JSON.parse(JSON.stringify(value));
+  };
+
+  const createRefinementSnapshot = (recommendation, request, selectionMode, selectedIds) => ({
+    recommendation: clonePlainData(recommendation),
+    request: clonePlainData(request),
+    selectionMode: selectionMode === "alternative" ? "alternative" : "exact",
+    selectedIds: new Set(Array.from(selectedIds || []).map(String))
+  });
+
+  const createRefinementRequestPayload = (request, recommendation, instruction) => ({
+    originalRequest: request,
+    originalRequirementInterpretation: String(recommendation?.requirementInterpretation || ""),
+    currentWineIds: Array.isArray(recommendation?.wines)
+      ? recommendation.wines.map((wine) => wine?.sommWineId)
+      : [],
+    instruction: String(instruction || "")
+  });
+
+  const validateRefinementResponse = (result, configuredCategories = null) => {
+    if (!result || !result.sessionId || !result.refinedRequest) {
+      throw new Error("The refinement response was incomplete. Your current selection has been kept.");
+    }
+    const wines = Array.isArray(result.wines) ? result.wines : [];
+    const bottleCount = Number(result.refinedRequest.bottleCount);
+    const refinedCounts = result.refinedRequest.categoryCounts;
+    const refinedCategoryKeys = refinedCounts && typeof refinedCounts === "object"
+      ? Object.keys(refinedCounts)
+      : [];
+    if (Array.isArray(configuredCategories)
+        && (refinedCategoryKeys.length !== configuredCategories.length
+          || configuredCategories.some((category) => !refinedCategoryKeys.includes(category))
+          || Object.values(refinedCounts).some((count) => !Number.isInteger(Number(count)) || Number(count) < 0)
+          || Object.values(refinedCounts).reduce((sum, count) => sum + Number(count), 0) !== bottleCount)) {
+      throw new Error("The refinement changed an unavailable bottle category. Your current selection has been kept.");
+    }
+    const ids = wines.map((wine) => String(wine?.sommWineId || ""));
+    if (!Number.isInteger(bottleCount)
+        || wines.length !== bottleCount
+        || ids.some((id) => !/^\d+$/.test(id))
+        || new Set(ids).size !== ids.length
+        || wines.some((wine) => !Number.isFinite(Number(wine?.price)) || Number(wine.price) <= 0)) {
+      throw new Error("The refinement response was invalid. Your current selection has been kept.");
+    }
+    return true;
+  };
+
+  const refinementFailureMessage = (
+    error,
+    currency,
+    currencyPrecision = null,
+    locale = null
+  ) => {
+    const suggestedBudget = Number(error?.details?.suggestedBudget);
+    if (error?.details?.code === "BUDGET_INCREASE_REQUIRED"
+        && Number.isFinite(suggestedBudget)
+        && suggestedBudget > 0) {
+      const formatted = createCurrencyFormatter(
+        currency,
+        currencyPrecision,
+        locale
+      ).format(suggestedBudget);
+      return `That exact refinement needs at least ${formatted}. Your current selection has been kept.`;
+    }
+    const message = String(
+      error?.message || "We could not refine that selection."
+    ).trim();
+    return /current selection has been kept/i.test(message)
+      ? message
+      : `${message}${/[.!?]$/.test(message) ? "" : "."} Your current selection has been kept.`;
+  };
+
+  const stableVisualPhase = (phase) => phase === "cart" ? "results" : phase;
+
+  const trapModalFocus = (event, container) => {
+    if (!event || !container) return false;
+    const focusable = Array.from(container.querySelectorAll(
+      "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+    )).filter((element) => !element.hidden
+      && element.getAttribute?.("aria-hidden") !== "true"
+      && (typeof element.getClientRects !== "function" || element.getClientRects().length > 0));
+    if (focusable.length === 0) return false;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = typeof document !== "undefined" ? document.activeElement : event.activeElement;
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus({ preventScroll: true });
+      return true;
+    }
+    if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+      return true;
+    }
+    return false;
+  };
+
+  const closeDialogAfterCartSuccess = (root, dialog, duration = MODAL_CLOSE_ANIMATION_MS) => {
+    if (!root || !dialog) return Promise.resolve();
+    const dimensions = dialog.getBoundingClientRect();
+    root.style.setProperty("--mnw-closing-width", `${dimensions.width}px`);
+    root.style.setProperty("--mnw-closing-height", `${dimensions.height}px`);
+    root.classList.add("mnw-wine-finder--closing");
+
+    return new Promise((resolve) => {
+      let completed = false;
+      let timer = null;
+      const finish = () => {
+        if (completed) return;
+        completed = true;
+        if (timer !== null) globalThis.clearTimeout(timer);
+        dialog.removeEventListener?.("animationend", onAnimationEnd);
+        if (typeof dialog.close === "function" && dialog.open) dialog.close();
+        else dialog.removeAttribute?.("open");
+        root.classList.remove("mnw-wine-finder--closing");
+        root.style.removeProperty("--mnw-closing-width");
+        root.style.removeProperty("--mnw-closing-height");
+        resolve();
+      };
+      const onAnimationEnd = (event) => {
+        if (event.target === dialog) finish();
+      };
+      dialog.addEventListener?.("animationend", onAnimationEnd);
+      timer = globalThis.setTimeout(finish, Math.max(0, duration) + 50);
+    });
   };
 
   const getSelectedWines = (resultsElement, wines) => {
@@ -1224,8 +1714,10 @@
       checkbox.checked = checkbox.dataset.sommWineId === String(replacementId)
         ? replacementShouldBeSelected
         : selectedIds.has(String(checkbox.dataset.sommWineId));
-      checkbox.closest("[data-mnw-wine-card]")
-        ?.classList.toggle("mnw-wine-card--selected", checkbox.checked);
+      updateWineCardSelectionState(
+        checkbox.closest("[data-mnw-wine-card]"),
+        checkbox
+      );
     });
   };
 
@@ -1478,7 +1970,7 @@
 
   const fetchJson = async (url, options, timeoutMs, timeoutMessage) => {
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = globalThis.setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await fetch(url, { ...options, signal: controller.signal });
       const text = await response.text();
@@ -1498,7 +1990,7 @@
       if (error.name === "AbortError") throw new Error(timeoutMessage);
       throw error;
     } finally {
-      window.clearTimeout(timeout);
+      globalThis.clearTimeout(timeout);
     }
   };
 
@@ -1569,6 +2061,56 @@
       .filter(Boolean)));
   };
 
+  const normaliseConfiguredCategories = (value) => {
+    if (value === undefined || value === null) {
+      return Array.from(LEGACY_WINE_CATEGORIES);
+    }
+    if (!Array.isArray(value)) {
+      throw new Error("The shop's Wine Finder categories are invalid.");
+    }
+    const allowed = new Set(CATEGORY_DEFINITIONS.map((category) => category.key));
+    const selected = Array.from(new Set(value.map((category) => String(category || "").trim())))
+      .filter(Boolean);
+    if (selected.length < 2 || selected.some((category) => !allowed.has(category))) {
+      throw new Error("The shop must configure at least two valid Wine Finder categories.");
+    }
+    return CATEGORY_DEFINITIONS
+      .map((category) => category.key)
+      .filter((category) => selected.includes(category));
+  };
+
+  const recommendationNoticeCopy = (selection, fallback) => {
+    const explanation = String(selection?.explanation || "").replace(/\s+/g, " ").trim();
+    return explanation || String(fallback || "").trim();
+  };
+
+  const applyCategoryConfiguration = (root, inputs, categories) => {
+    const selected = new Set(categories);
+    inputs.forEach((input) => {
+      const enabled = selected.has(input.dataset.mnwCategory);
+      input.disabled = !enabled;
+      input.required = enabled;
+      input.value = "0";
+      const field = input.closest("[data-mnw-category-field]");
+      if (field) field.hidden = !enabled;
+    });
+    const activeInputs = inputs.filter((input) => !input.disabled);
+    if (activeInputs.length >= 2) {
+      activeInputs[0].value = "3";
+      activeInputs[1].value = "3";
+    }
+    root.dataset.mnwCategories = categories.join(",");
+  };
+
+  const refinementExamples = (categories) => {
+    const definitions = categories
+      .map((key) => CATEGORY_DEFINITIONS.find((category) => category.key === key))
+      .filter(Boolean);
+    const first = definitions[0]?.plural || "bottles";
+    const second = definitions[1]?.plural || "other bottles";
+    return `Try “Make it 4 ${first} and 2 ${second}”, “Give me a better gift bottle” or “Make the selection more adventurous”.`;
+  };
+
   const normaliseBottleCount = (value) => {
     const parsed = Number(value);
     if (!Number.isInteger(parsed)) return 6;
@@ -1627,9 +2169,9 @@
     budgetHelp.textContent = `Minimum ${formatter.format(minimumBudget)} for ${bottleCount} ${bottleLabel}.`;
   };
 
-  const readBreakdownTotal = (form) => ["numberRed", "numberWhite", "numberSparkling", "numberDessert"]
-    .reduce((sum, name) => {
-      const value = Number(form.elements.namedItem(name).value);
+  const readBreakdownTotal = (form) => Array.from(form.querySelectorAll("[data-mnw-breakdown]:not(:disabled)"))
+    .reduce((sum, input) => {
+      const value = Number(input.value);
       return sum + (Number.isFinite(value) ? value : 0);
     }, 0);
 
@@ -1682,7 +2224,7 @@
     return parsed;
   };
 
-  const createCurrencyFormatter = (currency, precision = null) => {
+  const createCurrencyFormatter = (currency, precision = null, locale = null) => {
     const code = normaliseCurrencyCode(currency);
     const options = { style: "currency", currency: code };
     if (Number.isInteger(precision)) {
@@ -1690,7 +2232,10 @@
       options.maximumFractionDigits = precision;
     }
     return new Intl.NumberFormat(
-      document.documentElement.lang || navigator.language || "en",
+      locale
+        || (typeof document !== "undefined" ? document.documentElement?.lang : null)
+        || (typeof navigator !== "undefined" ? navigator.language : null)
+        || "en",
       options
     );
   };
@@ -1711,6 +2256,32 @@
     return Math.round((Number(value) + Number.EPSILON) * factor) / factor;
   };
 
+  const calculateRetryBudgetChoices = (
+    selectionTotal,
+    minimumBudget = null,
+    maximumBudget = null
+  ) => {
+    const total = Number(selectionTotal);
+    if (!Number.isFinite(total) || total <= 0) {
+      return { lower: null, higher: null };
+    }
+
+    const minimum = Number(minimumBudget);
+    const maximum = Number(maximumBudget);
+    const lower = Math.round(total * 0.9);
+    const higher = Math.round(total * 1.1);
+    const lowerAllowed = lower > 0
+      && lower < total
+      && (!Number.isFinite(minimum) || minimum <= 0 || lower >= minimum);
+    const higherAllowed = higher > total
+      && (!Number.isFinite(maximum) || maximum <= 0 || higher <= maximum);
+
+    return {
+      lower: lowerAllowed ? lower : null,
+      higher: higherAllowed ? higher : null
+    };
+  };
+
   const loadWidgetConfiguration = async (endpoint) => {
     if (!endpoint) throw new Error("The Wine Finder configuration endpoint is missing.");
     return fetchJson(endpoint, {
@@ -1720,6 +2291,30 @@
     }, CONFIGURATION_TIMEOUT_MS, "The wine finder configuration took too long to load.");
   };
 
-  document.addEventListener("DOMContentLoaded", initialiseAllWidgets);
-  initialiseAllWidgets();
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+      calculateRetryBudgetChoices,
+      calculateSelectionSummary,
+      closeDialogAfterCartSuccess,
+      createCurrencyFormatter,
+      createLoadingMessageController,
+      createRefinementRequestPayload,
+      createRefinementSnapshot,
+      normaliseConfiguredCategories,
+      recommendationNoticeCopy,
+      readRecommendationForm,
+      refinementFailureMessage,
+      refinementExamples,
+      fetchJson,
+      selectionActionState,
+      stableVisualPhase,
+      trapModalFocus,
+      validateRefinementResponse
+    };
+  }
+
+  if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", initialiseAllWidgets);
+    initialiseAllWidgets();
+  }
 })();

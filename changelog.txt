@@ -19,6 +19,30 @@
 
 *** My Next Wine for WooCommerce Changelog ***
 
+2026-08-14 - version 1.0.12
+* Replaced the token over-budget retry with meaningful budget choices approximately 10% below and above the displayed selection total.
+
+2026-08-14 - version 1.0.11
+* Clarified genuine refinement budget errors while keeping the existing selection intact.
+* Added storefront support for AI-interpreted natural-language refinement changes.
+
+2026-08-14 - version 1.0.10
+* Made every numerical bottle category mutually exclusive, including Pét-nat, Sherry, orange wine and Port handling.
+* Return and explain the closest available category alternatives instead of rejecting a selection for a category shortage.
+
+2026-08-14 - version 1.0.9
+* Added merchant-configurable Wine Finder bottle categories with a minimum of two and nine supported choices.
+* Kept older plugin and backend request shapes compatible for staged deployment.
+
+2026-08-14 - version 1.0.8
+* Removed the decorative example selection from the opening panel.
+* Clarified the refinement example for exact bottle-mix changes.
+
+2026-08-14 - version 1.0.7
+* Polished the Wine Finder launcher, first question, loading experience, results summary, cards and quick view.
+* Added safe server-side selection refinement with one-step undo.
+* Kept the modal dimensions stable through successful basket closing.
+
 2026-08-10 - version 1.0.5
 * Added idempotent item-level basket attempt, success and failure attribution.
 * A successful basket addition is the only recommendation-usefulness signal; no shopper rating is requested.

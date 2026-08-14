@@ -9,6 +9,11 @@ if (!defined('ABSPATH')) {
 
 final class MyNextWine_Woo_API_Client {
     private const SIGNATURE_SKEW_SECONDS = 300;
+    private const DEFAULT_WINE_CATEGORIES = array('red', 'white', 'rose', 'sparkling');
+    private const WINE_CATEGORY_KEYS = array(
+        'red', 'white', 'rose', 'sparkling', 'orange', 'petNat',
+        'sherry', 'otherFortified', 'dessert',
+    );
 
     /** @return array<string,mixed> */
     public function settings(): array {
@@ -33,12 +38,13 @@ final class MyNextWine_Woo_API_Client {
             'inherit_theme_styles' => 'yes',
             'accent_color' => '#722f37',
             'accent_text_color' => '#ffffff',
-            'heading' => __('Need help choosing wine?', 'my-next-wine-for-woocommerce'),
-            'intro' => __('Four quick questions and we will pick the perfect wines from our cellar', 'my-next-wine-for-woocommerce'),
-            'launcher_label' => __('Use our wine matcher', 'my-next-wine-for-woocommerce'),
+            'heading' => __('Not sure what to choose?', 'my-next-wine-for-woocommerce'),
+            'intro' => __('A complete selection from our available wines, built around your budget, preferences and occasion.', 'my-next-wine-for-woocommerce'),
+            'launcher_label' => __('Build my wine selection', 'my-next-wine-for-woocommerce'),
             'button_label' => __('Add selected to basket', 'my-next-wine-for-woocommerce'),
             'show_mnw_notes' => 'no',
             'show_mnw_rating' => 'no',
+            'wine_categories' => self::DEFAULT_WINE_CATEGORIES,
         );
         $saved = get_option(MYNEXTWINE_WOO_OPTION, array());
         $settings = wp_parse_args(is_array($saved) ? $saved : array(), $defaults);
@@ -47,15 +53,24 @@ final class MyNextWine_Woo_API_Client {
             array(
                 "Answer a few questions and get a selection from this shop's current range.",
                 'Four quick questions. We will choose from our cellar.',
+                'Four quick questions and we will pick the perfect wines from our cellar',
             ),
             true
         )) {
-            $settings['intro'] = __('Four quick questions and we will pick the perfect wines from our cellar', 'my-next-wine-for-woocommerce');
+            $settings['intro'] = __('A complete selection from our available wines, built around your budget, preferences and occasion.', 'my-next-wine-for-woocommerce');
         }
-        if ('Find my wines' === ($settings['launcher_label'] ?? '')) {
-            $settings['launcher_label'] = __('Use our wine matcher', 'my-next-wine-for-woocommerce');
+        if ('Need help choosing wine?' === ($settings['heading'] ?? '')) {
+            $settings['heading'] = __('Not sure what to choose?', 'my-next-wine-for-woocommerce');
+        }
+        if (in_array(
+            ($settings['launcher_label'] ?? ''),
+            array('Find my wines', 'Use our wine matcher'),
+            true
+        )) {
+            $settings['launcher_label'] = __('Build my wine selection', 'my-next-wine-for-woocommerce');
         }
         $settings['api_base_url'] = $this->default_api_base_url();
+        $settings['wine_categories'] = $this->normalise_wine_categories($settings['wine_categories'] ?? null);
         $settings['installation_secret'] = $this->unprotect_secret((string) ($settings['installation_secret'] ?? ''));
         return $settings;
     }
@@ -162,11 +177,27 @@ final class MyNextWine_Woo_API_Client {
     }
 
     /** @return array<string,mixed>|WP_Error */
-    public function update_display_settings(bool $show_notes, bool $show_rating) {
-        return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', array(
+    public function update_display_settings(bool $show_notes, bool $show_rating, ?array $wine_categories = null) {
+        $payload = array(
             'showMyNextWineNotes' => $show_notes,
             'showMyNextWineRating' => $show_rating,
-        ));
+        );
+        // Omitting this field preserves custom settings when an older caller
+        // invokes the two-argument method during a staged deployment.
+        if (null !== $wine_categories) {
+            $payload['wineCategories'] = $this->normalise_wine_categories($wine_categories);
+        }
+        return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', $payload);
+    }
+
+    /** @param mixed $value @return array<int,string> */
+    public function normalise_wine_categories($value): array {
+        if (!is_array($value)) {
+            return self::DEFAULT_WINE_CATEGORIES;
+        }
+        $selected = array_values(array_unique(array_map('strval', $value)));
+        $selected = array_values(array_intersect(self::WINE_CATEGORY_KEYS, $selected));
+        return count($selected) >= 2 ? $selected : self::DEFAULT_WINE_CATEGORIES;
     }
 
     /** @return array<string,mixed>|WP_Error */

@@ -9,6 +9,7 @@ if (!defined('ABSPATH')) { exit; }
   data-config-endpoint="<?php echo esc_url($configuration_endpoint); ?>"
   data-endpoint="<?php echo esc_url($recommendations_endpoint); ?>"
   data-swap-endpoint="<?php echo esc_url($swap_endpoint); ?>"
+  data-refine-endpoint="<?php echo esc_url($refine_endpoint); ?>"
   data-events-endpoint="<?php echo esc_url($events_endpoint); ?>"
   data-cart-endpoint="<?php echo esc_url($cart_endpoint); ?>"
   data-mnw-analytics-enabled="<?php echo esc_attr($analytics_enabled); ?>"
@@ -138,11 +139,11 @@ if (!defined('ABSPATH')) { exit; }
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                <?php echo esc_html__('Choose 1 to 12 bottles across the four styles.', 'my-next-wine-for-woocommerce'); ?>
+                <?php echo esc_html__('Choose 1 to 12 bottles across the categories available in this shop.', 'my-next-wine-for-woocommerce'); ?>
               </p>
 
               <div class="mnw-wine-finder__breakdown-grid">
-                <div class="mnw-field">
+                <div class="mnw-field" data-mnw-category-field="red">
                   <label
                     class="mnw-field__label"
                     for="mnw-red-<?php echo esc_attr($widget_id); ?>"
@@ -162,10 +163,11 @@ if (!defined('ABSPATH')) { exit; }
                     inputmode="numeric"
                     required
                     data-mnw-breakdown
+                    data-mnw-category="red"
                   >
                 </div>
 
-                <div class="mnw-field">
+                <div class="mnw-field" data-mnw-category-field="white">
                   <label
                     class="mnw-field__label"
                     for="mnw-white-<?php echo esc_attr($widget_id); ?>"
@@ -185,10 +187,16 @@ if (!defined('ABSPATH')) { exit; }
                     inputmode="numeric"
                     required
                     data-mnw-breakdown
+                    data-mnw-category="white"
                   >
                 </div>
 
-                <div class="mnw-field">
+                <div class="mnw-field" data-mnw-category-field="rose">
+                  <label class="mnw-field__label" for="mnw-rose-<?php echo esc_attr($widget_id); ?>"><?php echo esc_html__('Rosé', 'my-next-wine-for-woocommerce'); ?></label>
+                  <input id="mnw-rose-<?php echo esc_attr($widget_id); ?>" class="mnw-field__control" type="number" name="numberRose" value="0" min="0" max="12" step="1" inputmode="numeric" required data-mnw-breakdown data-mnw-category="rose">
+                </div>
+
+                <div class="mnw-field" data-mnw-category-field="sparkling">
                   <label
                     class="mnw-field__label"
                     for="mnw-sparkling-<?php echo esc_attr($widget_id); ?>"
@@ -208,10 +216,31 @@ if (!defined('ABSPATH')) { exit; }
                     inputmode="numeric"
                     required
                     data-mnw-breakdown
+                    data-mnw-category="sparkling"
                   >
                 </div>
 
-                <div class="mnw-field">
+                <div class="mnw-field" data-mnw-category-field="orange">
+                  <label class="mnw-field__label" for="mnw-orange-<?php echo esc_attr($widget_id); ?>"><?php echo esc_html__('Orange/Skin-contact', 'my-next-wine-for-woocommerce'); ?></label>
+                  <input id="mnw-orange-<?php echo esc_attr($widget_id); ?>" class="mnw-field__control" type="number" name="numberOrange" value="0" min="0" max="12" step="1" inputmode="numeric" required data-mnw-breakdown data-mnw-category="orange">
+                </div>
+
+                <div class="mnw-field" data-mnw-category-field="petNat">
+                  <label class="mnw-field__label" for="mnw-pet-nat-<?php echo esc_attr($widget_id); ?>"><?php echo esc_html__('Pét-nat', 'my-next-wine-for-woocommerce'); ?></label>
+                  <input id="mnw-pet-nat-<?php echo esc_attr($widget_id); ?>" class="mnw-field__control" type="number" name="numberPetNat" value="0" min="0" max="12" step="1" inputmode="numeric" required data-mnw-breakdown data-mnw-category="petNat">
+                </div>
+
+                <div class="mnw-field" data-mnw-category-field="sherry">
+                  <label class="mnw-field__label" for="mnw-sherry-<?php echo esc_attr($widget_id); ?>"><?php echo esc_html__('Sherry', 'my-next-wine-for-woocommerce'); ?></label>
+                  <input id="mnw-sherry-<?php echo esc_attr($widget_id); ?>" class="mnw-field__control" type="number" name="numberSherry" value="0" min="0" max="12" step="1" inputmode="numeric" required data-mnw-breakdown data-mnw-category="sherry">
+                </div>
+
+                <div class="mnw-field" data-mnw-category-field="otherFortified">
+                  <label class="mnw-field__label" for="mnw-fortified-<?php echo esc_attr($widget_id); ?>"><?php echo esc_html__('Other fortified', 'my-next-wine-for-woocommerce'); ?></label>
+                  <input id="mnw-fortified-<?php echo esc_attr($widget_id); ?>" class="mnw-field__control" type="number" name="numberOtherFortified" value="0" min="0" max="12" step="1" inputmode="numeric" required data-mnw-breakdown data-mnw-category="otherFortified">
+                </div>
+
+                <div class="mnw-field" data-mnw-category-field="dessert">
                   <label
                     class="mnw-field__label"
                     for="mnw-dessert-<?php echo esc_attr($widget_id); ?>"
@@ -231,6 +260,7 @@ if (!defined('ABSPATH')) { exit; }
                     inputmode="numeric"
                     required
                     data-mnw-breakdown
+                    data-mnw-category="dessert"
                   >
                 </div>
               </div>
@@ -493,6 +523,7 @@ if (!defined('ABSPATH')) { exit; }
               <p
                 class="mnw-wine-finder__selection-total"
                 data-mnw-total
+                aria-live="polite"
               ></p>
             </div>
 
@@ -523,6 +554,7 @@ if (!defined('ABSPATH')) { exit; }
             <div
               class="mnw-wine-finder__budget-notice"
               data-mnw-budget-notice
+              aria-live="polite"
               hidden
             >
               <strong data-mnw-budget-notice-title></strong>
@@ -547,13 +579,64 @@ if (!defined('ABSPATH')) { exit; }
                 </button>
 
                 <button
+                  class="mnw-wine-finder__secondary-button mnw-wine-finder__budget-toggle"
+                  type="button"
+                  data-mnw-retry-lower-budget
+                  hidden
+                ></button>
+
+                <button
                   class="mnw-wine-finder__primary-button mnw-wine-finder__budget-toggle"
                   type="button"
-                  data-mnw-retry-with-budget
+                  data-mnw-retry-higher-budget
                   hidden
                 ></button>
               </div>
             </div>
+
+            <section class="mnw-wine-finder__refinement" data-mnw-refinement>
+              <div class="mnw-wine-finder__refinement-heading">
+                <div>
+                  <h4><?php echo esc_html__('Want to change something?', 'my-next-wine-for-woocommerce'); ?></h4>
+                  <p><?php echo esc_html__('Keep the parts you like and tell us what to adjust.', 'my-next-wine-for-woocommerce'); ?></p>
+                </div>
+                <button
+                  class="mnw-wine-finder__refinement-undo"
+                  type="button"
+                  data-mnw-refine-undo
+                  hidden
+                ><?php echo esc_html__('Undo last refinement', 'my-next-wine-for-woocommerce'); ?></button>
+              </div>
+              <form class="mnw-wine-finder__refinement-form" data-mnw-refine-form>
+                <label class="mnw-visually-hidden" for="mnw-refine-<?php echo esc_attr($widget_id); ?>">
+                  <?php echo esc_html__('How should we refine this selection?', 'my-next-wine-for-woocommerce'); ?>
+                </label>
+                <input
+                  id="mnw-refine-<?php echo esc_attr($widget_id); ?>"
+                  class="mnw-field__control mnw-wine-finder__refinement-input"
+                  type="text"
+                  maxlength="240"
+                  autocomplete="off"
+                  placeholder="<?php echo esc_attr__('For example: Make it 10 cheaper.', 'my-next-wine-for-woocommerce'); ?>"
+                  data-mnw-refine-input
+                >
+                <button
+                  class="mnw-wine-finder__secondary-button mnw-wine-finder__refinement-button"
+                  type="submit"
+                  data-mnw-refine-submit
+                ><span data-mnw-refine-label><?php echo esc_html__('Refine selection', 'my-next-wine-for-woocommerce'); ?></span></button>
+              </form>
+              <p class="mnw-wine-finder__refinement-examples" data-mnw-refine-examples>
+                <?php echo esc_html__('Try “Make it 4 reds and 2 whites”, “Give me a better gift bottle” or “Make the selection more adventurous”.', 'my-next-wine-for-woocommerce'); ?>
+              </p>
+              <p
+                class="mnw-wine-finder__refinement-status"
+                data-mnw-refine-status
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
+            </section>
 
             <div
               class="mnw-wine-finder__results"
@@ -568,7 +651,7 @@ if (!defined('ABSPATH')) { exit; }
 
               <div class="mnw-wine-finder__actions">
                 <button
-                  class="mnw-wine-finder__primary-button"
+                  class="mnw-wine-finder__primary-button mnw-wine-finder__add-selected"
                   type="button"
                   data-mnw-add-selected
                 >

@@ -6,6 +6,17 @@
     var $id = $('#mnw-launcher-image-id');
     var $preview = $('#mnw-launcher-image-preview');
     var $remove = $('#mnw-remove-launcher-image');
+    var $categoryInputs = $('input[name="wine_categories[]"]');
+
+    $categoryInputs.on('change', function () {
+      if ($categoryInputs.filter(':checked').length >= 2) return;
+      this.checked = true;
+      window.alert(
+        window.MyNextWineWooAdmin && window.MyNextWineWooAdmin.minimumCategories
+          ? window.MyNextWineWooAdmin.minimumCategories
+          : 'Choose at least two bottle selection categories.'
+      );
+    });
 
     $('#mnw-select-launcher-image').on('click', function () {
       if (frame) {

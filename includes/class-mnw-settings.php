@@ -6,6 +6,10 @@ if (!defined('ABSPATH')) {
 }
 
 final class MyNextWine_Woo_Settings {
+    private const WINE_CATEGORY_KEYS = array(
+        'red', 'white', 'rose', 'sparkling', 'orange', 'petNat',
+        'sherry', 'otherFortified', 'dessert',
+    );
     private MyNextWine_Woo_API_Client $client;
     private MyNextWine_Woo_Catalogue_Sync $catalogue_sync;
 
@@ -39,6 +43,7 @@ final class MyNextWine_Woo_Settings {
             array(
                 'chooseLauncherImage' => __('Choose launcher image', 'my-next-wine-for-woocommerce'),
                 'useThisImage' => __('Use this image', 'my-next-wine-for-woocommerce'),
+                'minimumCategories' => __('Choose at least two bottle selection categories.', 'my-next-wine-for-woocommerce'),
             )
         );
     }
@@ -89,13 +94,21 @@ final class MyNextWine_Woo_Settings {
         $current['button_label'] = sanitize_text_field((string) wp_unslash($_POST['button_label'] ?? ''));
         $current['show_mnw_notes'] = isset($_POST['show_mnw_notes']) ? 'yes' : 'no';
         $current['show_mnw_rating'] = isset($_POST['show_mnw_rating']) ? 'yes' : 'no';
+        $submitted_categories = $this->submitted_wine_categories();
+        $category_error = count($submitted_categories) < 2;
+        if (!$category_error) {
+            $current['wine_categories'] = $submitted_categories;
+        }
         $this->client->save_settings($current);
 
-        $display_error = null;
+        $display_error = $category_error
+            ? new WP_Error('mynextwine_woo_categories', __('Choose at least two bottle selection categories.', 'my-next-wine-for-woocommerce'))
+            : null;
         if ($this->client->is_configured()) {
             $display_result = $this->client->update_display_settings(
                 'yes' === $current['show_mnw_notes'],
-                'yes' === $current['show_mnw_rating']
+                'yes' === $current['show_mnw_rating'],
+                $this->client->normalise_wine_categories($current['wine_categories'] ?? null)
             );
             if (is_wp_error($display_result)) {
                 $display_error = $display_result;
@@ -201,6 +214,11 @@ final class MyNextWine_Woo_Settings {
         $show_mnw_rating = is_array($status)
             ? !empty($status['showMyNextWineRating'])
             : 'yes' === ($settings['show_mnw_rating'] ?? 'no');
+        $wine_categories = $this->client->normalise_wine_categories(
+            is_array($status) && array_key_exists('wineCategories', $status)
+                ? $status['wineCategories']
+                : ($settings['wine_categories'] ?? null)
+        );
 
         // These read-only flags are set by nonce-protected admin-post handlers and only control notices.
         // phpcs:disable WordPress.Security.NonceVerification.Recommended
@@ -391,6 +409,31 @@ final class MyNextWine_Woo_Settings {
                     <tr><th scope="row"><label for="mnw-button-label"><?php echo esc_html__('Basket button', 'my-next-wine-for-woocommerce'); ?></label></th><td><input class="regular-text" id="mnw-button-label" name="button_label" type="text" maxlength="60" value="<?php echo esc_attr($settings['button_label']); ?>"></td></tr>
                 </table>
 
+                <h2><?php echo esc_html__('Bottle selection categories', 'my-next-wine-for-woocommerce'); ?></h2>
+                <p><?php echo esc_html__('Choose at least two categories to offer on the first Wine Finder question.', 'my-next-wine-for-woocommerce'); ?></p>
+                <?php
+                $category_labels = array(
+                    'red' => __('Red', 'my-next-wine-for-woocommerce'),
+                    'white' => __('White', 'my-next-wine-for-woocommerce'),
+                    'rose' => __('Rosé', 'my-next-wine-for-woocommerce'),
+                    'sparkling' => __('Sparkling', 'my-next-wine-for-woocommerce'),
+                    'orange' => __('Orange/Skin-contact', 'my-next-wine-for-woocommerce'),
+                    'petNat' => __('Pét-nat', 'my-next-wine-for-woocommerce'),
+                    'sherry' => __('Sherry', 'my-next-wine-for-woocommerce'),
+                    'otherFortified' => __('Other fortified', 'my-next-wine-for-woocommerce'),
+                    'dessert' => __('Dessert', 'my-next-wine-for-woocommerce'),
+                );
+                ?>
+                <fieldset style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;max-width:760px;">
+                    <legend class="screen-reader-text"><?php echo esc_html__('Bottle selection categories', 'my-next-wine-for-woocommerce'); ?></legend>
+                    <?php foreach ($category_labels as $category_key => $category_label) : ?>
+                        <label style="display:flex;align-items:center;gap:8px;min-height:40px;padding:7px 10px;border:1px solid #dcdcde;background:#fff;border-radius:4px;">
+                            <input type="checkbox" name="wine_categories[]" value="<?php echo esc_attr($category_key); ?>" <?php checked(in_array($category_key, $wine_categories, true)); ?>>
+                            <?php echo esc_html($category_label); ?>
+                        </label>
+                    <?php endforeach; ?>
+                </fieldset>
+
                 <h2><?php echo esc_html__('My Next Wine content', 'my-next-wine-for-woocommerce'); ?></h2>
                 <p><?php echo esc_html__('Both options are off by default. Enable them only when they suit this store’s own product presentation.', 'my-next-wine-for-woocommerce'); ?></p>
                 <table class="form-table" role="presentation">
@@ -415,6 +458,18 @@ final class MyNextWine_Woo_Settings {
 
     private function redirect_with_error(WP_Error $error): void {
         $this->redirect_with_message($this->error_message($error));
+    }
+
+    /** @return array<int,string> */
+    private function submitted_wine_categories(): array {
+        $raw = isset($_POST['wine_categories']) && is_array($_POST['wine_categories'])
+            ? wp_unslash($_POST['wine_categories'])
+            : array();
+        $submitted = array_values(array_unique(array_map(
+            static fn($value): string => sanitize_text_field((string) $value),
+            $raw
+        )));
+        return array_values(array_intersect(self::WINE_CATEGORY_KEYS, $submitted));
     }
 
     private function redirect_with_message(string $message): void {

@@ -33,6 +33,11 @@ final class MyNextWine_Woo_REST_Controller {
             'callback' => array($this, 'swap'),
             'permission_callback' => '__return_true',
         ));
+        register_rest_route(self::NAMESPACE, '/refine', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => array($this, 'refine'),
+            'permission_callback' => '__return_true',
+        ));
         register_rest_route(self::NAMESPACE, '/events', array(
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => array($this, 'events'),
@@ -55,6 +60,10 @@ final class MyNextWine_Woo_REST_Controller {
 
     public function swap(WP_REST_Request $request): WP_REST_Response {
         return $this->proxy_json($request, '/api/woocommerce/widget/swap');
+    }
+
+    public function refine(WP_REST_Request $request): WP_REST_Response {
+        return $this->proxy_json($request, '/api/woocommerce/widget/refine');
     }
 
     public function events(WP_REST_Request $request): WP_REST_Response {
@@ -179,7 +188,10 @@ final class MyNextWine_Woo_REST_Controller {
         if (!$this->client->is_enabled()) {
             return $this->error(__('The wine finder is not enabled.', 'my-next-wine-for-woocommerce'), 503);
         }
-        $timeout_seconds = '/api/woocommerce/widget/recommendations' === $backend_path
+        $timeout_seconds = in_array($backend_path, array(
+            '/api/woocommerce/widget/recommendations',
+            '/api/woocommerce/widget/refine',
+        ), true)
             ? self::RECOMMENDATION_PROXY_TIMEOUT_SECONDS
             : 40;
         $result = $this->client->request(
