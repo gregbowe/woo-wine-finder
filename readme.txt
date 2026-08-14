@@ -1,6 +1,6 @@
 === My Next Wine for WooCommerce ===
 Contributors: mynextwine
-Tags: woocommerce, wine, recommendations, product recommendations, artificial intelligence
+Tags: woocommerce, wine, wine recommendations, product recommendations, wine finder
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
