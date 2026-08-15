@@ -60,6 +60,12 @@
     const budgetInput = root.querySelector("[data-mnw-budget]");
     const budgetHelp = root.querySelector("[data-mnw-budget-help]");
     const budgetCurrencyElement = root.querySelector("[data-mnw-budget-currency]");
+    const budgetDecreaseButton = root.querySelector("[data-mnw-budget-decrease]");
+    const budgetIncreaseButton = root.querySelector("[data-mnw-budget-increase]");
+    const budgetDecreaseAmount = root.querySelector("[data-mnw-budget-decrease-amount]");
+    const budgetIncreaseAmount = root.querySelector("[data-mnw-budget-increase-amount]");
+    const budgetPerBottle = root.querySelector("[data-mnw-budget-per-bottle]");
+    const budgetQuickChoices = root.querySelector("[data-mnw-budget-quick-choices]");
     const breakdownInputs = Array.from(root.querySelectorAll("[data-mnw-breakdown]"));
     const allocationStatus = root.querySelector("[data-mnw-allocation-status]");
     const statusElement = root.querySelector("[data-mnw-status]");
@@ -141,6 +147,8 @@
 
     if (!endpoint || !dialog || !form || !openButton || wizardSteps.length === 0) return;
 
+    enhanceBreakdownControls(breakdownInputs);
+
     let currentRecommendation = null;
     let currentRequest = null;
     let currentSelectionMode = "exact";
@@ -168,6 +176,100 @@
       LOADING_MESSAGES
     );
 
+    const applyBudgetScreenValue = (value) => {
+      if (!configurationReady || !Number.isFinite(value)) return;
+      budgetInput.value = String(roundMoney(value, currencyPrecision));
+      budgetInput.dispatchEvent(new Event("input", { bubbles: true }));
+      budgetInput.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+
+    const renderBudgetScreen = () => {
+      if (!configurationReady || !storeCurrency) return;
+
+      const formatter = createCurrencyFormatter(storeCurrency, currencyPrecision);
+      const bottleCount = normaliseBottleCount(bottleCountInput.value);
+      const minimumBudget = Number(budgetInput.min);
+      const allowedMaximum = Number(budgetInput.max);
+      const rawValue = String(budgetInput.value || "").trim();
+      const parsedValue = rawValue === "" ? Number.NaN : Number(rawValue);
+      const currentBudget = Number.isFinite(parsedValue)
+        ? roundMoney(parsedValue, currencyPrecision)
+        : null;
+      const formattedIncrement = formatter.format(DEFAULT_BUDGET_ROUNDING_UNIT);
+      const lowerBudget = calculateAdjustedBudgetValue(
+        currentBudget,
+        minimumBudget,
+        allowedMaximum,
+        -1,
+        currencyPrecision
+      );
+      const higherBudget = calculateAdjustedBudgetValue(
+        currentBudget,
+        minimumBudget,
+        allowedMaximum,
+        1,
+        currencyPrecision
+      );
+
+      budgetInput.style.setProperty(
+        "--mnw-budget-value-width",
+        `${Math.max(3, rawValue.length || 3)}ch`
+      );
+      if (budgetDecreaseAmount) budgetDecreaseAmount.textContent = formattedIncrement;
+      if (budgetIncreaseAmount) budgetIncreaseAmount.textContent = formattedIncrement;
+
+      if (budgetDecreaseButton) {
+        budgetDecreaseButton.disabled = currentBudget === null || lowerBudget === currentBudget;
+        budgetDecreaseButton.setAttribute(
+          "aria-label",
+          lowerBudget === null
+            ? `Decrease total budget by ${formattedIncrement}`
+            : `Decrease total budget by ${formattedIncrement} to ${formatter.format(lowerBudget)}`
+        );
+      }
+      if (budgetIncreaseButton) {
+        budgetIncreaseButton.disabled = currentBudget === null || higherBudget === currentBudget;
+        budgetIncreaseButton.setAttribute(
+          "aria-label",
+          higherBudget === null
+            ? `Increase total budget by ${formattedIncrement}`
+            : `Increase total budget by ${formattedIncrement} to ${formatter.format(higherBudget)}`
+        );
+      }
+
+      if (budgetPerBottle) {
+        budgetPerBottle.textContent = currentBudget === null
+          ? ""
+          : `About ${formatter.format(roundMoney(currentBudget / bottleCount, currencyPrecision))} per bottle`;
+      }
+
+      if (budgetQuickChoices) {
+        budgetQuickChoices.replaceChildren();
+        calculateBudgetQuickChoices(minimumBudget, allowedMaximum, currencyPrecision)
+          .forEach((choice) => {
+            const button = document.createElement("button");
+            const qualifier = choice.kind === "minimum"
+              ? "Minimum"
+              : (choice.kind === "suggested" ? "Suggested" : "");
+            const formattedValue = formatter.format(choice.value);
+            const selected = currentBudget !== null && choice.value === currentBudget;
+            button.type = "button";
+            button.className = "mnw-wine-finder__budget-quick-choice";
+            button.dataset.mnwBudgetQuickChoice = String(choice.value);
+            button.setAttribute("aria-pressed", String(selected));
+            button.setAttribute(
+              "aria-label",
+              qualifier
+                ? `Use ${qualifier.toLowerCase()} total budget of ${formattedValue}`
+                : `Use total budget of ${formattedValue}`
+            );
+            button.textContent = qualifier ? `${formattedValue} ${qualifier}` : formattedValue;
+            button.addEventListener("click", () => applyBudgetScreenValue(choice.value));
+            budgetQuickChoices.append(button);
+          });
+      }
+    };
+
     const refreshBudgetMinimum = (bottleCount) => {
       if (!configurationReady) return;
       updateBudgetMinimum(
@@ -183,6 +285,7 @@
         currencyPrecision,
         !budgetEdited
       );
+      renderBudgetScreen();
     };
 
     // Do not leave a disabled/empty launcher on a merchant storefront while
@@ -371,7 +474,10 @@
 
     const focusCurrentWizardStep = () => {
       const currentStep = wizardSteps[currentWizardStep];
-      currentStep?.querySelector("input, textarea, select, button")?.focus({ preventScroll: true });
+      const preferredControl = currentStep?.hasAttribute("data-mnw-wizard-budget")
+        ? budgetInput
+        : currentStep?.querySelector("input, textarea, select, button");
+      preferredControl?.focus({ preventScroll: true });
     };
 
     const showWizardStep = (index, { focus = true } = {}) => {
@@ -390,6 +496,7 @@
         wizardTrack.setAttribute("aria-valuemax", String(wizardSteps.length));
         wizardTrack.setAttribute("aria-valuenow", String(displayIndex));
       }
+      if (currentStep?.hasAttribute("data-mnw-wizard-budget")) renderBudgetScreen();
 
       errorElement.hidden = true;
       dialogScroll.scrollTo({ top: 0, behavior: "smooth" });
@@ -850,9 +957,35 @@
         refreshBudgetMinimum(bottleCount);
       }
       updateAllocationStatus(form, allocationStatus, submitButton);
+      updateBreakdownControlStates(breakdownInputs);
     }));
 
-    budgetInput.addEventListener("input", () => { budgetEdited = true; });
+    budgetDecreaseButton?.addEventListener("click", () => {
+      const adjustedBudget = calculateAdjustedBudgetValue(
+        budgetInput.value,
+        budgetInput.min,
+        budgetInput.max,
+        -1,
+        currencyPrecision
+      );
+      if (adjustedBudget !== null) applyBudgetScreenValue(adjustedBudget);
+    });
+
+    budgetIncreaseButton?.addEventListener("click", () => {
+      const adjustedBudget = calculateAdjustedBudgetValue(
+        budgetInput.value,
+        budgetInput.min,
+        budgetInput.max,
+        1,
+        currencyPrecision
+      );
+      if (adjustedBudget !== null) applyBudgetScreenValue(adjustedBudget);
+    });
+
+    budgetInput.addEventListener("input", () => {
+      budgetEdited = true;
+      renderBudgetScreen();
+    });
 
     budgetInput.addEventListener("change", () => {
       budgetEdited = true;
@@ -864,6 +997,7 @@
       } else if (enteredBudget > maximumBudget) {
         budgetInput.value = String(roundMoney(maximumBudget, currencyPrecision));
       }
+      renderBudgetScreen();
     });
 
     form.addEventListener("submit", async (event) => {
@@ -1358,6 +1492,7 @@
         bottleCountInput.value = String(readBreakdownTotal(form));
         updateAllocationStatus(form, allocationStatus, submitButton);
         updateBreakdownMaximums(breakdownInputs);
+        updateBreakdownControlStates(breakdownInputs);
         configurationReady = true;
         refreshBudgetMinimum(normaliseBottleCount(bottleCountInput.value));
         root.hidden = false;
@@ -1378,6 +1513,7 @@
     bottleCountInput.value = String(readBreakdownTotal(form));
     updateBreakdownMaximums(breakdownInputs);
     updateAllocationStatus(form, allocationStatus, submitButton);
+    updateBreakdownControlStates(breakdownInputs);
     setPhase("form");
     showWizardStep(0, { focus: false });
   };
@@ -1440,7 +1576,6 @@
     if (breakdownTotal !== payload.bottleCount) {
       throw new Error(`The bottle mix adds up to ${breakdownTotal}, not ${payload.bottleCount}.`);
     }
-    if (!payload.usualWines) throw new Error("Tell us what sort of wines you usually like.");
     if (payload.usualWines.length > MAX_FREE_TEXT_LENGTH || payload.foodPairings.length > MAX_FREE_TEXT_LENGTH) {
       throw new Error("One of your answers is too long.");
     }
@@ -2438,6 +2573,62 @@
     return roundMoney(Math.min(roundedUpBudget, maximumBudget), currencyPrecision);
   };
 
+  const calculateAdjustedBudgetValue = (
+    currentBudget,
+    minimumBudget,
+    maximumBudget,
+    direction,
+    currencyPrecision = 2
+  ) => {
+    const minimum = Number(minimumBudget);
+    const maximum = Number(maximumBudget);
+    if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || maximum < minimum) return null;
+
+    const parsedCurrent = Number(currentBudget);
+    const boundedCurrent = roundMoney(
+      Math.max(minimum, Math.min(maximum, Number.isFinite(parsedCurrent) ? parsedCurrent : minimum)),
+      currencyPrecision
+    );
+    if (direction !== -1 && direction !== 1) return boundedCurrent;
+
+    return roundMoney(
+      Math.max(
+        minimum,
+        Math.min(maximum, boundedCurrent + (direction * DEFAULT_BUDGET_ROUNDING_UNIT))
+      ),
+      currencyPrecision
+    );
+  };
+
+  const calculateBudgetQuickChoices = (
+    minimumBudget,
+    maximumBudget,
+    currencyPrecision = 2
+  ) => {
+    const minimum = Number(minimumBudget);
+    const maximum = Number(maximumBudget);
+    if (!Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum <= 0 || maximum < minimum) {
+      return [];
+    }
+
+    const roundedMinimum = roundMoney(minimum, currencyPrecision);
+    const suggested = calculateDefaultBudget(roundedMinimum, maximum, currencyPrecision);
+    const choiceGap = DEFAULT_BUDGET_ROUNDING_UNIT * 2;
+    const candidates = [
+      { value: roundedMinimum, kind: "minimum" },
+      { value: suggested, kind: "suggested" },
+      { value: roundMoney(suggested + choiceGap, currencyPrecision), kind: "standard" },
+      { value: roundMoney(suggested + (choiceGap * 2), currencyPrecision), kind: "standard" }
+    ];
+    const seen = new Set();
+
+    return candidates.filter((choice) => {
+      if (choice.value < roundedMinimum || choice.value > maximum || seen.has(choice.value)) return false;
+      seen.add(choice.value);
+      return true;
+    });
+  };
+
   const updateBudgetMinimum = (
     budgetInput,
     budgetHelp,
@@ -2476,7 +2667,7 @@
       budgetCurrencyElement.textContent = configuredSymbol || currencySymbol(currency, currencyPrecision);
     }
     const bottleLabel = bottleCount === 1 ? "bottle" : "bottles";
-    budgetHelp.textContent = `Minimum ${formatter.format(minimumBudget)} for ${bottleCount} ${bottleLabel}.`;
+    budgetHelp.textContent = `For ${bottleCount} ${bottleLabel}, the minimum budget is ${formatter.format(minimumBudget)}.`;
   };
 
   const readBreakdownTotal = (form) => Array.from(form.querySelectorAll("[data-mnw-breakdown]:not(:disabled)"))
@@ -2484,6 +2675,100 @@
       const value = Number(input.value);
       return sum + (Number.isFinite(value) ? value : 0);
     }, 0);
+
+  const calculateAdjustedBreakdownValue = (
+    currentValue,
+    currentTotal,
+    adjustment,
+    maximumTotal = MAX_BOTTLE_COUNT
+  ) => {
+    const parsedValue = Number(currentValue);
+    const value = Number.isInteger(parsedValue) && parsedValue >= 0
+      ? Math.min(parsedValue, maximumTotal)
+      : 0;
+    const total = Number(currentTotal);
+    if (adjustment === -1) return Math.max(0, value - 1);
+    if (adjustment !== 1 || !Number.isFinite(total)
+        || total >= maximumTotal || value >= maximumTotal) return value;
+    return value + 1;
+  };
+
+  const updateBreakdownControlStates = (inputs) => {
+    const activeInputs = inputs.filter((input) => !input.disabled);
+    const total = activeInputs.reduce((sum, input) => {
+      const value = Number(input.value);
+      return sum + (Number.isFinite(value) ? value : 0);
+    }, 0);
+
+    inputs.forEach((input) => {
+      const value = Number(input.value);
+      const count = Number.isInteger(value) && value >= 0 ? value : 0;
+      const field = input.closest("[data-mnw-category-field]");
+      const stepper = input.closest("[data-mnw-bottle-stepper]");
+      const decrease = stepper?.querySelector('[data-mnw-breakdown-adjust="-1"]');
+      const increase = stepper?.querySelector('[data-mnw-breakdown-adjust="1"]');
+      field?.classList.toggle("mnw-field--selected", !input.disabled && count > 0);
+      if (decrease) decrease.disabled = input.disabled || count <= 0;
+      if (increase) {
+        increase.disabled = input.disabled || count >= MAX_BOTTLE_COUNT || total >= MAX_BOTTLE_COUNT;
+      }
+    });
+  };
+
+  const enhanceBreakdownControls = (inputs) => {
+    inputs.forEach((input) => {
+      if (input.closest("[data-mnw-bottle-stepper]")) return;
+      const field = input.closest("[data-mnw-category-field]");
+      const label = String(field?.querySelector("label")?.textContent || "Wine")
+        .replace(/\s+/g, " ")
+        .trim();
+      const documentRef = input.ownerDocument;
+      const stepper = documentRef.createElement("div");
+      stepper.className = "mnw-bottle-stepper";
+      stepper.dataset.mnwBottleStepper = "";
+      stepper.setAttribute("role", "group");
+      stepper.setAttribute("aria-label", `${label} bottles`);
+
+      const createButton = (adjustment, symbol, action) => {
+        const button = documentRef.createElement("button");
+        button.type = "button";
+        button.className = "mnw-bottle-stepper__button";
+        button.dataset.mnwBreakdownAdjust = String(adjustment);
+        button.setAttribute("aria-label", `${action} one ${label} bottle`);
+        if (input.id) button.setAttribute("aria-controls", input.id);
+        const icon = documentRef.createElement("span");
+        icon.setAttribute("aria-hidden", "true");
+        icon.textContent = symbol;
+        button.append(icon);
+        button.addEventListener("click", () => {
+          const currentTotal = inputs
+            .filter((candidate) => !candidate.disabled)
+            .reduce((sum, candidate) => {
+              const candidateValue = Number(candidate.value);
+              return sum + (Number.isFinite(candidateValue) ? candidateValue : 0);
+            }, 0);
+          const nextValue = calculateAdjustedBreakdownValue(
+            input.value,
+            currentTotal,
+            adjustment
+          );
+          if (String(nextValue) !== input.value) {
+            input.value = String(nextValue);
+            const EventConstructor = documentRef.defaultView?.Event;
+            if (EventConstructor) input.dispatchEvent(new EventConstructor("input", { bubbles: true }));
+          }
+        });
+        return button;
+      };
+
+      const decrease = createButton(-1, "−", "Remove");
+      const increase = createButton(1, "+", "Add");
+      input.classList.add("mnw-bottle-stepper__value");
+      input.parentNode.insertBefore(stepper, input);
+      stepper.append(decrease, input, increase);
+    });
+    updateBreakdownControlStates(inputs);
+  };
 
   const updateBreakdownMaximums = (inputs) => {
     inputs.forEach((input) => { input.max = String(MAX_BOTTLE_COUNT); });
@@ -2494,13 +2779,13 @@
     const valid = Number.isInteger(bottleCount)
       && bottleCount >= MIN_BOTTLE_COUNT
       && bottleCount <= MAX_BOTTLE_COUNT;
-    const bottleLabel = `${bottleCount} ${bottleCount === 1 ? "bottle" : "bottles"} selected.`;
+    const bottleLabel = `${bottleCount} ${bottleCount === 1 ? "bottle" : "bottles"} selected`;
     if (valid) {
       statusElement.textContent = bottleLabel;
     } else if (bottleCount < MIN_BOTTLE_COUNT) {
-      statusElement.textContent = `${bottleLabel} Choose at least ${MIN_BOTTLE_COUNT}.`;
+      statusElement.textContent = `${bottleLabel}. Choose at least ${MIN_BOTTLE_COUNT}.`;
     } else {
-      statusElement.textContent = `${bottleLabel} Choose no more than ${MAX_BOTTLE_COUNT}.`;
+      statusElement.textContent = `${bottleLabel}. Choose no more than ${MAX_BOTTLE_COUNT}.`;
     }
     statusElement.classList.toggle("mnw-wine-finder__allocation-status--valid", valid);
     statusElement.classList.toggle("mnw-wine-finder__allocation-status--invalid", !valid);
@@ -2603,6 +2888,9 @@
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
+      calculateAdjustedBreakdownValue,
+      calculateAdjustedBudgetValue,
+      calculateBudgetQuickChoices,
       calculateRetryBudgetChoices,
       calculateSelectionSummary,
       closeDialogAfterCartSuccess,
@@ -2623,6 +2911,7 @@
       selectionActionState,
       stableVisualPhase,
       trapModalFocus,
+      validateRecommendationPayload,
       validateRefinementResponse
     };
   }
