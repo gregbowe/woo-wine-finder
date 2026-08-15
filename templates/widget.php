@@ -640,6 +640,31 @@ if (!defined('ABSPATH')) { exit; }
                 aria-live="polite"
                 hidden
               ></p>
+              <div
+                class="mnw-wine-finder__refinement-budget-confirmation"
+                data-mnw-refinement-budget-confirmation
+                role="region"
+                aria-labelledby="mnw-refinement-budget-title-<?php echo esc_attr($widget_id); ?>"
+                aria-live="polite"
+                hidden
+              >
+                <strong id="mnw-refinement-budget-title-<?php echo esc_attr($widget_id); ?>">
+                  <?php echo esc_html__('This refinement is a little over budget', 'my-next-wine-for-woocommerce'); ?>
+                </strong>
+                <p data-mnw-refinement-budget-copy></p>
+                <div class="mnw-wine-finder__refinement-budget-actions">
+                  <button
+                    class="mnw-wine-finder__primary-button"
+                    type="button"
+                    data-mnw-accept-refinement-budget
+                  ><span data-mnw-accept-refinement-budget-label><?php echo esc_html__('Yes, use the higher budget', 'my-next-wine-for-woocommerce'); ?></span></button>
+                  <button
+                    class="mnw-wine-finder__secondary-button"
+                    type="button"
+                    data-mnw-decline-refinement-budget
+                  ><?php echo esc_html__('No, keep current selection', 'my-next-wine-for-woocommerce'); ?></button>
+                </div>
+              </div>
             </section>
 
             <div

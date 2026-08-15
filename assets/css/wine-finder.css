@@ -3483,6 +3483,53 @@ body.mnw-wine-finder-open {
   color: #7f1730;
 }
 
+.mnw-wine-finder__refinement-budget-confirmation {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--mnw-theme-accent) 22%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--mnw-theme-accent) 6%, #fffaf7);
+  color: var(--mnw-theme-text);
+}
+
+.mnw-wine-finder__refinement-budget-confirmation > strong {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.mnw-wine-finder__refinement-budget-confirmation > p {
+  margin: 0;
+  color: color-mix(in srgb, var(--mnw-theme-text) 76%, transparent);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mnw-wine-finder__refinement-budget-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.mnw-wine-finder__refinement-budget-actions button {
+  min-height: 40px;
+  padding: 9px 14px;
+  font-size: 14px;
+}
+
+@media (max-width: 430px) {
+  .mnw-wine-finder__refinement-budget-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mnw-wine-finder__refinement-budget-actions button {
+    width: 100%;
+  }
+}
+
 .mnw-wine-finder[data-mnw-phase="results"] .mnw-wine-finder__dialog-shell {
   grid-template-columns: 180px minmax(0, 1fr);
 }

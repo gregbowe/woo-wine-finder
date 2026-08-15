@@ -96,6 +96,11 @@
     const refineLabel = root.querySelector("[data-mnw-refine-label]");
     const refineStatus = root.querySelector("[data-mnw-refine-status]");
     const refineUndo = root.querySelector("[data-mnw-refine-undo]");
+    const refinementBudgetConfirmation = root.querySelector("[data-mnw-refinement-budget-confirmation]");
+    const refinementBudgetCopy = root.querySelector("[data-mnw-refinement-budget-copy]");
+    const acceptRefinementBudgetButton = root.querySelector("[data-mnw-accept-refinement-budget]");
+    const acceptRefinementBudgetLabel = root.querySelector("[data-mnw-accept-refinement-budget-label]");
+    const declineRefinementBudgetButton = root.querySelector("[data-mnw-decline-refinement-budget]");
     const startAgainButton = root.querySelector("[data-mnw-start-again]");
     const progressForm = root.querySelector("[data-mnw-progress-form]");
     const progressResults = root.querySelector("[data-mnw-progress-results]");
@@ -155,6 +160,7 @@
     let budgetEdited = false;
     let suggestedBudget = null;
     let retryBudgets = { lower: null, higher: null };
+    let pendingRefinementBudgetProposal = null;
     let destroyed = false;
     const pageSessionId = createPageSessionId();
     const loadingMessages = createLoadingMessageController(
@@ -487,7 +493,13 @@
     };
 
     const setRefinementControlsBusy = (busy) => {
-      [refineSubmit, retryWithLowerBudgetButton, retryWithHigherBudgetButton]
+      [
+        refineSubmit,
+        retryWithLowerBudgetButton,
+        retryWithHigherBudgetButton,
+        acceptRefinementBudgetButton,
+        declineRefinementBudgetButton
+      ]
         .forEach((button) => {
           if (!button) return;
           button.disabled = Boolean(busy);
@@ -539,6 +551,7 @@
         storeCurrency,
         currencyPrecision
       ).format(amount);
+      dismissRefinementBudgetConfirmation();
       await submitRefinementRequest({
         instruction: retry.instruction,
         request: retry.request,
@@ -1020,6 +1033,43 @@
       }
     };
 
+    const dismissRefinementBudgetConfirmation = () => {
+      pendingRefinementBudgetProposal = null;
+      if (refinementBudgetConfirmation) refinementBudgetConfirmation.hidden = true;
+      if (refinementBudgetCopy) refinementBudgetCopy.textContent = "";
+    };
+
+    const offerRefinementBudgetConfirmation = ({
+      error,
+      request,
+      instruction,
+      clearInput
+    }) => {
+      const proposal = createRefinementBudgetProposal(
+        error,
+        request,
+        instruction,
+        storeCurrency,
+        currencyPrecision,
+        null,
+        maximumBudget
+      );
+      if (!proposal || !refinementBudgetConfirmation || !refinementBudgetCopy
+          || !acceptRefinementBudgetButton || !acceptRefinementBudgetLabel
+          || !declineRefinementBudgetButton) return false;
+
+      pendingRefinementBudgetProposal = {
+        ...proposal,
+        clearInput: Boolean(clearInput)
+      };
+      if (refineStatus) refineStatus.hidden = true;
+      refinementBudgetCopy.textContent = proposal.prompt;
+      acceptRefinementBudgetLabel.textContent = proposal.acceptLabel;
+      refinementBudgetConfirmation.hidden = false;
+      window.setTimeout(() => acceptRefinementBudgetButton.focus({ preventScroll: true }), 0);
+      return true;
+    };
+
     const announceRefinement = (message, isError = false) => {
       if (!refineStatus) return;
       refineStatus.textContent = message;
@@ -1088,16 +1138,26 @@
             budgetInput.value = String(refinedBudget);
           }
         }
+        dismissRefinementBudgetConfirmation();
         showRecommendationSelection("exact");
         if (clearInput && refineInput) refineInput.value = "";
         if (refineUndo) refineUndo.hidden = false;
         announceRefinement(result.refinementSummary || successMessage);
         return true;
       } catch (error) {
-        announceRefinement(
-          refinementFailureMessage(error, storeCurrency, currencyPrecision),
-          true
-        );
+        const confirmationOffered = offerRefinementBudgetConfirmation({
+          error,
+          request,
+          instruction,
+          clearInput
+        });
+        if (!confirmationOffered) {
+          dismissRefinementBudgetConfirmation();
+          announceRefinement(
+            refinementFailureMessage(error, storeCurrency, currencyPrecision),
+            true
+          );
+        }
         return false;
       } finally {
         refinementInFlight = false;
@@ -1124,12 +1184,37 @@
         return;
       }
 
+      dismissRefinementBudgetConfirmation();
       await submitRefinementRequest({ instruction, clearInput: true });
+    });
+
+    acceptRefinementBudgetButton?.addEventListener("click", async () => {
+      if (!pendingRefinementBudgetProposal || refinementInFlight
+          || recommendationInFlight || cartInFlight) return;
+      const proposal = pendingRefinementBudgetProposal;
+      dismissRefinementBudgetConfirmation();
+      await submitRefinementRequest({
+        instruction: proposal.instruction,
+        request: proposal.request,
+        progressMessage: `Rebuilding your selection around ${proposal.formattedSuggestedBudget}…`,
+        pendingLabel: "Updating budget…",
+        successMessage: `Your selection now uses a budget of ${proposal.formattedSuggestedBudget}.`,
+        clearInput: proposal.clearInput,
+        synchroniseBudgetInput: true
+      });
+    });
+
+    declineRefinementBudgetButton?.addEventListener("click", () => {
+      if (!pendingRefinementBudgetProposal || refinementInFlight) return;
+      dismissRefinementBudgetConfirmation();
+      announceRefinement("No changes made. Your current selection has been kept.");
+      refineInput?.focus({ preventScroll: true });
     });
 
     refineUndo?.addEventListener("click", () => {
       if (!previousRefinement || refinementInFlight || cartInFlight) return;
       const snapshot = previousRefinement;
+      dismissRefinementBudgetConfirmation();
       previousRefinement = null;
       currentRecommendation = snapshot.recommendation;
       currentRequest = snapshot.request;
@@ -1225,6 +1310,7 @@
     editPreferencesButton?.addEventListener("click", () => {
       currentRecommendation = null;
       previousRefinement = null;
+      dismissRefinementBudgetConfirmation();
       if (refineUndo) refineUndo.hidden = true;
       if (refineStatus) refineStatus.hidden = true;
       selectionElement.hidden = true;
@@ -1240,6 +1326,7 @@
       currentRequest = null;
       currentSelectionMode = "exact";
       previousRefinement = null;
+      dismissRefinementBudgetConfirmation();
       if (refineUndo) refineUndo.hidden = true;
       if (refineStatus) refineStatus.hidden = true;
       selectionElement.hidden = true;
@@ -1786,6 +1873,57 @@
       throw new Error("The refinement response was invalid. Your current selection has been kept.");
     }
     return true;
+  };
+
+  const createRefinementBudgetProposal = (
+    error,
+    request,
+    instruction,
+    currency,
+    currencyPrecision = null,
+    locale = null,
+    maximumBudget = null
+  ) => {
+    const details = error?.details;
+    const suggestedBudget = Number(details?.suggestedBudget);
+    const responseBudget = Number(details?.requestedBudget);
+    const requestBudget = Number(request?.budget);
+    const requestedBudget = Number.isFinite(responseBudget) && responseBudget > 0
+      ? responseBudget
+      : requestBudget;
+    const maximum = Number(maximumBudget);
+    const cleanInstruction = String(instruction || "").replace(/\s+/g, " ").trim();
+    if (details?.code !== "BUDGET_INCREASE_REQUIRED"
+        || !request || !cleanInstruction
+        || !Number.isFinite(requestedBudget) || requestedBudget <= 0
+        || !Number.isFinite(suggestedBudget) || suggestedBudget <= requestedBudget
+        || (Number.isFinite(maximum) && maximum > 0 && suggestedBudget > maximum)) {
+      return null;
+    }
+
+    const formatter = createCurrencyFormatter(currency, currencyPrecision, locale);
+    const difference = suggestedBudget - requestedBudget;
+    const formattedRequestedBudget = formatter.format(requestedBudget);
+    const formattedSuggestedBudget = formatter.format(suggestedBudget);
+    const formattedDifference = formatter.format(difference);
+    return {
+      instruction: cleanInstruction,
+      request: {
+        ...request,
+        budget: suggestedBudget,
+        ...(request.categoryCounts && typeof request.categoryCounts === "object"
+          ? { categoryCounts: { ...request.categoryCounts } }
+          : {})
+      },
+      requestedBudget,
+      suggestedBudget,
+      difference,
+      formattedRequestedBudget,
+      formattedSuggestedBudget,
+      formattedDifference,
+      prompt: `That refinement would need ${formattedSuggestedBudget}, ${formattedDifference} above your current ${formattedRequestedBudget} budget. Is that okay?`,
+      acceptLabel: `Yes, use ${formattedSuggestedBudget}`
+    };
   };
 
   const refinementFailureMessage = (
@@ -2471,6 +2609,7 @@
       createBudgetRetryRefinement,
       createCurrencyFormatter,
       createLoadingMessageController,
+      createRefinementBudgetProposal,
       createRefinementRequestPayload,
       createRefinementSnapshot,
       formatBudgetPosition,
