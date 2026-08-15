@@ -484,6 +484,11 @@
       if (retryWithHigherBudgetButton) retryWithHigherBudgetButton.hidden = true;
     };
 
+    const setRetryBudgetChoicesDisabled = (disabled) => {
+      if (retryWithLowerBudgetButton) retryWithLowerBudgetButton.disabled = Boolean(disabled);
+      if (retryWithHigherBudgetButton) retryWithHigherBudgetButton.disabled = Boolean(disabled);
+    };
+
     const setRetryBudgetChoices = (selectionTotal) => {
       retryBudgets = calculateRetryBudgetChoices(
         selectionTotal,
@@ -502,17 +507,32 @@
           return;
         }
         button.textContent = `Try ${formatter.format(amount)} (${change})`;
+        button.disabled = refinementInFlight;
         button.hidden = false;
       });
     };
 
-    const applyRetryBudget = (direction) => {
+    const applyRetryBudget = async (direction) => {
       const amount = Number(retryBudgets[direction]);
-      if (!Number.isFinite(amount) || amount <= 0) return;
-      budgetEdited = true;
-      budgetInput.value = String(amount);
-      hideRetryBudgetChoices();
-      form.requestSubmit();
+      if (!Number.isFinite(amount) || amount <= 0 || !currentRequest) return;
+      const retry = createBudgetRetryRefinement(
+        currentRequest,
+        amount,
+        storeCurrency,
+        currencyPrecision
+      );
+      const formattedBudget = createCurrencyFormatter(
+        storeCurrency,
+        currencyPrecision
+      ).format(amount);
+      await submitRefinementRequest({
+        instruction: retry.instruction,
+        request: retry.request,
+        progressMessage: `Rebuilding your current selection around ${formattedBudget}…`,
+        pendingLabel: "Updating budget…",
+        successMessage: `Your selection has been rebuilt around ${formattedBudget}.`,
+        synchroniseBudgetInput: true
+      });
     };
 
     const showBudgetGuidance = (details) => {
@@ -646,7 +666,7 @@
           `We replaced unavailable or expensive exact matches with similar styles. Total ${formatter.format(alternativeTotal)}${underBudget > 0.0001 ? ` — ${formatter.format(underBudget)} under budget.` : "."}`
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
-        hideRetryBudgetChoices();
+        setRetryBudgetChoices(alternativeTotal);
         if (showExactSelectionButton) {
           showExactSelectionButton.hidden = false;
           showExactSelectionButton.textContent = `Show exact ${formatter.format(exactTotal)} selection`;
@@ -668,7 +688,7 @@
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        setRetryBudgetChoices(exactOverBudget ? Number(selection.total || 0) : 0);
+        setRetryBudgetChoices(Number(selection.total || 0));
         return;
       }
 
@@ -684,7 +704,7 @@
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        setRetryBudgetChoices(exactOverBudget ? Number(selection.total || 0) : 0);
+        setRetryBudgetChoices(Number(selection.total || 0));
         return;
       }
 
@@ -996,22 +1016,17 @@
       refineStatus.setAttribute("aria-live", isError ? "assertive" : "polite");
     };
 
-    refineForm?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (!refineEndpoint || !currentRecommendation || !currentRequest
-          || refinementInFlight || recommendationInFlight || cartInFlight) return;
-
-      const instruction = String(refineInput?.value || "").replace(/\s+/g, " ").trim();
-      if (!instruction) {
-        announceRefinement("Tell us what you want to change.", true);
-        refineInput?.focus({ preventScroll: true });
-        return;
-      }
-      if (instruction.length > MAX_REFINEMENT_LENGTH) {
-        announceRefinement(`Keep the refinement to ${MAX_REFINEMENT_LENGTH} characters or fewer.`, true);
-        refineInput?.focus({ preventScroll: true });
-        return;
-      }
+    const submitRefinementRequest = async ({
+      instruction,
+      request = currentRequest,
+      progressMessage = "Refining your current selection…",
+      pendingLabel = "Refining…",
+      successMessage = "Your selection has been refined.",
+      clearInput = false,
+      synchroniseBudgetInput = false
+    }) => {
+      if (!refineEndpoint || !currentRecommendation || !currentRequest || !request
+          || refinementInFlight || recommendationInFlight || cartInFlight) return false;
 
       const snapshot = createRefinementSnapshot(
         currentRecommendation,
@@ -1023,15 +1038,16 @@
       setBusy(true);
       const originalLabel = refineLabel?.textContent || "Refine selection";
       if (refineSubmit) refineSubmit.disabled = true;
-      if (refineLabel) refineLabel.textContent = "Refining…";
-      announceRefinement("Refining your current selection…");
+      if (refineLabel) refineLabel.textContent = pendingLabel;
+      setRetryBudgetChoicesDisabled(true);
+      announceRefinement(progressMessage);
 
       try {
         const result = await fetchJson(refineEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           body: JSON.stringify(createRefinementRequestPayload(
-            currentRequest,
+            request,
             currentRecommendation,
             instruction
           )),
@@ -1053,21 +1069,51 @@
         previousRefinement = snapshot;
         currentRequest = result.refinedRequest;
         currentRecommendation = result;
+        if (synchroniseBudgetInput) {
+          const refinedBudget = Number(currentRequest?.budget);
+          if (Number.isFinite(refinedBudget) && refinedBudget > 0) {
+            budgetEdited = true;
+            budgetInput.value = String(refinedBudget);
+          }
+        }
         showRecommendationSelection("exact");
-        refineInput.value = "";
+        if (clearInput && refineInput) refineInput.value = "";
         if (refineUndo) refineUndo.hidden = false;
-        announceRefinement(result.refinementSummary || "Your selection has been refined.");
+        announceRefinement(result.refinementSummary || successMessage);
+        return true;
       } catch (error) {
         announceRefinement(
           refinementFailureMessage(error, storeCurrency, currencyPrecision),
           true
         );
+        return false;
       } finally {
         refinementInFlight = false;
         setBusy(false);
         if (refineSubmit) refineSubmit.disabled = false;
         if (refineLabel) refineLabel.textContent = originalLabel;
+        setRetryBudgetChoicesDisabled(false);
       }
+    };
+
+    refineForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!refineEndpoint || !currentRecommendation || !currentRequest
+          || refinementInFlight || recommendationInFlight || cartInFlight) return;
+
+      const instruction = String(refineInput?.value || "").replace(/\s+/g, " ").trim();
+      if (!instruction) {
+        announceRefinement("Tell us what you want to change.", true);
+        refineInput?.focus({ preventScroll: true });
+        return;
+      }
+      if (instruction.length > MAX_REFINEMENT_LENGTH) {
+        announceRefinement(`Keep the refinement to ${MAX_REFINEMENT_LENGTH} characters or fewer.`, true);
+        refineInput?.focus({ preventScroll: true });
+        return;
+      }
+
+      await submitRefinementRequest({ instruction, clearInput: true });
     });
 
     refineUndo?.addEventListener("click", () => {
@@ -1587,6 +1633,29 @@
       : [],
     instruction: String(instruction || "")
   });
+
+  const createBudgetRetryRefinement = (
+    request,
+    budget,
+    currency,
+    currencyPrecision = 2
+  ) => {
+    const precision = Number.isInteger(currencyPrecision)
+      ? Math.max(0, Math.min(4, currencyPrecision))
+      : 2;
+    const targetBudget = roundMoney(budget, precision);
+    if (!request || typeof request !== "object"
+        || !Number.isFinite(targetBudget) || targetBudget <= 0) {
+      throw new Error("The retry budget is invalid.");
+    }
+    const updatedRequest = clonePlainData(request);
+    updatedRequest.budget = targetBudget;
+    const currencyCode = normaliseCurrencyCode(currency);
+    return {
+      request: updatedRequest,
+      instruction: `The shopper selected a new total order budget of ${currencyCode} ${targetBudget.toFixed(precision)}. Rebuild the selection for that budget while preserving all other order requirements.`
+    };
+  };
 
   const validateRefinementResponse = (result, configuredCategories = null) => {
     if (!result || !result.sessionId || !result.refinedRequest) {
@@ -2296,6 +2365,7 @@
       calculateRetryBudgetChoices,
       calculateSelectionSummary,
       closeDialogAfterCartSuccess,
+      createBudgetRetryRefinement,
       createCurrencyFormatter,
       createLoadingMessageController,
       createRefinementRequestPayload,

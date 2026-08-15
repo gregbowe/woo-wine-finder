@@ -206,7 +206,76 @@ final class MyNextWine_Woo_REST_Controller {
             $status = is_array($data) && isset($data['status']) ? (int) $data['status'] : 502;
             return $this->from_error($result, $status);
         }
+        if (is_array($result) && in_array($backend_path, array(
+            '/api/woocommerce/widget/recommendations',
+            '/api/woocommerce/widget/refine',
+            '/api/woocommerce/widget/swap',
+        ), true)) {
+            $result = $this->with_local_wine_images($result);
+        }
         return new WP_REST_Response($result, 200, $this->no_store_headers());
+    }
+
+    /** @param array<string,mixed> $payload
+     *  @return array<string,mixed>
+     */
+    private function with_local_wine_images(array $payload): array {
+        if (isset($payload['wines']) && is_array($payload['wines'])) {
+            $payload['wines'] = $this->with_local_wine_image_list($payload['wines']);
+        }
+        foreach (array('exactSelection', 'budgetAlternative') as $selection_key) {
+            if (isset($payload[$selection_key])
+                && is_array($payload[$selection_key])
+                && isset($payload[$selection_key]['wines'])
+                && is_array($payload[$selection_key]['wines'])) {
+                $payload[$selection_key]['wines'] = $this->with_local_wine_image_list(
+                    $payload[$selection_key]['wines']
+                );
+            }
+        }
+        if (isset($payload['wine']) && is_array($payload['wine'])) {
+            $payload['wine'] = $this->with_local_wine_image($payload['wine']);
+        }
+        return $payload;
+    }
+
+    /** @param array<int,mixed> $wines
+     *  @return array<int,mixed>
+     */
+    private function with_local_wine_image_list(array $wines): array {
+        foreach ($wines as $index => $wine) {
+            if (is_array($wine)) {
+                $wines[$index] = $this->with_local_wine_image($wine);
+            }
+        }
+        return $wines;
+    }
+
+    /** @param array<string,mixed> $wine
+     *  @return array<string,mixed>
+     */
+    private function with_local_wine_image(array $wine): array {
+        $external_id = absint($wine['variantId'] ?? 0);
+        if ($external_id < 1) {
+            return $wine;
+        }
+        $product = wc_get_product($external_id);
+        if (!$product instanceof WC_Product) {
+            return $wine;
+        }
+
+        $image_id = $product->get_image_id();
+        if (!$image_id && $product instanceof WC_Product_Variation) {
+            $parent = wc_get_product($product->get_parent_id());
+            if ($parent instanceof WC_Product) {
+                $image_id = $parent->get_image_id();
+            }
+        }
+        $image_url = $image_id ? wp_get_attachment_image_url($image_id, 'full') : '';
+        if (is_string($image_url) && '' !== $image_url) {
+            $wine['imageUrl'] = esc_url_raw($image_url);
+        }
+        return $wine;
     }
 
     /** @return array<string,mixed>|WP_Error */

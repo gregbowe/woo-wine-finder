@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.12
+Stable tag: 1.0.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -131,6 +131,13 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.14 =
+* Show the lower and higher budget retries whenever a result has a visible alternatives notice, not only when it is over budget.
+* Rehydrate recommendation images from the live local WooCommerce products before displaying them.
+
+= 1.0.13 =
+* Kept the current wines visible while retrying a lower or higher budget and preserved them when that retry fails.
 
 = 1.0.12 =
 * Replaced the token over-budget retry with meaningful budget choices approximately 10% below and above the displayed selection total.
