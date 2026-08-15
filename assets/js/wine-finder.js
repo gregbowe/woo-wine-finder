@@ -82,10 +82,12 @@
     const budgetNoticeCopy = root.querySelector("[data-mnw-budget-notice-copy]");
     const showBudgetAlternativeButton = root.querySelector("[data-mnw-show-budget-alternative]");
     const showExactSelectionButton = root.querySelector("[data-mnw-show-exact-selection]");
+    const retryBudgetControls = root.querySelector("[data-mnw-retry-budget-controls]");
     const retryWithLowerBudgetButton = root.querySelector("[data-mnw-retry-lower-budget]");
     const retryWithHigherBudgetButton = root.querySelector("[data-mnw-retry-higher-budget]");
     const selectedCountElement = root.querySelector("[data-mnw-selected-count]");
     const selectedTotalElement = root.querySelector("[data-mnw-selected-total]");
+    const selectedBudgetStatusElement = root.querySelector("[data-mnw-selected-budget-status]");
     const addSelectedButton = root.querySelector("[data-mnw-add-selected]");
     const addSelectedLabel = root.querySelector("[data-mnw-add-selected-label]");
     const refineForm = root.querySelector("[data-mnw-refine-form]");
@@ -94,7 +96,6 @@
     const refineLabel = root.querySelector("[data-mnw-refine-label]");
     const refineStatus = root.querySelector("[data-mnw-refine-status]");
     const refineUndo = root.querySelector("[data-mnw-refine-undo]");
-    const refineExamples = root.querySelector("[data-mnw-refine-examples]");
     const startAgainButton = root.querySelector("[data-mnw-start-again]");
     const progressForm = root.querySelector("[data-mnw-progress-form]");
     const progressResults = root.querySelector("[data-mnw-progress-results]");
@@ -482,39 +483,52 @@
       retryBudgets = { lower: null, higher: null };
       if (retryWithLowerBudgetButton) retryWithLowerBudgetButton.hidden = true;
       if (retryWithHigherBudgetButton) retryWithHigherBudgetButton.hidden = true;
+      if (retryBudgetControls) retryBudgetControls.hidden = true;
     };
 
-    const setRetryBudgetChoicesDisabled = (disabled) => {
-      if (retryWithLowerBudgetButton) retryWithLowerBudgetButton.disabled = Boolean(disabled);
-      if (retryWithHigherBudgetButton) retryWithHigherBudgetButton.disabled = Boolean(disabled);
+    const setRefinementControlsBusy = (busy) => {
+      [refineSubmit, retryWithLowerBudgetButton, retryWithHigherBudgetButton]
+        .forEach((button) => {
+          if (!button) return;
+          button.disabled = Boolean(busy);
+          if (busy) button.setAttribute("aria-busy", "true");
+          else button.removeAttribute("aria-busy");
+        });
     };
 
-    const setRetryBudgetChoices = (selectionTotal) => {
+    const setRetryBudgetChoices = (activeBudget) => {
       retryBudgets = calculateRetryBudgetChoices(
-        selectionTotal,
+        activeBudget,
         budgetInput.min,
         budgetInput.max
       );
       const formatter = createCurrencyFormatter(storeCurrency, currencyPrecision);
       const choices = [
-        [retryWithLowerBudgetButton, retryBudgets.lower, "-10%"],
-        [retryWithHigherBudgetButton, retryBudgets.higher, "+10%"]
+        [retryWithLowerBudgetButton, retryBudgets.lower, "−10%", "ten percent lower"],
+        [retryWithHigherBudgetButton, retryBudgets.higher, "+10%", "ten percent higher"]
       ];
-      choices.forEach(([button, amount, change]) => {
+      let visibleChoices = 0;
+      choices.forEach(([button, amount, change, accessibleChange]) => {
         if (!button) return;
         if (!Number.isFinite(amount) || amount <= 0) {
           button.hidden = true;
+          button.removeAttribute("aria-label");
           return;
         }
-        button.textContent = `Try ${formatter.format(amount)} (${change})`;
+        const formattedAmount = formatter.format(amount);
+        button.textContent = `Try ${formattedAmount} (${change})`;
+        button.setAttribute("aria-label", `Try a budget of ${formattedAmount}, ${accessibleChange}.`);
         button.disabled = refinementInFlight;
         button.hidden = false;
+        visibleChoices += 1;
       });
+      if (retryBudgetControls) retryBudgetControls.hidden = visibleChoices === 0;
     };
 
     const applyRetryBudget = async (direction) => {
       const amount = Number(retryBudgets[direction]);
-      if (!Number.isFinite(amount) || amount <= 0 || !currentRequest) return;
+      if (!Number.isFinite(amount) || amount <= 0 || !currentRequest
+          || refinementInFlight || recommendationInFlight || cartInFlight) return;
       const retry = createBudgetRetryRefinement(
         currentRequest,
         amount,
@@ -583,9 +597,7 @@
       requestMatch.hidden = summaryTags.length === 0 && unmet.length === 0;
       const partial = substituteTags.length > 0 || unmet.length > 0;
       requestMatch.classList.toggle("mnw-wine-finder__request-match--partial", partial);
-      requestMatchTitle.textContent = partial
-        ? "How we matched your request"
-        : "Your brief, matched";
+      requestMatchTitle.textContent = "Matched to your request";
       requestMatchUnmet.hidden = unmet.length === 0;
       requestMatchUnmetCopy.textContent = unmet.join("; ");
     };
@@ -610,7 +622,7 @@
 
       const currency = currentRecommendation.currency || storeCurrency;
       const formatter = createCurrencyFormatter(currency);
-      const requestedBudget = Number(currentRecommendation.requestedBudget || currentRequest?.budget || 0);
+      const requestedBudget = Number(currentRequest?.budget || currentRecommendation.requestedBudget || 0);
       const exactTotal = Number(currentRecommendation.exactSelection?.total || 0);
       const derivedOverBudget = Number.isFinite(requestedBudget)
         && Number.isFinite(exactTotal)
@@ -638,7 +650,10 @@
         currentRequest,
         selectionStatus
       );
-      summaryElement.textContent = selection.summary || "Chosen from wines currently in stock.";
+      summaryElement.textContent = formatSelectionHeadingSummary(
+        currentRequest,
+        selection.summary || "Chosen from wines currently in stock."
+      );
       attachSelectionListeners({
         resultsElement,
         wines: selection.wines,
@@ -648,10 +663,12 @@
         resultSummaryElement: totalElement,
         selectedCountElement,
         selectedTotalElement,
+        selectedBudgetStatusElement,
         addSelectedButton,
         addSelectedLabel
       });
       renderRequestMatch(selection);
+      setRetryBudgetChoices(requestedBudget);
 
       if (!budgetNotice || !budgetNoticeTitle || !budgetNoticeCopy) return;
 
@@ -666,7 +683,6 @@
           `We replaced unavailable or expensive exact matches with similar styles. Total ${formatter.format(alternativeTotal)}${underBudget > 0.0001 ? ` — ${formatter.format(underBudget)} under budget.` : "."}`
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
-        setRetryBudgetChoices(alternativeTotal);
         if (showExactSelectionButton) {
           showExactSelectionButton.hidden = false;
           showExactSelectionButton.textContent = `Show exact ${formatter.format(exactTotal)} selection`;
@@ -688,7 +704,6 @@
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        setRetryBudgetChoices(Number(selection.total || 0));
         return;
       }
 
@@ -704,7 +719,6 @@
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        setRetryBudgetChoices(Number(selection.total || 0));
         return;
       }
 
@@ -712,7 +726,6 @@
         budgetNotice.hidden = true;
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-        hideRetryBudgetChoices();
         return;
       }
 
@@ -735,7 +748,6 @@
         }
       }
       if (showExactSelectionButton) showExactSelectionButton.hidden = true;
-      setRetryBudgetChoices(exactTotal);
     };
 
     openButton.addEventListener("click", openDialog);
@@ -938,10 +950,11 @@
         wines: currentRecommendation.wines,
         currency: currentRecommendation.currency || storeCurrency,
         currencyPrecision,
-        requestedBudget: Number(currentRecommendation.requestedBudget || currentRequest?.budget || 0),
+        requestedBudget: Number(currentRequest?.budget || currentRecommendation.requestedBudget || 0),
         resultSummaryElement: totalElement,
         selectedCountElement,
         selectedTotalElement,
+        selectedBudgetStatusElement,
         addSelectedButton,
         addSelectedLabel
       });
@@ -1036,10 +1049,9 @@
       );
       refinementInFlight = true;
       setBusy(true);
-      const originalLabel = refineLabel?.textContent || "Refine selection";
-      if (refineSubmit) refineSubmit.disabled = true;
+      const originalLabel = refineLabel?.textContent || "Refine";
+      setRefinementControlsBusy(true);
       if (refineLabel) refineLabel.textContent = pendingLabel;
-      setRetryBudgetChoicesDisabled(true);
       announceRefinement(progressMessage);
 
       try {
@@ -1090,9 +1102,8 @@
       } finally {
         refinementInFlight = false;
         setBusy(false);
-        if (refineSubmit) refineSubmit.disabled = false;
         if (refineLabel) refineLabel.textContent = originalLabel;
-        setRetryBudgetChoicesDisabled(false);
+        setRefinementControlsBusy(false);
       }
     };
 
@@ -1187,10 +1198,11 @@
           wines: currentRecommendation.wines,
           currency: currentRecommendation.currency || storeCurrency,
           currencyPrecision,
-          requestedBudget: Number(currentRecommendation.requestedBudget || currentRequest?.budget || 0),
+          requestedBudget: Number(currentRequest?.budget || currentRecommendation.requestedBudget || 0),
           resultSummaryElement: totalElement,
           selectedCountElement,
           selectedTotalElement,
+          selectedBudgetStatusElement,
           addSelectedButton,
           addSelectedLabel
         });
@@ -1259,12 +1271,8 @@
         bottleCountInput.value = String(readBreakdownTotal(form));
         updateAllocationStatus(form, allocationStatus, submitButton);
         updateBreakdownMaximums(breakdownInputs);
-        if (refineExamples) refineExamples.textContent = refinementExamples(configuredCategories);
         configurationReady = true;
         refreshBudgetMinimum(normaliseBottleCount(bottleCountInput.value));
-        if (refineInput) {
-          refineInput.placeholder = `For example: Make it ${createCurrencyFormatter(storeCurrency, currencyPrecision).format(10)} cheaper.`;
-        }
         root.hidden = false;
         openButton.disabled = false;
         openButton.setAttribute("aria-busy", "false");
@@ -1403,7 +1411,7 @@
       const checkboxLabel = document.createElement("label");
       checkboxLabel.className = "mnw-wine-card__checkbox-label";
       checkboxLabel.htmlFor = checkboxId;
-      checkboxLabel.textContent = "Selected";
+      checkboxLabel.textContent = "Included";
       selectionRow.append(checkbox, checkboxLabel);
 
       const cardBody = document.createElement("div");
@@ -1437,12 +1445,23 @@
       const title = document.createElement("h4");
       title.className = "mnw-wine-card__title";
       title.textContent = wine.title || "Wine";
+      const location = [wine.region, wine.country]
+        .map((value) => String(value || "").trim())
+        .filter((value, itemIndex, values) => value && values.indexOf(value) === itemIndex)
+        .join(", ");
+      const vintageValue = typeof wine.vintage === "object"
+        ? wine.vintage?.year
+        : (wine.vintageYear || wine.vintage);
+      const metadata = [location, String(vintageValue || "").trim()].filter(Boolean);
+      const meta = document.createElement("p");
+      meta.className = "mnw-wine-card__meta";
+      meta.textContent = metadata.join(" · ");
+      meta.hidden = metadata.length === 0;
       const price = document.createElement("p");
       price.className = "mnw-wine-card__price";
       price.textContent = formatter.format(Number(wine.price || 0));
-      content.append(title, price);
+      content.append(title, meta, price);
 
-      const recommendationLabel = String(wine.recommendationLabel || "Why it fits").trim();
       const recommendationReason = directAddressRecommendationCopy(
         wine.recommendationReason || fallbackRecommendationReason(request, selectionStatus)
       );
@@ -1456,12 +1475,12 @@
           reasonTags.className = "mnw-wine-card__reason-tags";
           renderRecommendationTags(reasonTags, recommendationTags);
           reason.appendChild(reasonTags);
-        } else {
-          const reasonLabel = document.createElement("span");
-          reasonLabel.className = "mnw-wine-card__reason-label";
-          reasonLabel.textContent = recommendationLabel || "Why it fits";
-          reason.appendChild(reasonLabel);
         }
+
+        const reasonLabel = document.createElement("span");
+        reasonLabel.className = "mnw-wine-card__reason-label";
+        reasonLabel.textContent = "Why we picked it";
+        reason.appendChild(reasonLabel);
 
         const reasonCopy = document.createElement("p");
         reasonCopy.className = "mnw-wine-card__reason-copy";
@@ -1484,15 +1503,35 @@
       quickViewLabel.setAttribute("aria-hidden", "true");
       content.appendChild(quickViewLabel);
 
+      const cardActions = document.createElement("div");
+      cardActions.className = "mnw-wine-card__actions";
+
       let swapButton = null;
       if (typeof swapWine === "function") {
         swapButton = document.createElement("button");
         swapButton.className = "mnw-wine-card__swap-button";
         swapButton.type = "button";
-        swapButton.textContent = "Swap this wine";
+        swapButton.textContent = "Swap";
         swapButton.setAttribute("aria-label", `Swap ${wine.title || "wine"} with another`);
-        swapButton.addEventListener("click", () => swapWine(wine, swapButton));
+        swapButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          swapWine(wine, swapButton);
+        });
+        cardActions.appendChild(swapButton);
       }
+
+      const selectionToggle = document.createElement("button");
+      selectionToggle.className = "mnw-wine-card__selection-toggle";
+      selectionToggle.type = "button";
+      selectionToggle.dataset.mnwWineSelectionToggle = "true";
+      selectionToggle.textContent = "Remove";
+      selectionToggle.setAttribute("aria-label", `Remove ${wine.title || "wine"} from selection`);
+      selectionToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      cardActions.appendChild(selectionToggle);
 
       const showQuickView = () => openQuickView?.({
         ...wine,
@@ -1507,8 +1546,7 @@
       });
 
       cardBody.append(imageWrap, content);
-      card.append(selectionRow, cardBody);
-      if (swapButton) card.appendChild(swapButton);
+      card.append(selectionRow, cardBody, cardActions);
       container.appendChild(card);
     });
   };
@@ -1527,7 +1565,8 @@
   const updateSelectedState = ({
     resultsElement, wines, currency, currencyPrecision, requestedBudget,
     resultSummaryElement, selectedCountElement,
-    selectedTotalElement, addSelectedButton, addSelectedLabel
+    selectedTotalElement, selectedBudgetStatusElement,
+    addSelectedButton, addSelectedLabel
   }) => {
     const selectedWines = getSelectedWines(resultsElement, wines);
     const summary = calculateSelectionSummary(
@@ -1536,10 +1575,21 @@
       requestedBudget,
       currencyPrecision
     );
-    selectedCountElement.textContent = `${summary.count} wine${summary.count === 1 ? "" : "s"} selected`;
-    selectedTotalElement.textContent = `Selected total: ${summary.formattedTotal}`;
+    selectedCountElement.textContent = `${summary.count} bottle${summary.count === 1 ? "" : "s"} selected`;
+    selectedTotalElement.textContent = summary.formattedTotal;
+    if (selectedBudgetStatusElement) {
+      const budgetPosition = formatBudgetPosition(
+        summary.total,
+        summary.budget,
+        currency,
+        currencyPrecision
+      );
+      selectedBudgetStatusElement.textContent = budgetPosition.text;
+      selectedBudgetStatusElement.dataset.mnwBudgetPosition = budgetPosition.state;
+      selectedBudgetStatusElement.hidden = !budgetPosition.text;
+    }
     if (resultSummaryElement) {
-      resultSummaryElement.textContent = `${summary.count} wine${summary.count === 1 ? "" : "s"} selected · ${summary.formattedTotal} of ${summary.formattedBudget}`;
+      resultSummaryElement.textContent = `${summary.formattedTotal} of ${summary.formattedBudget}`;
     }
     const action = selectionActionState(summary.count);
     addSelectedButton.disabled = action.disabled;
@@ -1553,7 +1603,7 @@
       disabled: selectedCount === 0,
       label: selectedCount === 0
         ? "Select at least one wine"
-        : `Add ${selectedCount} selected wine${selectedCount === 1 ? "" : "s"}`
+        : `Add ${selectedCount} wine${selectedCount === 1 ? "" : "s"} to basket`
     };
   };
 
@@ -1563,7 +1613,60 @@
     card.classList.toggle("mnw-wine-card--selected", selected);
     card.dataset.mnwSelected = String(selected);
     const label = card.querySelector(".mnw-wine-card__checkbox-label");
-    if (label) label.textContent = selected ? "Selected" : "Not selected";
+    if (label) label.textContent = selected ? "Included" : "Removed";
+    const selectionToggle = card.querySelector("[data-mnw-wine-selection-toggle]");
+    if (selectionToggle) {
+      const title = card.querySelector(".mnw-wine-card__title")?.textContent || "wine";
+      selectionToggle.textContent = selected ? "Remove" : "Add back";
+      selectionToggle.setAttribute(
+        "aria-label",
+        selected ? `Remove ${title} from selection` : `Add ${title} back to selection`
+      );
+    }
+  };
+
+  const formatSelectionHeadingSummary = (request, fallback = "") => {
+    const categoryCounts = request?.categoryCounts && typeof request.categoryCounts === "object"
+      ? request.categoryCounts
+      : {};
+    const categoryParts = CATEGORY_DEFINITIONS
+      .map((category) => ({
+        label: category.label.toLowerCase(),
+        count: Number(categoryCounts[category.key] || 0)
+      }))
+      .filter((category) => Number.isInteger(category.count) && category.count > 0)
+      .map((category) => `${category.count} ${category.label}`);
+    const requestedCount = Number(request?.bottleCount || 0);
+    const derivedCount = Object.values(categoryCounts)
+      .reduce((sum, value) => sum + (Number.isFinite(Number(value)) ? Number(value) : 0), 0);
+    const bottleCount = Number.isInteger(requestedCount) && requestedCount > 0
+      ? requestedCount
+      : derivedCount;
+    if (!Number.isInteger(bottleCount) || bottleCount <= 0) return String(fallback || "");
+    return [
+      `${bottleCount} bottle${bottleCount === 1 ? "" : "s"}`,
+      ...categoryParts
+    ].join(" · ");
+  };
+
+  const formatBudgetPosition = (
+    total,
+    budget,
+    currency,
+    currencyPrecision = null,
+    locale = null
+  ) => {
+    const numericTotal = Number(total || 0);
+    const numericBudget = Number(budget || 0);
+    if (!Number.isFinite(numericTotal) || !Number.isFinite(numericBudget) || numericBudget <= 0) {
+      return { state: "none", text: "" };
+    }
+    const difference = numericBudget - numericTotal;
+    if (Math.abs(difference) <= 0.0001) return { state: "on", text: "On budget" };
+    const formatter = createCurrencyFormatter(currency, currencyPrecision, locale);
+    return difference > 0
+      ? { state: "under", text: `${formatter.format(difference)} under budget` }
+      : { state: "over", text: `${formatter.format(Math.abs(difference))} over budget` };
   };
 
   const calculateSelectionSummary = (
@@ -2326,23 +2429,23 @@
   };
 
   const calculateRetryBudgetChoices = (
-    selectionTotal,
+    activeBudget,
     minimumBudget = null,
     maximumBudget = null
   ) => {
-    const total = Number(selectionTotal);
-    if (!Number.isFinite(total) || total <= 0) {
+    const budget = Number(activeBudget);
+    if (!Number.isFinite(budget) || budget <= 0) {
       return { lower: null, higher: null };
     }
 
     const minimum = Number(minimumBudget);
     const maximum = Number(maximumBudget);
-    const lower = Math.round(total * 0.9);
-    const higher = Math.round(total * 1.1);
+    const lower = Math.round(budget * 0.9);
+    const higher = Math.round(budget * 1.1);
     const lowerAllowed = lower > 0
-      && lower < total
+      && lower < budget
       && (!Number.isFinite(minimum) || minimum <= 0 || lower >= minimum);
-    const higherAllowed = higher > total
+    const higherAllowed = higher > budget
       && (!Number.isFinite(maximum) || maximum <= 0 || higher <= maximum);
 
     return {
@@ -2370,6 +2473,8 @@
       createLoadingMessageController,
       createRefinementRequestPayload,
       createRefinementSnapshot,
+      formatBudgetPosition,
+      formatSelectionHeadingSummary,
       normaliseConfiguredCategories,
       recommendationNoticeCopy,
       readRecommendationForm,

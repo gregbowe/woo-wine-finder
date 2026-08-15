@@ -511,7 +511,7 @@ if (!defined('ABSPATH')) { exit; }
             <div class="mnw-wine-finder__selection-header">
               <div>
                 <h3 class="mnw-wine-finder__selection-title">
-                  <?php echo esc_html__('Wines picked for you', 'my-next-wine-for-woocommerce'); ?>
+                  <?php echo esc_html__('Your wine selection', 'my-next-wine-for-woocommerce'); ?>
                 </h3>
 
                 <p
@@ -578,28 +578,12 @@ if (!defined('ABSPATH')) { exit; }
                   <?php echo esc_html__('Show exact matches', 'my-next-wine-for-woocommerce'); ?>
                 </button>
 
-                <button
-                  class="mnw-wine-finder__secondary-button mnw-wine-finder__budget-toggle"
-                  type="button"
-                  data-mnw-retry-lower-budget
-                  hidden
-                ></button>
-
-                <button
-                  class="mnw-wine-finder__primary-button mnw-wine-finder__budget-toggle"
-                  type="button"
-                  data-mnw-retry-higher-budget
-                  hidden
-                ></button>
               </div>
             </div>
 
             <section class="mnw-wine-finder__refinement" data-mnw-refinement>
               <div class="mnw-wine-finder__refinement-heading">
-                <div>
-                  <h4><?php echo esc_html__('Want to change something?', 'my-next-wine-for-woocommerce'); ?></h4>
-                  <p><?php echo esc_html__('Keep the parts you like and tell us what to adjust.', 'my-next-wine-for-woocommerce'); ?></p>
-                </div>
+                <h4><?php echo esc_html__('Want to adjust your selection?', 'my-next-wine-for-woocommerce'); ?></h4>
                 <button
                   class="mnw-wine-finder__refinement-undo"
                   type="button"
@@ -617,18 +601,38 @@ if (!defined('ABSPATH')) { exit; }
                   type="text"
                   maxlength="240"
                   autocomplete="off"
-                  placeholder="<?php echo esc_attr__('For example: Make it 10 cheaper.', 'my-next-wine-for-woocommerce'); ?>"
+                  placeholder="<?php echo esc_attr__('Ask for cheaper bottles, more reds, or a different style…', 'my-next-wine-for-woocommerce'); ?>"
                   data-mnw-refine-input
                 >
                 <button
-                  class="mnw-wine-finder__secondary-button mnw-wine-finder__refinement-button"
+                  class="mnw-wine-finder__primary-button mnw-wine-finder__refinement-button"
                   type="submit"
                   data-mnw-refine-submit
-                ><span data-mnw-refine-label><?php echo esc_html__('Refine selection', 'my-next-wine-for-woocommerce'); ?></span></button>
+                ><span data-mnw-refine-label><?php echo esc_html__('Refine', 'my-next-wine-for-woocommerce'); ?></span></button>
               </form>
-              <p class="mnw-wine-finder__refinement-examples" data-mnw-refine-examples>
-                <?php echo esc_html__('Try “Make it 4 reds and 2 whites”, “Give me a better gift bottle” or “Make the selection more adventurous”.', 'my-next-wine-for-woocommerce'); ?>
-              </p>
+              <div
+                class="mnw-wine-finder__quick-budgets"
+                data-mnw-retry-budget-controls
+                hidden
+              >
+                <span class="mnw-wine-finder__quick-budgets-label">
+                  <?php echo esc_html__('Or try a different budget', 'my-next-wine-for-woocommerce'); ?>
+                </span>
+                <div class="mnw-wine-finder__quick-budget-actions">
+                  <button
+                    class="mnw-wine-finder__secondary-button mnw-wine-finder__budget-retry"
+                    type="button"
+                    data-mnw-retry-lower-budget
+                    hidden
+                  ></button>
+                  <button
+                    class="mnw-wine-finder__secondary-button mnw-wine-finder__budget-retry"
+                    type="button"
+                    data-mnw-retry-higher-budget
+                    hidden
+                  ></button>
+                </div>
+              </div>
               <p
                 class="mnw-wine-finder__refinement-status"
                 data-mnw-refine-status
@@ -647,23 +651,28 @@ if (!defined('ABSPATH')) { exit; }
               <div class="mnw-wine-finder__selected-summary">
                 <span data-mnw-selected-count></span>
                 <strong data-mnw-selected-total></strong>
+                <span
+                  class="mnw-wine-finder__selected-budget-status"
+                  data-mnw-selected-budget-status
+                  aria-live="polite"
+                ></span>
               </div>
 
               <div class="mnw-wine-finder__actions">
+                <button
+                  class="mnw-wine-finder__secondary-button"
+                  type="button"
+                  data-mnw-start-again
+                >
+                  <?php echo esc_html__('Edit answers', 'my-next-wine-for-woocommerce'); ?>
+                </button>
+
                 <button
                   class="mnw-wine-finder__primary-button mnw-wine-finder__add-selected"
                   type="button"
                   data-mnw-add-selected
                 >
                   <span data-mnw-add-selected-label><?php echo esc_html($button_label); ?></span>
-                </button>
-
-                <button
-                  class="mnw-wine-finder__secondary-button"
-                  type="button"
-                  data-mnw-start-again
-                >
-                  <?php echo esc_html__('Change my answers', 'my-next-wine-for-woocommerce'); ?>
                 </button>
               </div>
             </div>
