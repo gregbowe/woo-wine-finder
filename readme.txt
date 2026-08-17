@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.21
+Stable tag: 1.0.22
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,7 +38,13 @@ Non-wine products can be excluded. The initial eligible catalogue is mapped or r
 
 = Pricing =
 
-The hosted My Next Wine service includes a 14-day free trial followed by EUR 29.99 per month plus applicable tax. There is no commission or per-order fee.
+The hosted My Next Wine service includes a 14-day free trial followed by one of these monthly plans, plus applicable tax:
+
+* Launch: EUR 29.99 per month for up to 500 completed Wine Finder sessions.
+* Growth: EUR 79.99 per month for up to 2,000 completed Wine Finder sessions.
+* Scale: EUR 199.99 per month for up to 5,000 completed Wine Finder sessions.
+
+A completed session includes the shopper's initial recommendations and every follow-up refinement or bottle swap made during that visit. Refinements and swaps are not counted as separate sessions. There is no commission or per-order fee.
 
 Subscription checkout and account management are hosted by Stripe. The trial begins only when the catalogue is ready and the merchant chooses to start it. Activating the plugin alone does not start the trial, create a charge or transmit store or catalogue data.
 
@@ -131,6 +137,11 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.22 =
+* Added Launch, Growth and Scale plan selection for Stripe checkout.
+* Reused one visit-scoped session across initial recommendations, refinements and bottle swaps.
+* Added completed-session allowance and current-month usage to the merchant settings screen.
 
 = 1.0.14 =
 * Show the lower and higher budget retries whenever a result has a visible alternatives notice, not only when it is over budget.

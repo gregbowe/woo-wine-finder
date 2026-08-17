@@ -162,8 +162,14 @@ final class MyNextWine_Woo_API_Client {
     }
 
     /** @return array<string,mixed>|WP_Error */
-    public function start_billing() {
-        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/start', array());
+    public function start_billing(string $plan_code = 'LAUNCH') {
+        $plan_code = strtoupper(sanitize_key($plan_code));
+        if (!in_array($plan_code, array('LAUNCH', 'GROWTH', 'SCALE'), true)) {
+            return new WP_Error('mynextwine_woo_plan_invalid', __('Choose a valid Wine Finder plan.', 'my-next-wine-for-woocommerce'));
+        }
+        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/start', array(
+            'planCode' => $plan_code,
+        ));
     }
 
     /** Compatibility alias for older plugin builds. @return array<string,mixed>|WP_Error */

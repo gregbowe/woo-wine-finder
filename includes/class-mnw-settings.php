@@ -149,7 +149,10 @@ final class MyNextWine_Woo_Settings {
             wp_die(esc_html__('You do not have permission to start My Next Wine billing.', 'my-next-wine-for-woocommerce'));
         }
         check_admin_referer('mynextwine_woo_start_billing');
-        $result = $this->client->start_billing();
+        $plan_code = isset($_POST['plan_code'])
+            ? strtoupper(sanitize_key(wp_unslash($_POST['plan_code'])))
+            : 'LAUNCH';
+        $result = $this->client->start_billing($plan_code);
         if (is_wp_error($result)) {
             $this->redirect_with_error($result);
         }
@@ -208,6 +211,17 @@ final class MyNextWine_Woo_Settings {
         $billing_currency = is_array($status) ? (string) ($status['billingCurrency'] ?? 'EUR') : 'EUR';
         $billing_price = is_array($status) ? (string) ($status['billingPrice'] ?? '29.99') : '29.99';
         $billing_trial_days = is_array($status) ? max(0, (int) ($status['billingTrialDays'] ?? 14)) : 14;
+        $plans = is_array($status) && !empty($status['plans']) && is_array($status['plans'])
+            ? $status['plans']
+            : array(
+                array('code' => 'LAUNCH', 'name' => 'Launch', 'monthlyPrice' => '29.99', 'completedSessionsPerMonth' => 500),
+                array('code' => 'GROWTH', 'name' => 'Growth', 'monthlyPrice' => '79.99', 'completedSessionsPerMonth' => 2000),
+                array('code' => 'SCALE', 'name' => 'Scale', 'monthlyPrice' => '199.99', 'completedSessionsPerMonth' => 5000),
+            );
+        $plan_code = is_array($status) ? strtoupper((string) ($status['planCode'] ?? 'LAUNCH')) : 'LAUNCH';
+        $plan_name = is_array($status) ? (string) ($status['planName'] ?? 'Launch') : 'Launch';
+        $completed_sessions = is_array($status) ? max(0, (int) ($status['completedSessionsThisMonth'] ?? 0)) : 0;
+        $completed_session_limit = is_array($status) ? max(0, (int) ($status['completedSessionsLimit'] ?? 500)) : 500;
         $show_mnw_notes = is_array($status)
             ? !empty($status['showMyNextWineNotes'])
             : 'yes' === ($settings['show_mnw_notes'] ?? 'no');
@@ -284,10 +298,17 @@ final class MyNextWine_Woo_Settings {
                     </p>
                     <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php
-                        /* translators: 1: billing currency code, 2: monthly price. */
-                        echo esc_html(sprintf(__('%1$s %2$s per month, plus tax where applicable', 'my-next-wine-for-woocommerce'), $billing_currency, $billing_price));
+                        /* translators: 1: plan name, 2: billing currency code, 3: monthly price. */
+                        echo esc_html(sprintf(__('%1$s — %2$s %3$s per month, plus tax where applicable', 'my-next-wine-for-woocommerce'), $plan_name, $billing_currency, $billing_price));
                         ?>
                     </p>
+                    <p><strong><?php echo esc_html__('Completed sessions this month:', 'my-next-wine-for-woocommerce'); ?></strong>
+                        <?php
+                        /* translators: 1: completed sessions, 2: monthly session allowance. */
+                        echo esc_html(sprintf(__('%1$s of %2$s', 'my-next-wine-for-woocommerce'), number_format_i18n($completed_sessions), number_format_i18n($completed_session_limit)));
+                        ?>
+                    </p>
+                    <p class="description"><?php echo esc_html__('A session includes the initial recommendations and every refinement or bottle swap during the same shopper visit.', 'my-next-wine-for-woocommerce'); ?></p>
                     <?php if (!empty($status['trialEndsAt'])) : ?>
                         <p><strong><?php echo esc_html__('Trial ends:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['trialEndsAt'])); ?></p>
                     <?php endif; ?>
@@ -357,13 +378,28 @@ final class MyNextWine_Woo_Settings {
                             </form>
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canStartBilling'])) : ?>
-                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="width:100%;margin-top:12px;">
                                 <input type="hidden" name="action" value="mynextwine_woo_start_billing">
                                 <?php wp_nonce_field('mynextwine_woo_start_billing'); ?>
-                                <?php
-                                /* translators: 1: trial length in days, 2: billing currency code, 3: monthly price. */
-                                submit_button(sprintf(__('Start %1$d-day trial — %2$s %3$s/month + tax', 'my-next-wine-for-woocommerce'), $billing_trial_days, $billing_currency, $billing_price), 'primary', 'submit', false);
-                                ?>
+                                <fieldset>
+                                    <legend style="font-weight:600;margin-bottom:8px;"><?php echo esc_html__('Choose a Wine Finder plan', 'my-next-wine-for-woocommerce'); ?></legend>
+                                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px;">
+                                        <?php foreach ($plans as $plan) :
+                                            $candidate_code = strtoupper((string) ($plan['code'] ?? ''));
+                                            if (!in_array($candidate_code, array('LAUNCH', 'GROWTH', 'SCALE'), true)) {
+                                                continue;
+                                            }
+                                            ?>
+                                            <label style="display:block;border:1px solid #c3c4c7;border-radius:6px;padding:12px;background:#fff;">
+                                                <input type="radio" name="plan_code" value="<?php echo esc_attr($candidate_code); ?>" <?php checked($plan_code, $candidate_code); ?> required>
+                                                <strong><?php echo esc_html((string) ($plan['name'] ?? ucfirst(strtolower($candidate_code)))); ?></strong><br>
+                                                <span><?php echo esc_html($billing_currency . ' ' . (string) ($plan['monthlyPrice'] ?? '')); ?>/<?php echo esc_html__('month', 'my-next-wine-for-woocommerce'); ?></span><br>
+                                                <small><?php echo esc_html(number_format_i18n((int) ($plan['completedSessionsPerMonth'] ?? 0)) . ' ' . __('completed sessions', 'my-next-wine-for-woocommerce')); ?></small>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </fieldset>
+                                <?php submit_button(sprintf(__('Start %d-day trial with selected plan', 'my-next-wine-for-woocommerce'), $billing_trial_days), 'primary', 'submit', false); ?>
                             </form>
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canManageBilling'])) : ?>

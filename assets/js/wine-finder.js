@@ -1024,6 +1024,7 @@
 
       try {
         const payload = readRecommendationForm(form, configuredCategories);
+        payload.sessionId = pageSessionId;
         validateRecommendationPayload(
           payload,
           minimumBottlePrice,
@@ -1125,7 +1126,8 @@
           body: JSON.stringify({
             request: currentRequest,
             wineToReplaceId: wineToReplace.sommWineId,
-            currentWineIds: currentRecommendation.wines.map((wine) => wine.sommWineId)
+            currentWineIds: currentRecommendation.wines.map((wine) => wine.sommWineId),
+            sessionId: currentRecommendation.sessionId
           }),
           cache: "no-store"
         }, SWAP_TIMEOUT_MS, "The wine swap took too long. Please try again.");
@@ -1956,7 +1958,8 @@
     currentWineIds: Array.isArray(recommendation?.wines)
       ? recommendation.wines.map((wine) => wine?.sommWineId)
       : [],
-    instruction: String(instruction || "")
+    instruction: String(instruction || ""),
+    sessionId: recommendation?.sessionId
   });
 
   const createBudgetRetryRefinement = (

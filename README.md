@@ -91,7 +91,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 
 - Set the sole-trader legal name, genuine geographic business address, CRO business-name registration number and monitored support/privacy email in the backend AWS Secrets Manager record. Leave VAT blank while not VAT registered.
 - Publish the Merchant Terms, Privacy Statement and subprocessor list at the URLs above.
-- Create the Stripe recurring Price, configure Stripe Customer Portal, register the dedicated Stripe webhook endpoint and add separate staging/production Stripe secrets in AWS Secrets Manager.
+- Create the three Stripe recurring Prices, configure Stripe Customer Portal for plan changes, register the dedicated Stripe webhook endpoint and add separate staging/production Stripe secrets in AWS Secrets Manager.
 - Test against the exact WordPress/WooCommerce/PHP versions claimed in `readme.txt` and update `Tested up to` before submission.
 - Run Plugin Check and WordPress Coding Standards, prepare repository assets/screenshots, and provide clear WordPress.org reviewer instructions for the external SaaS and Stripe billing flow.
 
@@ -100,7 +100,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- The default direct subscription is EUR 29.99/month after a 14-day trial; the configured Stripe Price currency and amount must exactly match the backend settings and published terms.
+- The direct subscriptions are Launch (EUR 29.99 / 500 completed sessions), Growth (EUR 79.99 / 2,000) and Scale (EUR 199.99 / 5,000) per month after a 14-day trial. Each configured Stripe Price must exactly match the backend plan and published terms.
 
 ## Local development
 
