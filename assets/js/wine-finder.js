@@ -32,6 +32,7 @@
     { key: "dessert", label: "Dessert", plural: "dessert wines" }
   ]);
   const LEGACY_WINE_CATEGORIES = Object.freeze(["red", "white", "sparkling", "dessert"]);
+  let serviceLocale = null;
 
   const initialiseAllWidgets = () => {
     document.querySelectorAll("[data-mnw-widget]").forEach(initialiseWidget);
@@ -1480,6 +1481,7 @@
     loadWidgetConfiguration(configEndpoint)
       .then((configuration) => {
         storeCurrency = requireCurrencyCode(configuration.currency);
+        serviceLocale = normaliseMarketLocale(configuration.marketLocale);
         storeCurrencySymbol = String(configuration.currencySymbol || "").trim() || null;
         currencyPrecision = requireIntegerInRange(configuration.currencyPrecision, 0, 4, "currency precision");
         minimumBottlePrice = requirePositiveNumber(configuration.minimumBottlePrice, "minimum bottle price");
@@ -2822,6 +2824,14 @@
     return parsed;
   };
 
+  const normaliseMarketLocale = (locale) => {
+    const parts = String(locale || "").trim().replace("_", "-").split("-");
+    if (parts.length !== 2 || !/^[A-Za-z]{2}$/.test(parts[0]) || !/^[A-Za-z]{2}$/.test(parts[1])) {
+      return null;
+    }
+    return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}`;
+  };
+
   const createCurrencyFormatter = (currency, precision = null, locale = null) => {
     const code = normaliseCurrencyCode(currency);
     const options = { style: "currency", currency: code };
@@ -2831,6 +2841,7 @@
     }
     return new Intl.NumberFormat(
       locale
+        || serviceLocale
         || (typeof document !== "undefined" ? document.documentElement?.lang : null)
         || (typeof navigator !== "undefined" ? navigator.language : null)
         || "en",

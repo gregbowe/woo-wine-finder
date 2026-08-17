@@ -84,6 +84,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - The Wine Finder is activated only from a verified Stripe webhook, never from the browser return alone.
 - Stripe handles card collection, payment authentication, renewals and hosted invoices; payment-card details never pass through the WordPress plugin or My Next Wine backend.
 - The merchant opens Stripe Customer Portal from **WooCommerce → My Next Wine** to update billing details, view invoices or cancel.
+- Stripe Checkout collects the billing address and optional tax identifier; the backend retains returned merchant billing evidence but never payment-card details. Stripe Checkout and invoices are authoritative for the total, and the integration does not assert that Stripe Automatic Tax is enabled.
 - Cancellation normally keeps access until the end of the paid period reported by Stripe.
 - Uninstalling revokes the plugin connection but does not silently cancel the Stripe subscription.
 
@@ -97,10 +98,10 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 
 ## Initial limitations
 
-- One store currency must match the merchant country's configured My Next Wine currency.
+- The pilot accepts Ireland/EUR and United Kingdom/GBP stores. One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- The direct subscriptions are Launch (EUR 29.99 / 500 completed sessions), Growth (EUR 79.99 / 2,000) and Scale (EUR 199.99 / 5,000) per month after a 14-day trial. Each configured Stripe Price must exactly match the backend plan and published terms.
+- The initial direct subscriptions remain billed in EUR: Launch (EUR 29.99 / 500 completed sessions), Growth (EUR 79.99 / 2,000) and Scale (EUR 199.99 / 5,000) per month after a 14-day trial. Each configured Stripe Price must exactly match the backend plan and published terms; Stripe Checkout and invoices are authoritative for any tax shown.
 
 ## Local development
 

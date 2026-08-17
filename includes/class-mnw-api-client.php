@@ -31,6 +31,7 @@ final class MyNextWine_Woo_API_Client {
             'catalogue_mode' => '',
             'last_catalogue_sync_at' => '',
             'last_catalogue_sync_error' => '',
+            'last_service_contact_at' => '',
             'auto_display' => 'yes',
             'analytics_enabled' => 'no',
             'launcher_position' => 'left',
@@ -158,7 +159,13 @@ final class MyNextWine_Woo_API_Client {
 
     /** @return array<string,mixed>|WP_Error */
     public function status() {
-        return $this->request('GET', '/api/woocommerce/widget/merchant/status');
+        $result = $this->request('GET', '/api/woocommerce/widget/merchant/status');
+        if (!is_wp_error($result)) {
+            $settings = $this->settings();
+            $settings['last_service_contact_at'] = gmdate('c');
+            $this->save_settings($settings);
+        }
+        return $result;
     }
 
     /** @return array<string,mixed>|WP_Error */

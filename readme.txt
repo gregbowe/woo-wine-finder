@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.22
+Stable tag: 1.0.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,7 +38,7 @@ Non-wine products can be excluded. The initial eligible catalogue is mapped or r
 
 = Pricing =
 
-The hosted My Next Wine service includes a 14-day free trial followed by one of these monthly plans, plus applicable tax:
+The hosted My Next Wine service includes a 14-day free trial followed by one of these monthly plans. The current direct-subscription billing currency is EUR:
 
 * Launch: EUR 29.99 per month for up to 500 completed Wine Finder sessions.
 * Growth: EUR 79.99 per month for up to 2,000 completed Wine Finder sessions.
@@ -47,6 +47,8 @@ The hosted My Next Wine service includes a 14-day free trial followed by one of 
 A completed session includes the shopper's initial recommendations and every follow-up refinement or bottle swap made during that visit. Refinements and swaps are not counted as separate sessions. There is no commission or per-order fee.
 
 Subscription checkout and account management are hosted by Stripe. The trial begins only when the catalogue is ready and the merchant chooses to start it. Activating the plugin alone does not start the trial, create a charge or transmit store or catalogue data.
+
+Stripe Checkout and the Stripe invoice show the authoritative charge and any tax before payment. My Next Wine does not claim that Stripe Automatic Tax is enabled. The Wine Finder pilot accepts stores in Ireland using EUR and stores in the United Kingdom using GBP; store prices and shopper budgets continue to use the store's own currency.
 
 My Next Wine provides technology only. The merchant remains the seller of every wine and is responsible for alcohol licensing, age verification, product information and condition, payment, fulfilment, delivery, customer service, refunds and legal compliance.
 
@@ -88,7 +90,7 @@ After connection, the plugin may send:
 
 The plugin is not designed to send shopper names, customer email addresses, billing/delivery addresses or payment-card details to My Next Wine.
 
-Stripe is used for merchant subscription billing. Stripe is contacted only after the merchant chooses to start the trial or manage the subscription. My Next Wine may provide Stripe with the merchant contact email and subscription metadata; the merchant submits billing and payment details directly on Stripe-hosted pages. Payment-card details are not sent through the WordPress plugin or stored by My Next Wine.
+Stripe is used for merchant subscription billing. Stripe is contacted only after the merchant chooses to start the trial or manage the subscription. My Next Wine may provide Stripe with the merchant contact email and subscription metadata; the merchant submits billing and payment details directly on Stripe-hosted pages. Stripe returns the merchant name, billing address/country and any supplied tax identifier to My Next Wine as billing evidence. Payment-card details are not sent through the WordPress plugin or stored by My Next Wine.
 
 My Next Wine may use contracted hosting, database, monitoring, support, billing and artificial-intelligence providers, including Stripe for merchant subscription billing, to operate the service. Full information is available here:
 
@@ -137,6 +139,11 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.23 =
+* Added explicit Ireland/EUR and United Kingdom/GBP market validation feedback.
+* Added merchant market, catalogue readiness and last-service-contact details to the settings screen.
+* Updated merchant agreement acceptance and clarified the actual EUR Stripe billing currency and billing evidence.
 
 = 1.0.22 =
 * Added Launch, Growth and Scale plan selection for Stripe checkout.

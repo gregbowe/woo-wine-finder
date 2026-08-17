@@ -101,6 +101,13 @@ final class MyNextWine_Woo_Installer {
         if ('CONNECTED' === ($settings['connection_state'] ?? '') && $this->client->is_configured()) {
             return;
         }
+        if (in_array(
+            (string) ($settings['connection_state'] ?? ''),
+            array('MARKET_UNSUPPORTED', 'MARKET_DISABLED', 'CURRENCY_MISMATCH', 'MARKET_CONFIGURATION_ERROR'),
+            true
+        )) {
+            return;
+        }
         $next_attempt = (int) ($settings['bootstrap_next_attempt'] ?? 0);
         if ($next_attempt > time()) {
             return;
@@ -139,6 +146,13 @@ final class MyNextWine_Woo_Installer {
         $settings = $this->client->settings();
         if ('yes' !== ($settings['connection_consent'] ?? 'no')
             || MYNEXTWINE_WOO_TERMS_VERSION !== ($settings['terms_version'] ?? '')) {
+            return;
+        }
+        if (in_array(
+            (string) ($settings['connection_state'] ?? ''),
+            array('MARKET_UNSUPPORTED', 'MARKET_DISABLED', 'CURRENCY_MISMATCH', 'MARKET_CONFIGURATION_ERROR'),
+            true
+        )) {
             return;
         }
         if (!$this->acquire_bootstrap_lock()) {
@@ -200,7 +214,12 @@ final class MyNextWine_Woo_Installer {
 
         $result = $this->client->bootstrap($payload);
         if (is_wp_error($result)) {
-            $this->record_failure($result->get_error_message());
+            $market_state = $this->market_failure_state($result);
+            $this->record_failure(
+                $result->get_error_message(),
+                null === $market_state ? 'ERROR' : $market_state,
+                null === $market_state
+            );
             return;
         }
 
@@ -253,15 +272,30 @@ final class MyNextWine_Woo_Installer {
         return $scheme . '://' . $host . $port . $path;
     }
 
-    private function record_failure(string $message): void {
+    private function record_failure(string $message, string $state = 'ERROR', bool $retry = true): void {
         $settings = $this->client->settings();
-        $settings['connection_state'] = 'ERROR';
+        $settings['connection_state'] = $state;
         $settings['connection_error'] = sanitize_text_field($message);
-        $settings['bootstrap_next_attempt'] = time() + 300;
+        $settings['bootstrap_next_attempt'] = $retry ? time() + 300 : 0;
         $this->client->save_settings($settings);
-        if (!wp_next_scheduled(self::BOOTSTRAP_HOOK)) {
+        if ($retry && !wp_next_scheduled(self::BOOTSTRAP_HOOK)) {
             wp_schedule_single_event(time() + 300, self::BOOTSTRAP_HOOK);
         }
+    }
+
+    private function market_failure_state(WP_Error $error): ?string {
+        $data = $error->get_error_data();
+        $body = is_array($data) && isset($data['body']) && is_array($data['body'])
+            ? $data['body']
+            : array();
+        $code = strtoupper(sanitize_key((string) ($body['code'] ?? '')));
+        $states = array(
+            'UNSUPPORTED_MARKET' => 'MARKET_UNSUPPORTED',
+            'MARKET_DISABLED' => 'MARKET_DISABLED',
+            'MARKET_CURRENCY_MISMATCH' => 'CURRENCY_MISMATCH',
+            'MARKET_CONFIGURATION_ERROR' => 'MARKET_CONFIGURATION_ERROR',
+        );
+        return $states[$code] ?? null;
     }
 
     private static function random_secret(): string {

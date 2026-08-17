@@ -204,6 +204,32 @@ final class MyNextWine_Woo_Settings {
         $operational = is_array($status) && !empty($status['operational']);
         $catalogue = is_array($status) && isset($status['catalogue']) && is_array($status['catalogue']) ? $status['catalogue'] : array();
         $connection_state = (string) ($settings['connection_state'] ?? 'PENDING');
+        $base_location = function_exists('wc_get_base_location') ? wc_get_base_location() : array();
+        $local_country_code = sanitize_text_field((string) ($base_location['country'] ?? ''));
+        $country_names = function_exists('WC') && WC() && isset(WC()->countries)
+            ? WC()->countries->get_countries()
+            : array();
+        $store_name = is_array($status)
+            ? (string) ($status['storeName'] ?? get_bloginfo('name'))
+            : (string) get_bloginfo('name');
+        $store_country_code = is_array($status)
+            ? (string) ($status['storeCountryCode'] ?? $local_country_code)
+            : $local_country_code;
+        $store_country = is_array($status)
+            ? (string) ($status['storeCountry'] ?? ($country_names[$store_country_code] ?? $store_country_code))
+            : (string) ($country_names[$store_country_code] ?? $store_country_code);
+        $store_currency = is_array($status)
+            ? (string) ($status['storeCurrency'] ?? (function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : ''))
+            : (function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : '');
+        $store_locale = is_array($status)
+            ? (string) ($status['storeLocale'] ?? determine_locale())
+            : determine_locale();
+        $market_locale = is_array($status) ? (string) ($status['marketLocale'] ?? '') : '';
+        $installed_at = is_array($status) ? (string) ($status['installedAt'] ?? '') : '';
+        $last_service_contact_at = (string) ($settings['last_service_contact_at'] ?? '');
+        $last_catalogue_sync_at = is_array($status)
+            ? (string) ($status['lastCatalogueSyncAt'] ?? ($settings['last_catalogue_sync_at'] ?? ''))
+            : (string) ($settings['last_catalogue_sync_at'] ?? '');
         $local_terms_current = 'yes' === ($settings['connection_consent'] ?? 'no')
             && MYNEXTWINE_WOO_TERMS_VERSION === ($settings['terms_version'] ?? '');
         $server_terms_current = is_array($status) && !empty($status['termsAccepted']);
@@ -281,27 +307,76 @@ final class MyNextWine_Woo_Settings {
             <div style="max-width:760px;background:#fff;border:1px solid #dcdcde;padding:18px 22px;margin:16px 0;">
                 <h2 style="margin-top:0;"><?php echo esc_html__('Setup status', 'my-next-wine-for-woocommerce'); ?></h2>
                 <p><strong><?php echo esc_html__('Store connection:', 'my-next-wine-for-woocommerce'); ?></strong>
-                    <?php echo esc_html($connected ? __('Connected', 'my-next-wine-for-woocommerce') : ucfirst(strtolower($connection_state))); ?>
+                    <?php echo esc_html($connected ? __('Connected', 'my-next-wine-for-woocommerce') : $this->connection_status_label($connection_state)); ?>
                 </p>
                 <?php if (!$connected && !empty($settings['connection_error'])) : ?>
                     <p style="color:#b32d2e;"><?php echo esc_html((string) $settings['connection_error']); ?></p>
                 <?php endif; ?>
+                <p><strong><?php echo esc_html__('WooCommerce market configuration:', 'my-next-wine-for-woocommerce'); ?></strong>
+                    <?php
+                    /* translators: 1: country, 2: ISO country code, 3: store currency, 4: store locale. */
+                    echo esc_html(sprintf(
+                        __('%1$s (%2$s) — %3$s — %4$s', 'my-next-wine-for-woocommerce'),
+                        '' !== $store_country ? $store_country : __('not set', 'my-next-wine-for-woocommerce'),
+                        '' !== $store_country_code ? $store_country_code : __('not set', 'my-next-wine-for-woocommerce'),
+                        '' !== $store_currency ? $store_currency : __('not set', 'my-next-wine-for-woocommerce'),
+                        $store_locale
+                    ));
+                    ?>
+                </p>
                 <?php if (is_array($status)) : ?>
+                    <p><strong><?php echo esc_html__('Store:', 'my-next-wine-for-woocommerce'); ?></strong>
+                        <?php echo esc_html($store_name); ?>
+                    </p>
+                    <p><strong><?php echo esc_html__('Store market:', 'my-next-wine-for-woocommerce'); ?></strong>
+                        <?php
+                        /* translators: 1: country, 2: ISO country code, 3: store currency, 4: store locale, 5: service market locale. */
+                        echo esc_html(sprintf(
+                            __('%1$s (%2$s) — %3$s — store locale %4$s; service locale %5$s', 'my-next-wine-for-woocommerce'),
+                            $store_country,
+                            $store_country_code,
+                            $store_currency,
+                            $store_locale,
+                            '' !== $market_locale ? $market_locale : __('not reported', 'my-next-wine-for-woocommerce')
+                        ));
+                        ?>
+                    </p>
+                    <?php if ('' !== $installed_at) : ?>
+                        <p><strong><?php echo esc_html__('Installed:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date($installed_at)); ?></p>
+                    <?php endif; ?>
+                    <?php if ('' !== $last_service_contact_at) : ?>
+                        <p><strong><?php echo esc_html__('Last successful service contact:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date($last_service_contact_at)); ?></p>
+                    <?php endif; ?>
                     <p><strong><?php echo esc_html__('Catalogue:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php echo esc_html((string) ($catalogue['statusMessage'] ?? __('Waiting for the first catalogue sync.', 'my-next-wine-for-woocommerce'))); ?>
                     </p>
-                    <p><strong><?php echo esc_html__('Available mapped wines:', 'my-next-wine-for-woocommerce'); ?></strong>
-                        <?php echo esc_html((string) ((int) ($catalogue['mappedAvailableCount'] ?? 0))); ?>
+                    <p><strong><?php echo esc_html__('Catalogue counts:', 'my-next-wine-for-woocommerce'); ?></strong>
+                        <?php
+                        /* translators: 1: imported items, 2: currently available items, 3: available mapped wines. */
+                        echo esc_html(sprintf(
+                            __('%1$s imported; %2$s available; %3$s available and mapped', 'my-next-wine-for-woocommerce'),
+                            number_format_i18n((int) ($status['catalogueItemCount'] ?? 0)),
+                            number_format_i18n((int) ($status['catalogueAvailableCount'] ?? 0)),
+                            number_format_i18n((int) ($catalogue['mappedAvailableCount'] ?? 0))
+                        ));
+                        ?>
                     </p>
+                    <p><strong><?php echo esc_html__('Mapping coverage:', 'my-next-wine-for-woocommerce'); ?></strong>
+                        <?php echo esc_html(number_format_i18n((int) ($catalogue['mappingCoveragePercentage'] ?? 0)) . '%'); ?>
+                    </p>
+                    <?php if ('' !== $last_catalogue_sync_at) : ?>
+                        <p><strong><?php echo esc_html__('Last catalogue sync:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date($last_catalogue_sync_at)); ?></p>
+                    <?php endif; ?>
                     <p><strong><?php echo esc_html__('Billing:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php echo esc_html($this->billing_status_label($billing_status, $billing_trial_days)); ?>
                     </p>
                     <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php
                         /* translators: 1: plan name, 2: billing currency code, 3: monthly price. */
-                        echo esc_html(sprintf(__('%1$s — %2$s %3$s per month, plus tax where applicable', 'my-next-wine-for-woocommerce'), $plan_name, $billing_currency, $billing_price));
+                        echo esc_html(sprintf(__('%1$s — %2$s %3$s per month', 'my-next-wine-for-woocommerce'), $plan_name, $billing_currency, $billing_price));
                         ?>
                     </p>
+                    <p class="description"><?php echo esc_html__('The store currency and subscription billing currency can differ. Stripe Checkout and the Stripe invoice are authoritative for the amount and any tax shown before payment.', 'my-next-wine-for-woocommerce'); ?></p>
                     <p><strong><?php echo esc_html__('Completed sessions this month:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php
                         /* translators: 1: completed sessions, 2: monthly session allowance. */
@@ -540,6 +615,20 @@ final class MyNextWine_Woo_Settings {
             'CANCEL_PENDING' => __('Cancellation scheduled — access remains active until the date shown', 'my-next-wine-for-woocommerce'),
             'CANCELED' => __('Cancelled', 'my-next-wine-for-woocommerce'),
             'REFUNDED' => __('Refunded', 'my-next-wine-for-woocommerce'),
+        );
+        $key = strtoupper($status);
+        return (string) ($labels[$key] ?? $status);
+    }
+
+    private function connection_status_label(string $status): string {
+        $labels = array(
+            'PENDING' => __('Pending administrator connection', 'my-next-wine-for-woocommerce'),
+            'CONNECTING' => __('Connecting', 'my-next-wine-for-woocommerce'),
+            'ERROR' => __('Connection error; automatic retry scheduled', 'my-next-wine-for-woocommerce'),
+            'MARKET_UNSUPPORTED' => __('Store country is not supported', 'my-next-wine-for-woocommerce'),
+            'MARKET_DISABLED' => __('UK onboarding is temporarily paused', 'my-next-wine-for-woocommerce'),
+            'CURRENCY_MISMATCH' => __('Store currency does not match its country', 'my-next-wine-for-woocommerce'),
+            'MARKET_CONFIGURATION_ERROR' => __('The selected market is not fully configured', 'my-next-wine-for-woocommerce'),
         );
         $key = strtoupper($status);
         return (string) ($labels[$key] ?? $status);
