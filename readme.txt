@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.26
+Stable tag: 1.0.27
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,9 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.27 =
+* Updated Merchant Terms acceptance to version 2026-08-18-UK3 for annual rate-change notice and merchant brand/licence retailer-listing permissions.
 
 = 1.0.26 =
 * Aligned WooCommerce Merchant Terms acceptance with the 2026-08-18-UK2 legal release for the United Kingdom launch while retaining Ireland and EU coverage.
