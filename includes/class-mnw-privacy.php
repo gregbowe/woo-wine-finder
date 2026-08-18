@@ -21,6 +21,10 @@ final class MyNextWine_Woo_Privacy {
             . '</p><p>'
             . esc_html__('Shopper wine-preference answers are sent when a recommendation is requested. Optional widget analytics are off by default and may include impressions, recommendation results and basket attempts or outcomes linked to the recommended wine identifiers. A successful basket addition is the only recommendation-usefulness signal; the widget does not ask the shopper to rate the recommendations. When this site exposes the WordPress Consent API, those events are additionally suppressed until statistics consent is reported. For attributed orders, the service receives the WooCommerce order identifier, currency, total, product references and quantities, but not the customer name, email, delivery address or payment-card details. Technical security logs may include network and request metadata.', 'my-next-wine-for-woocommerce')
             . '</p><p>'
+            . esc_html__('This store determines why the Wine Finder is used and is responsible for its customer notice, lawful basis and any consent or other permission required for optional analytics. My Next Wine generally processes shopper request and attribution data for this store, while acting independently for its own merchant-account, billing, security and legal records, as described in the linked Privacy Statement and Merchant Terms.', 'my-next-wine-for-woocommerce')
+            . '</p><p>'
+            . esc_html__('The Wine Finder uses automated and AI-assisted processing. Do not enter names, contact details, account or payment information, health information or other sensitive personal data in its free-text fields. My Next Wine may use contracted hosting and AI providers; the linked documents explain recipients, international-transfer safeguards, retention, individual rights and how to raise a data-protection complaint.', 'my-next-wine-for-woocommerce')
+            . '</p><p>'
             . sprintf(
                 /* translators: 1: privacy URL, 2: shopper terms URL, 3: merchant terms URL */
                 esc_html__('See the My Next Wine %1$s, %2$s and %3$s.', 'my-next-wine-for-woocommerce'),

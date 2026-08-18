@@ -21,9 +21,9 @@ My Next Wine provides recommendation, catalogue-mapping, widget, analytics and a
 
 Published documents:
 
-- Merchant Terms: `https://mynextwine.ie/woocommerce/terms`
-- Privacy Statement: `https://mynextwine.ie/woocommerce/privacy`
-- Subprocessors: `https://mynextwine.ie/subprocessors`
+- Merchant Terms: `https://mynextwine.com/woocommerce/terms`
+- Privacy Statement: `https://mynextwine.com/woocommerce/privacy`
+- Subprocessors: `https://mynextwine.com/subprocessors`
 
 ## External-service disclosure
 
@@ -92,6 +92,8 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 
 - Set the sole-trader legal name, genuine geographic business address, CRO business-name registration number and monitored support/privacy email in the backend AWS Secrets Manager record. Leave VAT blank while not VAT registered.
 - Publish the Merchant Terms, Privacy Statement and subprocessor list at the URLs above.
+- Before UK activation, identify the appointed UK representative in the Privacy Statement or retain a documented Article 27 exception, and operate a data-protection complaints process that acknowledges complaints within 30 days and responds without undue delay.
+- For UK prospecting, email only recipients permitted by PECR, link the business-outreach privacy notice in the first message, and suppress every opt-out before any follow-up.
 - Create the three Stripe recurring Prices, configure Stripe Customer Portal for plan changes, register the dedicated Stripe webhook endpoint and add separate staging/production Stripe secrets in AWS Secrets Manager.
 - Test against the exact WordPress/WooCommerce/PHP versions claimed in `readme.txt` and update `Tested up to` before submission.
 - Run Plugin Check and WordPress Coding Standards, prepare repository assets/screenshots, and provide clear WordPress.org reviewer instructions for the external SaaS and Stripe billing flow.
@@ -123,8 +125,8 @@ The backend certificate must be trusted by the WordPress host. Distributed plugi
 
 Wine Finder legal pages
 -----------------------
-* Merchant installation terms: https://mynextwine.ie/woocommerce/terms (B2B click-wrap before connection).
-* WooCommerce Wine Finder privacy statement: https://mynextwine.ie/woocommerce/privacy.
-* Shopper Wine Finder user terms: https://mynextwine.ie/woocommerce/user-terms (linked beside the recommendation button).
+* Merchant installation terms: https://mynextwine.com/woocommerce/terms (B2B click-wrap before connection).
+* WooCommerce Wine Finder privacy statement: https://mynextwine.com/woocommerce/privacy.
+* Shopper Wine Finder user terms: https://mynextwine.com/woocommerce/user-terms (linked beside the recommendation button).
 * The storefront disclosure states that recommendations are AI-assisted and that wine is sold and fulfilled by the merchant.
 * These pages are separate from the Irish My Next Wine B2C terms and privacy policy.

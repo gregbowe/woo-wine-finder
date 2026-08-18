@@ -528,6 +528,7 @@ if (!defined('ABSPATH')) { exit; }
               </div>
 
               <p class="mnw-wine-finder__legal-copy">
+                <?php echo esc_html__('Automated, AI-assisted guidance for people of legal drinking age. Do not enter names, contact details, health information or other sensitive personal data.', 'my-next-wine-for-woocommerce'); ?><br>
                 <?php echo esc_html__('By selecting “Find my wines”, you agree to the', 'my-next-wine-for-woocommerce'); ?>
                 <a href="<?php echo esc_url(MYNEXTWINE_WOO_USER_TERMS_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Wine Finder User Terms', 'my-next-wine-for-woocommerce'); ?></a>
                 <?php echo esc_html__('and acknowledge the', 'my-next-wine-for-woocommerce'); ?>

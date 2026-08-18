@@ -86,7 +86,7 @@ final class MyNextWine_Woo_API_Client {
     }
 
     public function default_api_base_url(): string {
-        $configured = defined('MYNEXTWINE_WOO_API_BASE_URL') ? (string) MYNEXTWINE_WOO_API_BASE_URL : 'https://mynextwine.ie';
+        $configured = defined('MYNEXTWINE_WOO_API_BASE_URL') ? (string) MYNEXTWINE_WOO_API_BASE_URL : 'https://mynextwine.com';
         return esc_url_raw(untrailingslashit($configured));
     }
 

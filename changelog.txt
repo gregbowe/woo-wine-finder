@@ -1,3 +1,10 @@
+= 1.0.25 =
+* Switched the hosted service, API, legal-document and support addresses to the canonical mynextwine.com domain.
+
+= 1.0.24 =
+* Restored the pre-submission AI, legal-drinking-age and sensitive-data warning after the storefront redesign.
+* Expanded the WordPress Privacy Policy Guide wording and clarified UK/EU analytics permission requirements.
+
 = 0.5.0 =
 * Replaced Woo Marketplace billing with direct Stripe Checkout and Customer Portal subscription management.
 * Added verified Stripe subscription lifecycle handling for trials, renewals, failed payments, cancellation and invoices.

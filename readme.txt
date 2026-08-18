@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.23
+Stable tag: 1.0.26
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,7 +67,7 @@ No WooCommerce REST key, Somm ID, installation ID or installation secret needs t
 
 == External services ==
 
-This plugin connects to the externally hosted My Next Wine service at https://mynextwine.ie. It cannot provide catalogue mapping, recommendations, reporting or order attribution without that service.
+This plugin connects to the externally hosted My Next Wine service at https://mynextwine.com. It cannot provide catalogue mapping, recommendations, reporting or order attribution without that service.
 
 No store or catalogue information is transmitted merely because the plugin is installed or activated. Transmission begins only after an authorised administrator accepts the disclosure and connects the store from WooCommerce > My Next Wine.
 
@@ -84,7 +84,7 @@ After connection, the plugin may send:
 
 * Product and variation identifiers, SKUs, names, descriptions, images, categories, attributes, prices, currency, stock and availability.
 * Shopper bottle mix, budget, wine preferences and food-pairing text when a recommendation is requested.
-* Optional widget events such as impressions, opens, requests, results, swaps and basket attempts/outcomes. These are off by default. When the WordPress Consent API is available, they are sent only with positive statistics consent. When it is unavailable, enabling analytics confirms that the merchant has another lawful consent or privacy basis for these events. A successful basket addition is the only recommendation-usefulness signal; the widget does not ask shoppers to rate recommendations.
+* Optional widget events such as impressions, opens, requests, results, swaps and basket attempts/outcomes. These are off by default. When the WordPress Consent API is available, they are sent only with positive statistics consent. When it is unavailable, enabling analytics confirms that the merchant has a valid data-protection lawful basis and has obtained any consent or other permission required by applicable ePrivacy or PECR rules. A successful basket addition is the only recommendation-usefulness signal; the widget does not ask shoppers to rate recommendations.
 * For orders attributed to the Wine Finder: order identifier, currency, total, selected product/variation references and quantities.
 * Technical request, replay-prevention and security metadata.
 
@@ -94,9 +94,9 @@ Stripe is used for merchant subscription billing. Stripe is contacted only after
 
 My Next Wine may use contracted hosting, database, monitoring, support, billing and artificial-intelligence providers, including Stripe for merchant subscription billing, to operate the service. Full information is available here:
 
-* Merchant Terms: https://mynextwine.ie/woocommerce/terms
-* Privacy Statement: https://mynextwine.ie/woocommerce/privacy
-* Subprocessors: https://mynextwine.ie/subprocessors
+* Merchant Terms: https://mynextwine.com/woocommerce/terms
+* Privacy Statement: https://mynextwine.com/woocommerce/privacy
+* Subprocessors: https://mynextwine.com/subprocessors
 * Stripe Services Agreement: https://stripe.com/legal/ssa
 * Stripe Privacy Policy: https://stripe.com/privacy
 
@@ -104,9 +104,9 @@ My Next Wine may use contracted hosting, database, monitoring, support, billing 
 
 The plugin adds suggested wording to WordPress's Privacy Policy Guide under Settings > Privacy. Merchants should review and include suitable wording in their own customer privacy notice, cookie notice and terms of sale.
 
-Shopper preference answers are used to create the requested recommendation. For attributed orders, My Next Wine receives order and product references but not customer identity, address or payment-card data. Normal security logs may contain network or device metadata.
+Shopper preference answers are used to create the requested automated, AI-assisted recommendation. The pre-submission notice tells shoppers not to enter names, contact details, health information or other sensitive personal data. For attributed orders, My Next Wine receives order and product references but not customer identity, address or payment-card data. Normal security logs may contain network or device metadata.
 
-Uninstall removes local plugin settings and sends a best-effort service revocation request to My Next Wine. Uninstalling does not itself cancel the Stripe subscription; use Manage subscription in WooCommerce > My Next Wine before uninstalling. A merchant can also contact support@mynextwine.ie to request revocation, access, export or deletion, subject to legal retention requirements.
+Uninstall removes local plugin settings and sends a best-effort service revocation request to My Next Wine. Uninstalling does not itself cancel the Stripe subscription; use Manage subscription in WooCommerce > My Next Wine before uninstalling. A merchant can also contact support@mynextwine.com to request revocation, access, export or deletion, subject to legal retention requirements.
 
 == Frequently Asked Questions ==
 
@@ -139,6 +139,17 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.26 =
+* Aligned WooCommerce Merchant Terms acceptance with the 2026-08-18-UK2 legal release for the United Kingdom launch while retaining Ireland and EU coverage.
+
+= 1.0.25 =
+* Switched the hosted service, API, legal-document and support addresses to the canonical mynextwine.com domain.
+
+= 1.0.24 =
+* Restored the pre-submission AI, legal-drinking-age and sensitive-data warning after the storefront redesign.
+* Expanded the WordPress Privacy Policy Guide wording for controller/processor roles, AI providers, international transfers, rights and complaints.
+* Clarified that optional analytics require both a valid data-protection basis and any consent or permission required under applicable ePrivacy or PECR rules.
 
 = 1.0.23 =
 * Added explicit Ireland/EUR and United Kingdom/GBP market validation feedback.
