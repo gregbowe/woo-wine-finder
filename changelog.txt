@@ -1,3 +1,6 @@
+= 1.0.28 =
+* UI improvements around showing requirement fulfilment
+
 = 1.0.27 =
 * Updated Merchant Terms acceptance to version 2026-08-18-UK3 for annual rate-change notice and merchant brand/licence retailer-listing permissions.
 
