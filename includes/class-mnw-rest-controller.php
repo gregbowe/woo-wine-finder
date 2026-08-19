@@ -8,7 +8,8 @@ if (!defined('ABSPATH')) {
 final class MyNextWine_Woo_REST_Controller {
     private const NAMESPACE = 'my-next-wine/v1';
     private const MAX_BODY_BYTES = 65536;
-    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 29;
+    /** Keep the Woo proxy above the backend's temporary 120-second deadline. */
+    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 125;
 
     private MyNextWine_Woo_API_Client $client;
 

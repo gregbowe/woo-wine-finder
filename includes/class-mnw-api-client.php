@@ -383,7 +383,9 @@ final class MyNextWine_Woo_API_Client {
         $url = untrailingslashit($this->default_api_base_url()) . '/' . ltrim($path, '/');
         $response = wp_remote_request($url, array(
             'method' => strtoupper($method),
-            'timeout' => max(1, min(40, $timeout_seconds)),
+            // Recommendation/refinement requests currently have a 125-second
+            // proxy allowance; retain a finite ceiling for every other call.
+            'timeout' => max(1, min(130, $timeout_seconds)),
             'redirection' => 0,
             'sslverify' => true,
             'headers' => array_merge(array(

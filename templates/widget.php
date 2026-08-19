@@ -728,7 +728,10 @@ if (!defined('ABSPATH')) { exit; }
                 aria-live="polite"
                 hidden
               >
-                <strong id="mnw-refinement-budget-title-<?php echo esc_attr($widget_id); ?>">
+                <strong
+                  id="mnw-refinement-budget-title-<?php echo esc_attr($widget_id); ?>"
+                  data-mnw-refinement-budget-title
+                >
                   <?php echo esc_html__('This refinement is a little over budget', 'my-next-wine-for-woocommerce'); ?>
                 </strong>
                 <p data-mnw-refinement-budget-copy></p>

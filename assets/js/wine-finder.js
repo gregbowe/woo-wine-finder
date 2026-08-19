@@ -7,9 +7,9 @@
   const MAX_REFINEMENT_LENGTH = 240;
   const DEFAULT_BUDGET_MULTIPLIER = 1.2;
   const DEFAULT_BUDGET_ROUNDING_UNIT = 10;
-  // Leave headroom below the configured 30-second recommendation target so
-  // the shopper receives a deterministic error instead of a hanging request.
-  const REQUEST_TIMEOUT_MS = 29500;
+  // Temporary launch-stabilisation timeout. Leave five seconds of headroom
+  // above the backend's 120-second recommendation deadline.
+  const REQUEST_TIMEOUT_MS = 125000;
   const CART_TIMEOUT_MS = 15000;
   const SWAP_TIMEOUT_MS = 20000;
   const CONFIGURATION_TIMEOUT_MS = 10000;
@@ -104,6 +104,7 @@
     const refineStatus = root.querySelector("[data-mnw-refine-status]");
     const refineUndo = root.querySelector("[data-mnw-refine-undo]");
     const refinementBudgetConfirmation = root.querySelector("[data-mnw-refinement-budget-confirmation]");
+    const refinementBudgetTitle = root.querySelector("[data-mnw-refinement-budget-title]");
     const refinementBudgetCopy = root.querySelector("[data-mnw-refinement-budget-copy]");
     const acceptRefinementBudgetButton = root.querySelector("[data-mnw-accept-refinement-budget]");
     const acceptRefinementBudgetLabel = root.querySelector("[data-mnw-accept-refinement-budget-label]");
@@ -663,6 +664,7 @@
       await submitRefinementRequest({
         instruction: retry.instruction,
         request: retry.request,
+        refinementMode: "BUDGET_ONLY",
         progressMessage: `Rebuilding your current selection around ${formattedBudget}…`,
         pendingLabel: "Updating budget…",
         successMessage: `Your selection has been rebuilt around ${formattedBudget}.`,
@@ -675,6 +677,10 @@
       const suggested = Number(details?.suggestedBudget || 0);
       if (!budgetGuidance || !budgetGuidanceCopy || !Number.isFinite(suggested) || suggested <= 0) {
         showError("We could not build a complete selection at that budget. Try increasing it or changing your request.");
+        return;
+      }
+      if (!budgetSuggestionAdvances(requested, suggested, currencyPrecision)) {
+        showError("We could not build a complete selection at that budget. Please edit your wine preferences or bottle mix and try again.");
         return;
       }
       const formatter = createCurrencyFormatter(storeCurrency, currencyPrecision);
@@ -1109,23 +1115,34 @@
       });
     };
 
-    const swapWine = async (wineToReplace, trigger) => {
+    const swapWine = async (
+      wineToReplace,
+      trigger,
+      {
+        request = currentRequest,
+        synchroniseBudget = false,
+        allowBudgetProposal = true
+      } = {}
+    ) => {
       if (!swapEndpoint || !currentRecommendation || !currentRequest || swapInFlight || cartInFlight) return;
 
       const selectedIds = getSelectedWineIds(resultsElement);
-      const originalLabel = trigger.textContent;
+      const originalLabel = trigger?.textContent || "Swap";
+      if (allowBudgetProposal) dismissRefinementBudgetConfirmation();
       swapInFlight = true;
       setBusy(true);
       errorElement.hidden = true;
-      trigger.disabled = true;
-      trigger.textContent = "Finding another…";
+      if (trigger) {
+        trigger.disabled = true;
+        trigger.textContent = "Finding another…";
+      }
 
       try {
         const response = await fetchJson(swapEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           body: JSON.stringify({
-            request: currentRequest,
+            request,
             wineToReplaceId: wineToReplace.sommWineId,
             currentWineIds: currentRecommendation.wines.map((wine) => wine.sommWineId),
             sessionId: currentRecommendation.sessionId
@@ -1140,6 +1157,17 @@
         currentRecommendation.total = response.total;
         currentRecommendation.sessionId = response.sessionId || currentRecommendation.sessionId;
         currentRecommendation.recommendationToken = response.recommendationToken || currentRecommendation.recommendationToken;
+        if (synchroniseBudget) {
+          currentRequest = {
+            ...request,
+            ...(request?.categoryCounts && typeof request.categoryCounts === "object"
+              ? { categoryCounts: { ...request.categoryCounts } }
+              : {})
+          };
+          currentRecommendation.requestedBudget = currentRequest.budget;
+          budgetEdited = true;
+          budgetInput.value = String(currentRequest.budget);
+        }
         if (response.currency) {
           storeCurrency = normaliseCurrencyCode(response.currency);
           currentRecommendation.currency = storeCurrency;
@@ -1157,13 +1185,27 @@
         showRecommendationSelection("exact");
         restoreSelectedWineIds(resultsElement, selectedIds, response.wine.sommWineId, wineToReplace.sommWineId);
         refreshCurrentSelectedState();
+        dismissRefinementBudgetConfirmation();
+        if (synchroniseBudget) {
+          announceRefinement(`The swap was made using a budget of ${
+            createCurrencyFormatter(storeCurrency, currencyPrecision).format(Number(currentRequest.budget))
+          }.`);
+        }
         sendAnalytics(analyticsEnabled, eventsEndpoint, pageSessionId, "SWAP");
       } catch (error) {
-        showError(error.message || "That wine could not be swapped. Please try again.");
+        const confirmationOffered = allowBudgetProposal && offerSwapBudgetConfirmation({
+          error,
+          request,
+          wineToReplace,
+          trigger
+        });
+        if (!confirmationOffered) {
+          showError(error.message || "That wine could not be swapped. Please try again.");
+        }
       } finally {
         swapInFlight = false;
         setBusy(false);
-        if (trigger.isConnected) {
+        if (trigger?.isConnected) {
           trigger.disabled = false;
           trigger.textContent = originalLabel;
         }
@@ -1173,6 +1215,7 @@
     const dismissRefinementBudgetConfirmation = () => {
       pendingRefinementBudgetProposal = null;
       if (refinementBudgetConfirmation) refinementBudgetConfirmation.hidden = true;
+      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This refinement is a little over budget";
       if (refinementBudgetCopy) refinementBudgetCopy.textContent = "";
     };
 
@@ -1197,9 +1240,39 @@
 
       pendingRefinementBudgetProposal = {
         ...proposal,
+        action: "refinement",
         clearInput: Boolean(clearInput)
       };
       if (refineStatus) refineStatus.hidden = true;
+      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This refinement is a little over budget";
+      refinementBudgetCopy.textContent = proposal.prompt;
+      acceptRefinementBudgetLabel.textContent = proposal.acceptLabel;
+      refinementBudgetConfirmation.hidden = false;
+      window.setTimeout(() => acceptRefinementBudgetButton.focus({ preventScroll: true }), 0);
+      return true;
+    };
+
+    const offerSwapBudgetConfirmation = ({ error, request, wineToReplace, trigger }) => {
+      const proposal = createSwapBudgetProposal(
+        error,
+        request,
+        storeCurrency,
+        currencyPrecision,
+        null,
+        maximumBudget
+      );
+      if (!proposal || !refinementBudgetConfirmation || !refinementBudgetCopy
+          || !acceptRefinementBudgetButton || !acceptRefinementBudgetLabel
+          || !declineRefinementBudgetButton) return false;
+
+      pendingRefinementBudgetProposal = {
+        ...proposal,
+        action: "swap",
+        wineToReplace,
+        trigger
+      };
+      if (refineStatus) refineStatus.hidden = true;
+      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This swap is a little over budget";
       refinementBudgetCopy.textContent = proposal.prompt;
       acceptRefinementBudgetLabel.textContent = proposal.acceptLabel;
       refinementBudgetConfirmation.hidden = false;
@@ -1223,7 +1296,8 @@
       pendingLabel = "Refining…",
       successMessage = "Your selection has been refined.",
       clearInput = false,
-      synchroniseBudgetInput = false
+      synchroniseBudgetInput = false,
+      refinementMode = "FREE_TEXT"
     }) => {
       if (!refineEndpoint || !currentRecommendation || !currentRequest || !request
           || refinementInFlight || recommendationInFlight || cartInFlight) return false;
@@ -1248,12 +1322,17 @@
           body: JSON.stringify(createRefinementRequestPayload(
             request,
             currentRecommendation,
-            instruction
+            instruction,
+            refinementMode
           )),
           cache: "no-store"
         }, REQUEST_TIMEOUT_MS, "The refinement took too long. Your current selection has been kept.");
 
         validateRefinementResponse(result, configuredCategories);
+        if (refinementMode === "BUDGET_ONLY") {
+          preserveBudgetOnlyRequestState(request, result);
+          preserveRetainedRecommendationEvidence(currentRecommendation, result);
+        }
         storeCurrency = normaliseCurrencyCode(result.currency || storeCurrency);
         result.currency = storeCurrency;
         result.exactSelection = {
@@ -1330,6 +1409,14 @@
           || recommendationInFlight || cartInFlight) return;
       const proposal = pendingRefinementBudgetProposal;
       dismissRefinementBudgetConfirmation();
+      if (proposal.action === "swap") {
+        await swapWine(proposal.wineToReplace, proposal.trigger, {
+          request: proposal.request,
+          synchroniseBudget: true,
+          allowBudgetProposal: false
+        });
+        return;
+      }
       await submitRefinementRequest({
         instruction: proposal.instruction,
         request: proposal.request,
@@ -1343,9 +1430,14 @@
 
     declineRefinementBudgetButton?.addEventListener("click", () => {
       if (!pendingRefinementBudgetProposal || refinementInFlight) return;
+      const proposal = pendingRefinementBudgetProposal;
       dismissRefinementBudgetConfirmation();
       announceRefinement("No changes made. Your current selection has been kept.");
-      refineInput?.focus({ preventScroll: true });
+      if (proposal.action === "swap") {
+        proposal.trigger?.focus({ preventScroll: true });
+      } else {
+        refineInput?.focus({ preventScroll: true });
+      }
     });
 
     refineUndo?.addEventListener("click", () => {
@@ -1954,13 +2046,90 @@
     selectedIds: new Set(Array.from(selectedIds || []).map(String))
   });
 
-  const createRefinementRequestPayload = (request, recommendation, instruction) => ({
+  const preserveBudgetOnlyRequestState = (request, result) => {
+    if (!request || typeof request !== "object" || !result || typeof result !== "object") {
+      return result;
+    }
+    const refined = result.refinedRequest && typeof result.refinedRequest === "object"
+      ? result.refinedRequest
+      : {};
+    result.refinedRequest = {
+      ...refined,
+      colour: request.colour,
+      bottleCount: request.bottleCount,
+      occasion: request.occasion,
+      style: request.style,
+      budget: request.budget,
+      numberRed: request.numberRed,
+      numberWhite: request.numberWhite,
+      numberSparkling: request.numberSparkling,
+      numberDessert: request.numberDessert,
+      usualWines: request.usualWines,
+      foodPairings: request.foodPairings,
+      categoryCounts: clonePlainData(request.categoryCounts || {})
+    };
+    return result;
+  };
+
+  const preserveRetainedRecommendationEvidence = (previousRecommendation, result) => {
+    if (!previousRecommendation || !result || !Array.isArray(result.wines)) return result;
+    const previousWines = Array.isArray(previousRecommendation.wines)
+      ? previousRecommendation.wines
+      : previousRecommendation.exactSelection?.wines;
+    if (!Array.isArray(previousWines)) return result;
+
+    const previousById = new Map(previousWines
+      .filter((wine) => wine?.sommWineId !== undefined && wine?.sommWineId !== null)
+      .map((wine) => [String(wine.sommWineId), wine]));
+    const retainedTags = [];
+    result.wines = result.wines.map((wine) => {
+      const previous = previousById.get(String(wine?.sommWineId));
+      if (!previous) return wine;
+      const previousTags = normaliseRecommendationTags(previous.recommendationTags);
+      retainedTags.push(...previousTags);
+      return {
+        ...wine,
+        recommendationTags: normaliseRecommendationTags([
+          ...previousTags,
+          ...normaliseRecommendationTags(wine?.recommendationTags)
+        ]),
+        recommendationLabel: String(wine?.recommendationLabel || "").trim()
+          || previous.recommendationLabel,
+        recommendationReason: String(wine?.recommendationReason || "").trim()
+          || previous.recommendationReason
+      };
+    });
+
+    const retainedMatchLabels = retainedTags
+      .filter((tag) => tag.type === "MATCH")
+      .map((tag) => tag.label);
+    result.matchedPreferences = normaliseDisplayList([
+      ...normaliseDisplayList(result.matchedPreferences),
+      ...retainedMatchLabels
+    ]);
+    const resolvedLabels = [
+      ...result.matchedPreferences,
+      ...result.wines.flatMap((wine) => normaliseRecommendationTags(wine.recommendationTags))
+        .map((tag) => tag.label)
+    ];
+    result.unmetPreferences = normaliseDisplayList(result.unmetPreferences)
+      .filter((item) => !resolvedLabels.some((label) => assessmentMatchesTag(item, label)));
+    return result;
+  };
+
+  const createRefinementRequestPayload = (
+    request,
+    recommendation,
+    instruction,
+    refinementMode = "FREE_TEXT"
+  ) => ({
     originalRequest: request,
     originalRequirementInterpretation: String(recommendation?.requirementInterpretation || ""),
     currentWineIds: Array.isArray(recommendation?.wines)
       ? recommendation.wines.map((wine) => wine?.sommWineId)
       : [],
     instruction: String(instruction || ""),
+    refinementMode: refinementMode === "BUDGET_ONLY" ? "BUDGET_ONLY" : "FREE_TEXT",
     sessionId: recommendation?.sessionId
   });
 
@@ -2062,6 +2231,54 @@
       formattedSuggestedBudget,
       formattedDifference,
       prompt: `That refinement would need ${formattedSuggestedBudget}, ${formattedDifference} above your current ${formattedRequestedBudget} budget. Is that okay?`,
+      acceptLabel: `Yes, use ${formattedSuggestedBudget}`
+    };
+  };
+
+  const createSwapBudgetProposal = (
+    error,
+    request,
+    currency,
+    currencyPrecision = null,
+    locale = null,
+    maximumBudget = null
+  ) => {
+    const details = error?.details;
+    const suggestedBudget = Number(details?.suggestedBudget);
+    const responseBudget = Number(details?.requestedBudget);
+    const requestBudget = Number(request?.budget);
+    const requestedBudget = Number.isFinite(responseBudget) && responseBudget > 0
+      ? responseBudget
+      : requestBudget;
+    const maximum = Number(maximumBudget);
+    if (details?.code !== "BUDGET_INCREASE_REQUIRED"
+        || !request
+        || !Number.isFinite(requestedBudget) || requestedBudget <= 0
+        || !Number.isFinite(suggestedBudget) || suggestedBudget <= requestedBudget
+        || (Number.isFinite(maximum) && maximum > 0 && suggestedBudget > maximum)) {
+      return null;
+    }
+
+    const formatter = createCurrencyFormatter(currency, currencyPrecision, locale);
+    const difference = suggestedBudget - requestedBudget;
+    const formattedRequestedBudget = formatter.format(requestedBudget);
+    const formattedSuggestedBudget = formatter.format(suggestedBudget);
+    const formattedDifference = formatter.format(difference);
+    return {
+      request: {
+        ...request,
+        budget: suggestedBudget,
+        ...(request.categoryCounts && typeof request.categoryCounts === "object"
+          ? { categoryCounts: { ...request.categoryCounts } }
+          : {})
+      },
+      requestedBudget,
+      suggestedBudget,
+      difference,
+      formattedRequestedBudget,
+      formattedSuggestedBudget,
+      formattedDifference,
+      prompt: `The nearest available replacement needs ${formattedSuggestedBudget}, ${formattedDifference} above your current ${formattedRequestedBudget} budget. Is that okay?`,
       acceptLabel: `Yes, use ${formattedSuggestedBudget}`
     };
   };
@@ -2865,6 +3082,22 @@
     return Math.round((Number(value) + Number.EPSILON) * factor) / factor;
   };
 
+  const budgetSuggestionAdvances = (
+    requestedBudget,
+    suggestedBudget,
+    precision = 2
+  ) => {
+    const requested = Number(requestedBudget);
+    const suggested = Number(suggestedBudget);
+    if (!Number.isFinite(suggested) || suggested <= 0) return false;
+    if (!Number.isFinite(requested) || requested <= 0) return true;
+    const safePrecision = Number.isInteger(precision)
+      ? Math.max(0, Math.min(6, precision))
+      : 2;
+    const halfMinorUnit = 0.5 / (10 ** safePrecision);
+    return suggested - requested > halfMinorUnit;
+  };
+
   const calculateRetryBudgetChoices = (
     activeBudget,
     minimumBudget = null,
@@ -2907,16 +3140,20 @@
       calculateBudgetQuickChoices,
       calculateRetryBudgetChoices,
       calculateSelectionSummary,
+      budgetSuggestionAdvances,
       closeDialogAfterCartSuccess,
       createBudgetRetryRefinement,
       createCurrencyFormatter,
       createLoadingMessageController,
       createRefinementBudgetProposal,
+      createSwapBudgetProposal,
       createRefinementRequestPayload,
       createRefinementSnapshot,
       formatBudgetPosition,
       formatSelectionHeadingSummary,
       normaliseConfiguredCategories,
+      preserveBudgetOnlyRequestState,
+      preserveRetainedRecommendationEvidence,
       recommendationNoticeCopy,
       readRecommendationForm,
       refinementFailureMessage,
