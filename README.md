@@ -103,7 +103,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - The pilot accepts Ireland/EUR and United Kingdom/GBP stores. One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- The initial direct subscriptions remain billed in EUR: Launch (EUR 29.99 / 500 completed sessions), Growth (EUR 79.99 / 2,000) and Scale (EUR 199.99 / 5,000) per month after a 14-day trial. Each configured Stripe Price must exactly match the backend plan and published terms; Stripe Checkout and invoices are authoritative for any tax shown.
+- The initial direct subscriptions remain billed in EUR: Launch (EUR 29.99 / 350 completed sessions), Growth (EUR 79.99 / 800) and Scale (EUR 199.99 / 2,000) per month after a 14-day trial. One completed session covers an initial recommendation and up to five combined refinements or bottle swaps in the same selection journey. Each configured Stripe Price must exactly match the backend plan and published terms; Stripe Checkout and invoices are authoritative for any tax shown.
 
 ## Local development
 

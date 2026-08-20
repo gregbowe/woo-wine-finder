@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.28
+Stable tag: 1.0.29
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,11 +40,11 @@ Non-wine products can be excluded. The initial eligible catalogue is mapped or r
 
 The hosted My Next Wine service includes a 14-day free trial followed by one of these monthly plans. The current direct-subscription billing currency is EUR:
 
-* Launch: EUR 29.99 per month for up to 500 completed Wine Finder sessions.
-* Growth: EUR 79.99 per month for up to 2,000 completed Wine Finder sessions.
-* Scale: EUR 199.99 per month for up to 5,000 completed Wine Finder sessions.
+* Launch: EUR 29.99 per month for up to 350 completed Wine Finder sessions.
+* Growth: EUR 79.99 per month for up to 800 completed Wine Finder sessions.
+* Scale: EUR 199.99 per month for up to 2,000 completed Wine Finder sessions.
 
-A completed session includes the shopper's initial recommendations and every follow-up refinement or bottle swap made during that visit. Refinements and swaps are not counted as separate sessions. There is no commission or per-order fee.
+A completed session is one successful selection journey containing the shopper's initial recommendation and up to five combined follow-up refinements or bottle swaps. Starting again creates a new session. Follow-up actions are not counted as separate completed sessions. There is no commission or per-order fee.
 
 Subscription checkout and account management are hosted by Stripe. The trial begins only when the catalogue is ready and the merchant chooses to start it. Activating the plugin alone does not start the trial, create a charge or transmit store or catalogue data.
 
@@ -139,6 +139,11 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.29 =
+* Aligned Launch, Growth and Scale allowances with 350, 800 and 2,000 completed sessions.
+* Rotated the guarded session when a shopper starts again or edits a completed selection.
+* Updated Merchant Terms acceptance to 2026-08-20-UK4 for the new allowances and five-follow-up session guard.
 
 = 1.0.27 =
 * Updated Merchant Terms acceptance to version 2026-08-18-UK3 for annual rate-change notice and merchant brand/licence retailer-listing permissions.

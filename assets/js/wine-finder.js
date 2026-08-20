@@ -172,7 +172,10 @@
     let retryBudgets = { lower: null, higher: null };
     let pendingRefinementBudgetProposal = null;
     let destroyed = false;
-    const pageSessionId = createPageSessionId();
+    let pageSessionId = createPageSessionId();
+    const beginNewRecommendationSession = () => {
+      pageSessionId = createPageSessionId();
+    };
     const loadingMessages = createLoadingMessageController(
       statusElement,
       LOADING_MESSAGES
@@ -340,7 +343,7 @@
       const recommendationReason = directAddressRecommendationCopy(
         wine.recommendationReason || ""
       );
-      const recommendationTags = recommendationTagsForWine(wine, currentRequest);
+      const recommendationTags = recommendationTagsForWine(wine);
       if (quickViewReasonRow && quickViewReason) {
         quickViewReasonRow.hidden = !recommendationReason && recommendationTags.length === 0;
         if (quickViewReasonTags) {
@@ -699,7 +702,7 @@
           || !requestMatchUnmet || !requestMatchUnmetCopy) return;
 
       const wines = Array.isArray(selection?.wines) ? selection.wines : [];
-      const perWineTags = wines.flatMap((wine) => recommendationTagsForWine(wine, currentRequest));
+      const perWineTags = wines.flatMap((wine) => recommendationTagsForWine(wine));
       const directTags = normaliseRecommendationTags(
         perWineTags.filter((tag) => tag.type === "MATCH")
       );
@@ -714,9 +717,7 @@
         ...substituteTags
       ]).slice(0, 8);
 
-      const resolvedLabels = summaryTags.map((tag) => tag.label);
       const unmet = normaliseDisplayList(selection?.unmetPreferences)
-        .filter((item) => !resolvedLabels.some((label) => assessmentMatchesTag(item, label)))
         .slice(0, 4);
 
       renderRecommendationTags(requestMatchItems, summaryTags);
@@ -1085,6 +1086,9 @@
         if (error?.details?.code === "BUDGET_INCREASE_REQUIRED") {
           showBudgetGuidance(error.details);
         } else {
+          if (error?.details?.code === "SESSION_INITIAL_ALREADY_COMPLETED") {
+            beginNewRecommendationSession();
+          }
           currentRequest = null;
           showError(error.message || "We could not build the wine selection.");
         }
@@ -1537,6 +1541,7 @@
     retryWithLowerBudgetButton?.addEventListener("click", () => applyRetryBudget("lower"));
     retryWithHigherBudgetButton?.addEventListener("click", () => applyRetryBudget("higher"));
     editPreferencesButton?.addEventListener("click", () => {
+      beginNewRecommendationSession();
       currentRecommendation = null;
       previousRefinement = null;
       dismissRefinementBudgetConfirmation();
@@ -1551,6 +1556,7 @@
     });
 
     startAgainButton.addEventListener("click", () => {
+      beginNewRecommendationSession();
       currentRecommendation = null;
       currentRequest = null;
       currentSelectionMode = "exact";
@@ -1783,7 +1789,7 @@
       const recommendationReason = directAddressRecommendationCopy(
         wine.recommendationReason || fallbackRecommendationReason(request, selectionStatus)
       );
-      const recommendationTags = recommendationTagsForWine(wine, request);
+      const recommendationTags = recommendationTagsForWine(wine);
       if (recommendationReason || recommendationTags.length > 0) {
         const reason = document.createElement("div");
         reason.className = "mnw-wine-card__reason";
@@ -2081,18 +2087,11 @@
     const previousById = new Map(previousWines
       .filter((wine) => wine?.sommWineId !== undefined && wine?.sommWineId !== null)
       .map((wine) => [String(wine.sommWineId), wine]));
-    const retainedTags = [];
     result.wines = result.wines.map((wine) => {
       const previous = previousById.get(String(wine?.sommWineId));
       if (!previous) return wine;
-      const previousTags = normaliseRecommendationTags(previous.recommendationTags);
-      retainedTags.push(...previousTags);
       return {
         ...wine,
-        recommendationTags: normaliseRecommendationTags([
-          ...previousTags,
-          ...normaliseRecommendationTags(wine?.recommendationTags)
-        ]),
         recommendationLabel: String(wine?.recommendationLabel || "").trim()
           || previous.recommendationLabel,
         recommendationReason: String(wine?.recommendationReason || "").trim()
@@ -2100,20 +2099,8 @@
       };
     });
 
-    const retainedMatchLabels = retainedTags
-      .filter((tag) => tag.type === "MATCH")
-      .map((tag) => tag.label);
-    result.matchedPreferences = normaliseDisplayList([
-      ...normaliseDisplayList(result.matchedPreferences),
-      ...retainedMatchLabels
-    ]);
-    const resolvedLabels = [
-      ...result.matchedPreferences,
-      ...result.wines.flatMap((wine) => normaliseRecommendationTags(wine.recommendationTags))
-        .map((tag) => tag.label)
-    ];
-    result.unmetPreferences = normaliseDisplayList(result.unmetPreferences)
-      .filter((item) => !resolvedLabels.some((label) => assessmentMatchesTag(item, label)));
+    result.matchedPreferences = normaliseDisplayList(result.matchedPreferences);
+    result.unmetPreferences = normaliseDisplayList(result.unmetPreferences);
     return result;
   };
 
@@ -2662,12 +2649,6 @@
   };
 
   const directAddressRecommendationCopy = (value) => String(value || "")
-    .replace(/\bthe shopper's\b/gi, "your")
-    .replace(/\bshopper's\b/gi, "your")
-    .replace(/\bthe customer's\b/gi, "your")
-    .replace(/\bcustomer's\b/gi, "your")
-    .replace(/\bfor the shopper\b/gi, "for you")
-    .replace(/\bfor the customer\b/gi, "for you")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -2703,23 +2684,6 @@
 
   const recommendationTagsForWine = (wine) =>
     normaliseRecommendationTags(wine?.recommendationTags);
-
-  const assessmentMatchesTag = (assessment, tagLabel) => {
-    const assessmentText = normaliseComparisonText(assessment);
-    const tagText = normaliseComparisonText(tagLabel);
-    if (!assessmentText || !tagText) return false;
-    return assessmentText === tagText
-      || assessmentText.includes(tagText)
-      || tagText.includes(assessmentText);
-  };
-
-  const normaliseComparisonText = (value) => String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 
   const normaliseDisplayList = (value) => {
     if (!Array.isArray(value)) return [];

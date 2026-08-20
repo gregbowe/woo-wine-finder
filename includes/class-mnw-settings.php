@@ -240,14 +240,14 @@ final class MyNextWine_Woo_Settings {
         $plans = is_array($status) && !empty($status['plans']) && is_array($status['plans'])
             ? $status['plans']
             : array(
-                array('code' => 'LAUNCH', 'name' => 'Launch', 'monthlyPrice' => '29.99', 'completedSessionsPerMonth' => 500),
-                array('code' => 'GROWTH', 'name' => 'Growth', 'monthlyPrice' => '79.99', 'completedSessionsPerMonth' => 2000),
-                array('code' => 'SCALE', 'name' => 'Scale', 'monthlyPrice' => '199.99', 'completedSessionsPerMonth' => 5000),
+                array('code' => 'LAUNCH', 'name' => 'Launch', 'monthlyPrice' => '29.99', 'completedSessionsPerMonth' => 350),
+                array('code' => 'GROWTH', 'name' => 'Growth', 'monthlyPrice' => '79.99', 'completedSessionsPerMonth' => 800),
+                array('code' => 'SCALE', 'name' => 'Scale', 'monthlyPrice' => '199.99', 'completedSessionsPerMonth' => 2000),
             );
         $plan_code = is_array($status) ? strtoupper((string) ($status['planCode'] ?? 'LAUNCH')) : 'LAUNCH';
         $plan_name = is_array($status) ? (string) ($status['planName'] ?? 'Launch') : 'Launch';
         $completed_sessions = is_array($status) ? max(0, (int) ($status['completedSessionsThisMonth'] ?? 0)) : 0;
-        $completed_session_limit = is_array($status) ? max(0, (int) ($status['completedSessionsLimit'] ?? 500)) : 500;
+        $completed_session_limit = is_array($status) ? max(0, (int) ($status['completedSessionsLimit'] ?? 350)) : 350;
         $show_mnw_notes = is_array($status)
             ? !empty($status['showMyNextWineNotes'])
             : 'yes' === ($settings['show_mnw_notes'] ?? 'no');
@@ -383,7 +383,7 @@ final class MyNextWine_Woo_Settings {
                         echo esc_html(sprintf(__('%1$s of %2$s', 'my-next-wine-for-woocommerce'), number_format_i18n($completed_sessions), number_format_i18n($completed_session_limit)));
                         ?>
                     </p>
-                    <p class="description"><?php echo esc_html__('A session includes the initial recommendations and every refinement or bottle swap during the same shopper visit.', 'my-next-wine-for-woocommerce'); ?></p>
+                    <p class="description"><?php echo esc_html__('One completed session covers the initial recommendation and up to five combined refinements or bottle swaps in the same selection journey. Starting again creates a new session.', 'my-next-wine-for-woocommerce'); ?></p>
                     <?php if (!empty($status['trialEndsAt'])) : ?>
                         <p><strong><?php echo esc_html__('Trial ends:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date((string) $status['trialEndsAt'])); ?></p>
                     <?php endif; ?>
