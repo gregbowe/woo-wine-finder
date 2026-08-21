@@ -1,3 +1,7 @@
+= 1.0.30 =
+* Permanently deleting the plugin now requests immediate Stripe subscription cancellation as well as service revocation.
+* Clarified that deactivation alone does not cancel billing and updated Merchant Terms acceptance to 2026-08-21-UK5.
+
 = 1.0.29 =
 * Aligned Launch, Growth and Scale allowances with 350, 800 and 2,000 completed sessions.
 * Rotated the guarded session when a shopper starts again or edits a completed selection.

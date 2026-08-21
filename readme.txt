@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.29
+Stable tag: 1.0.30
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -106,7 +106,7 @@ The plugin adds suggested wording to WordPress's Privacy Policy Guide under Sett
 
 Shopper preference answers are used to create the requested automated, AI-assisted recommendation. The pre-submission notice tells shoppers not to enter names, contact details, health information or other sensitive personal data. For attributed orders, My Next Wine receives order and product references but not customer identity, address or payment-card data. Normal security logs may contain network or device metadata.
 
-Uninstall removes local plugin settings and sends a best-effort service revocation request to My Next Wine. Uninstalling does not itself cancel the Stripe subscription; use Manage subscription in WooCommerce > My Next Wine before uninstalling. A merchant can also contact support@mynextwine.com to request revocation, access, export or deletion, subject to legal retention requirements.
+Deactivating the plugin does not cancel billing. Permanently deleting it through WordPress removes local settings and sends a signed request to revoke service access and immediately cancel the associated Stripe subscription. Once My Next Wine records the uninstall request, it retries transient Stripe cancellation failures automatically. Delivery of the initial request still depends on the WordPress site being able to contact My Next Wine before local credentials are removed, so merchants who require immediate confirmation should use Manage subscription in WooCommerce > My Next Wine before deletion or contact support@mynextwine.com. Billing records and limited legal/accounting records may be retained as described in the Privacy Statement.
 
 == Frequently Asked Questions ==
 
@@ -139,6 +139,10 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.30 =
+* Permanently deleting the plugin now requests immediate Stripe subscription cancellation as well as service revocation.
+* Clarified that deactivation alone does not cancel billing and updated Merchant Terms acceptance to 2026-08-21-UK5.
 
 = 1.0.29 =
 * Aligned Launch, Growth and Scale allowances with 350, 800 and 2,000 completed sessions.

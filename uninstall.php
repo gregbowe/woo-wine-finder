@@ -16,7 +16,9 @@ if (file_exists($mynextwine_woo_client_file)) {
     if (class_exists('MyNextWine_Woo_API_Client')) {
         $mynextwine_woo_client = new MyNextWine_Woo_API_Client();
         if ($mynextwine_woo_client->is_configured()) {
-            // Best effort. A failed network call must never prevent WordPress uninstall.
+            // The signed backend request revokes access and immediately cancels
+            // any Stripe subscription. A failed network call must never prevent
+            // WordPress from completing local uninstall cleanup.
             $mynextwine_woo_client->revoke();
         }
     }

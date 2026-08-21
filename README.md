@@ -86,7 +86,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - The merchant opens Stripe Customer Portal from **WooCommerce → My Next Wine** to update billing details, view invoices or cancel.
 - Stripe Checkout collects the billing address and optional tax identifier; the backend retains returned merchant billing evidence but never payment-card details. Stripe Checkout and invoices are authoritative for the total, and the integration does not assert that Stripe Automatic Tax is enabled.
 - Cancellation normally keeps access until the end of the paid period reported by Stripe.
-- Uninstalling revokes the plugin connection but does not silently cancel the Stripe subscription.
+- Deactivating the plugin does not cancel billing. Permanently deleting it through WordPress sends a signed revocation request that ends service access and immediately cancels the associated Stripe subscription. The backend retries transient Stripe cancellation failures after it records the uninstall request.
 
 ## Public-release prerequisites
 
