@@ -276,6 +276,10 @@ final class MyNextWine_Woo_Settings {
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('My Next Wine', 'my-next-wine-for-woocommerce'); ?></h1>
+            <nav class="nav-tab-wrapper" aria-label="<?php echo esc_attr__('My Next Wine sections', 'my-next-wine-for-woocommerce'); ?>">
+                <a class="nav-tab nav-tab-active" href="<?php echo esc_url(admin_url('admin.php?page=mynextwine-woo-settings')); ?>"><?php echo esc_html__('Setup', 'my-next-wine-for-woocommerce'); ?></a>
+                <a class="nav-tab" href="<?php echo esc_url(admin_url('admin.php?page=mynextwine-woo-palate')); ?>"><?php echo esc_html__('Store Palate', 'my-next-wine-for-woocommerce'); ?></a>
+            </nav>
             <?php if ($notice_saved) : ?>
                 <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Settings saved.', 'my-next-wine-for-woocommerce'); ?></p></div>
             <?php endif; ?>

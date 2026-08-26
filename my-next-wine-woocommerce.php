@@ -2,7 +2,7 @@
 /**
  * Plugin Name: My Next Wine for WooCommerce
  * Description: Adds the My Next Wine recommendation widget to a WooCommerce wine shop.
- * Version: 1.0.30
+ * Version: 1.0.31
  * Author: My Next Wine
  * Author URI: https://mynextwine.com/
  * Requires at least: 6.5
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MYNEXTWINE_WOO_VERSION', '1.0.30');
+define('MYNEXTWINE_WOO_VERSION', '1.0.31');
 define('MYNEXTWINE_WOO_FILE', __FILE__);
 define('MYNEXTWINE_WOO_DIR', plugin_dir_path(__FILE__));
 define('MYNEXTWINE_WOO_URL', plugin_dir_url(__FILE__));
@@ -48,6 +48,7 @@ require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-api-client.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-installer.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-catalogue-sync.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-settings.php';
+require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-store-palate-settings.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-rest-controller.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-catalogue-controller.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-order-attribution.php';
@@ -69,6 +70,7 @@ add_action('plugins_loaded', static function () {
     $installer = new MyNextWine_Woo_Installer($client);
     $installer->set_catalogue_sync($catalogue_sync);
     new MyNextWine_Woo_Settings($client, $catalogue_sync);
+    new MyNextWine_Woo_Store_Palate_Settings($client);
     new MyNextWine_Woo_REST_Controller($client);
     new MyNextWine_Woo_Catalogue_Controller($client);
     new MyNextWine_Woo_Order_Attribution($client);

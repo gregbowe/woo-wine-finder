@@ -203,6 +203,18 @@ final class MyNextWine_Woo_API_Client {
         return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', $payload);
     }
 
+    /** @param array<string,mixed> $payload @return array<string,mixed>|WP_Error */
+    public function update_store_palate(array $payload) {
+        return $this->request('POST', '/api/woocommerce/widget/merchant/store-palate', $payload);
+    }
+
+    /** @return array<string,mixed>|WP_Error */
+    public function search_store_palate_wines(string $query) {
+        return $this->request('POST', '/api/woocommerce/widget/merchant/store-palate/wines', array(
+            'query' => sanitize_text_field($query),
+        ));
+    }
+
     /** @param mixed $value @return array<int,string> */
     public function normalise_wine_categories($value): array {
         if (!is_array($value)) {
