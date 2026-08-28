@@ -1,6 +1,372 @@
 (() => {
   "use strict";
 
+  const STATIC_WIDGET_DEFAULTS = Object.freeze({
+    "widget.static.wine_finder": "Wine finder",
+    "widget.static.wine_picked_for_you": "Wine, picked for you.",
+    "widget.static.question_1_of_4": "Question 1 of 4",
+    "widget.static.what_mix_would_you_like": "What mix would you like?",
+    "widget.static.choose_1_to_12_bottles_across_the_categories_available_in_this_shop": "Choose 1 to 12 bottles across the categories available in this shop.",
+    "widget.static.red": "Red",
+    "widget.static.white": "White",
+    "widget.static.ros": "Rosé",
+    "widget.static.sparkling": "Sparkling",
+    "widget.static.orange_skin_contact": "Orange/Skin-contact",
+    "widget.static.p_t_nat": "Pét-nat",
+    "widget.static.sherry": "Sherry",
+    "widget.static.other_fortified": "Other fortified",
+    "widget.static.dessert": "Dessert",
+    "widget.static.6_bottles_selected": "6 bottles selected",
+    "widget.static.next": "Next",
+    "widget.static.what_is_your_total_budget": "What is your total budget?",
+    "widget.static.loading_this_shop_s_currency_and_spend_limits": "Loading this shop's currency and spend limits.",
+    "widget.static.total_budget": "Total budget",
+    "widget.static.quick_choices": "Quick choices",
+    "widget.static.back": "Back",
+    "widget.static.tell_us_a_little_more": "Tell us a little more",
+    "widget.static.share_what_you_enjoy_anything_you_would_rather_avoid_and_whether_the": "Share what you enjoy, anything you would rather avoid, and whether the wines are for a gift or special occasion.",
+    "widget.static.your_preferences": "Your preferences",
+    "widget.static.optional": "Optional",
+    "widget.static.a_sentence_is_plenty_leave_this_blank_if_you_would_like_us_to_surpri": "A sentence is plenty. Leave this blank if you would like us to surprise you.",
+    "widget.static.what_are_you_pairing_with": "What are you pairing with?",
+    "widget.static.share_any_meals_dishes_or_snacks_you_would_like_us_to_match_with_a_b": "Share any meals, dishes or snacks you would like us to match with a bottle.",
+    "widget.static.food_pairings": "Food pairings",
+    "widget.static.add_more_than_one_dish_if_you_need_different_bottles_for_different_m": "Add more than one dish if you need different bottles for different meals.",
+    "widget.static.find_my_wines": "Find my wines",
+    "widget.static.automated_ai_assisted_guidance_for_people_of_legal_drinking_age_do_n": "Automated, AI-assisted guidance for people of legal drinking age. Do not enter names, contact details, health information or other sensitive personal data.",
+    "widget.static.by_selecting_find_my_wines_you_agree_to_the": "By selecting “Find my wines”, you agree to the",
+    "widget.static.wine_finder_user_terms": "Wine Finder User Terms",
+    "widget.static.and_acknowledge_the": "and acknowledge the",
+    "widget.static.privacy_statement": "Privacy Statement",
+    "widget.static.a_little_more_budget_is_needed": "A little more budget is needed",
+    "widget.static.edit_my_request": "Edit my request",
+    "widget.static.your_wine_selection": "Your wine selection",
+    "widget.static.not_fully_matched": "Not fully matched:",
+    "widget.static.show_budget_friendly_alternatives": "Show budget-friendly alternatives",
+    "widget.static.show_exact_matches": "Show exact matches",
+    "widget.static.want_to_adjust_your_selection": "Want to adjust your selection?",
+    "widget.static.undo_last_refinement": "Undo last refinement",
+    "widget.static.how_should_we_refine_this_selection": "How should we refine this selection?",
+    "widget.static.refine": "Refine",
+    "widget.static.or_try_a_different_budget": "Or try a different budget",
+    "widget.static.this_refinement_is_a_little_over_budget": "This refinement is a little over budget",
+    "widget.static.yes_use_the_higher_budget": "Yes, use the higher budget",
+    "widget.static.no_keep_current_selection": "No, keep current selection",
+    "widget.static.edit_answers": "Edit answers",
+    "widget.static.ai_assisted_recommendations_by": "AI-assisted recommendations by",
+    "widget.static.my_next_wine": "My Next Wine",
+    "widget.static.wine_is_sold_and_fulfilled_by_this_shop": ". Wine is sold and fulfilled by this shop.",
+    "widget.static.wine": "Wine",
+    "widget.static.why_it_fits": "Why it fits",
+    "widget.static.my_next_wine_rating": "My Next Wine rating",
+    "widget.static.producer": "Producer",
+    "widget.static.region": "Region",
+    "widget.static.country": "Country",
+    "widget.static.grapes": "Grapes",
+    "widget.static.my_next_wine_note": "My Next Wine note",
+    "widget.static.close_wine_finder": "Close wine finder",
+    "widget.static.bottle_mix": "Bottle mix",
+    "widget.static.budget": "Budget",
+    "widget.static.your_taste": "Your taste",
+    "widget.static.for_example_i_like_light_pinot_noir_and_crisp_whites_dislike_heavily": "For example: I like light Pinot Noir and crisp whites, dislike heavily oaked wines, and need one special bottle as a gift.",
+    "widget.static.food": "Food",
+    "widget.static.for_example_roast_lamb_on_saturday_seafood_spicy_food_or_a_cheese_bo": "For example: roast lamb on Saturday, seafood, spicy food, or a cheese board.",
+    "widget.static.ask_for_cheaper_bottles_more_reds_or_a_different_style": "Ask for cheaper bottles, more reds, or a different style…",
+    "widget.static.close_wine_details": "Close wine details",
+    "widget.static.close_note": "Close note",
+    "widget.static.not_sure_what_to_choose": "Not sure what to choose?",
+    "widget.static.build_my_wine_selection": "Build my wine selection",
+    "widget.static.a_complete_selection_from_our_available_wines_built_around_your_budg": "A complete selection from our available wines, built around your budget, preferences and occasion.",
+    "widget.static.add_selected_wines_to_my_basket": "Add selected wines to my basket",
+    "widget.static.add_selected_to_basket": "Add selected to basket",
+  });
+
+  const STATIC_WIDGET_KEYS_BY_TEXT = new Map(
+    Object.entries(STATIC_WIDGET_DEFAULTS).map(([key, value]) => [String(value).trim(), key])
+  );
+  let widgetMessages = Object.freeze({});
+  let widgetUiLocale = "en";
+
+  const formatWidgetMessage = (template, values = {}) =>
+    Object.entries(values).reduce(
+      (result, [name, value]) => result.replaceAll(`{${name}}`, String(value)),
+      String(template ?? "")
+    );
+
+  const t = (key, fallback, values = {}) => formatWidgetMessage(
+    Object.prototype.hasOwnProperty.call(widgetMessages, key)
+      ? widgetMessages[key]
+      : (fallback ?? STATIC_WIDGET_DEFAULTS[key] ?? key),
+    values
+  );
+
+  const DYNAMIC_WIDGET_KEYS_BY_TEXT = new Map([
+    ["Understanding your preferences…", "widget.loading.understanding"],
+    ["Checking our available wines…", "widget.loading.checking"],
+    ["Balancing your bottle mix and budget…", "widget.loading.balancing"],
+    ["Building your selection…", "widget.loading.building"],
+    ["We could not complete that request. Please try again.", "widget.error.generic_request"],
+    ["ten percent lower", "widget.budget.ten_percent_lower"],
+    ["ten percent higher", "widget.budget.ten_percent_higher"],
+    ["Updating budget…", "widget.budget.updating"],
+    ["We could not build a complete selection at that budget. Try increasing it or changing your request.", "widget.budget.incomplete_increase"],
+    ["We could not build a complete selection at that budget. Please edit your wine preferences or bottle mix and try again.", "widget.budget.incomplete_edit"],
+    ["Matched to your request", "widget.match.matched"],
+    ["Chosen from wines currently in stock.", "widget.match.current_stock"],
+    ["Closest alternatives", "widget.match.closest_alternatives"],
+    ["Closest complete selection", "widget.match.closest_complete"],
+    ["Considered substitutions", "widget.match.substitutions"],
+    ["Exact matches are over budget", "widget.match.exact_over_budget"],
+    ["Finding wines…", "widget.recommendation.finding"],
+    ["The wine finder took too long to respond. Please try again.", "widget.recommendation.timeout"],
+    ["No suitable wines were found for those answers. Try a slightly larger budget or different mix.", "widget.recommendation.none"],
+    ["The wine finder response was incomplete. Please try again.", "widget.recommendation.incomplete"],
+    ["We could not build the wine selection.", "widget.recommendation.failed"],
+    ["Finding another…", "widget.swap.finding"],
+    ["The wine swap took too long. Please try again.", "widget.swap.timeout"],
+    ["No alternative wine was returned. Please try again.", "widget.swap.none"],
+    ["That wine could not be swapped. Please try again.", "widget.swap.failed"],
+    ["This refinement is a little over budget", "widget.refine.over_budget"],
+    ["Refining your current selection…", "widget.refine.running"],
+    ["Refining…", "widget.refine.short"],
+    ["Your selection has been refined.", "widget.refine.done"],
+    ["The refinement took too long. Your current selection has been kept.", "widget.refine.timeout"],
+    ["Tell us what you want to change.", "widget.refine.tell_change"],
+    ["No changes made. Your current selection has been kept.", "widget.refine.no_changes"],
+    ["The most recent refinement was undone.", "widget.refine.undone"],
+    ["Adding to basket…", "widget.cart.adding"],
+    ["The wines could not be added to the basket. Please try again.", "widget.cart.failed"],
+    ["This shop's Wine Finder configuration is unavailable.", "widget.config.unavailable"],
+    ["This shop's currency and spend limits are not configured.", "widget.config.currency_unavailable"],
+    ["The linked merchant currency range is invalid.", "widget.config.invalid_range"],
+    ["The Wine Finder configuration endpoint is missing.", "widget.config.endpoint_missing"],
+    ["The wine finder configuration took too long to load.", "widget.config.timeout"],
+    ["The available bottle categories are invalid. Refresh and try again.", "widget.validation.categories_invalid"],
+    ["Every bottle mix value must be a whole number of zero or more.", "widget.validation.mix_whole_numbers"],
+    ["One of your answers is too long.", "widget.validation.answer_too_long"],
+    ["Chosen as the closest suitable alternative to your requested wines, within this shop's current range.", "widget.reason.closest"],
+    ["Chosen to fit your wine preferences and the food you described.", "widget.reason.preferences_food"],
+    ["Chosen to match the wine preferences and style you described as closely as possible.", "widget.reason.preferences"],
+    ["Chosen with the food pairing you described in mind.", "widget.reason.food"],
+    ["Chosen for balance, value and fit with the rest of your selection.", "widget.reason.balance"],
+    ["Why we picked it", "widget.quick_view.why"],
+    ["Quick view", "widget.quick_view.label"],
+    ["Select at least one wine", "widget.selection.select_one"],
+    ["Add back", "widget.selection.add_back"],
+    ["On budget", "widget.selection.on_budget"],
+    ["The retry budget is invalid.", "widget.retry.invalid"],
+    ["The refinement response was incomplete. Your current selection has been kept.", "widget.refine.response_incomplete"],
+    ["The refinement changed an unavailable bottle category. Your current selection has been kept.", "widget.refine.category_changed"],
+    ["The refinement response was invalid. Your current selection has been kept.", "widget.refine.response_invalid"],
+    ["We could not refine that selection.", "widget.refine.failed"],
+    ["One recommended wine is temporarily unavailable. Change your answers and try again.", "widget.cart.unavailable"],
+    ["The basket took too long to respond. Please try again.", "widget.cart.timeout"],
+    ["The service returned an unexpected response. Please try again.", "widget.http.unexpected"],
+    ["The shop's Wine Finder categories are invalid.", "widget.categories.shop_invalid"],
+    ["The shop must configure at least two valid Wine Finder categories.", "widget.categories.minimum"],
+    ["Red", "widget.category.red.label"],
+    ["reds", "widget.category.red.plural"],
+    ["White", "widget.category.white.label"],
+    ["whites", "widget.category.white.plural"],
+    ["Rosé", "widget.category.rose.label"],
+    ["rosés", "widget.category.rose.plural"],
+    ["Sparkling", "widget.category.sparkling.label"],
+    ["sparkling wines", "widget.category.sparkling.plural"],
+    ["Orange/Skin-contact", "widget.category.orange.label"],
+    ["orange wines", "widget.category.orange.plural"],
+    ["Pét-nat", "widget.category.petNat.label"],
+    ["pét-nats", "widget.category.petNat.plural"],
+    ["Sherry", "widget.category.sherry.label"],
+    ["sherries", "widget.category.sherry.plural"],
+    ["Other fortified", "widget.category.otherFortified.label"],
+    ["fortified wines", "widget.category.otherFortified.plural"],
+    ["Dessert", "widget.category.dessert.label"],
+    ["dessert wines", "widget.category.dessert.plural"],
+    ["other bottles", "widget.category.other_bottles"],
+    ["The linked merchant currency is invalid.", "widget.config.invalid_currency"],
+    ["No further description is available for this wine.", "widget.wine.no_description"],
+    ["We could not match every preference exactly, so we chose the closest suitable alternatives within budget.", "widget.alternative.within_budget"],
+    ["Some exact matches were unavailable, so we chose the closest suitable alternatives and stayed within budget.", "widget.alternative.closest_within"],
+    ["Minimum", "widget.budget.minimum"],
+    ["Suggested", "widget.budget.suggested"],
+    ["Add", "widget.action.add"],
+    ["Remove", "widget.action.remove"],
+    ["bottle", "widget.unit.bottle"],
+    ["bottles", "widget.unit.bottles"],
+    ["Included", "widget.selection.included"],
+    ["Removed", "widget.selection.removed"],
+    ["Swap", "widget.action.swap"],
+    ["wine", "widget.unit.wine"],
+    ["This swap is a little over budget", "widget.swap.over_budget"],
+    ["One or more requests could not be matched exactly, so the closest safe selection is shown honestly.", "widget.match.partial_fallback"],
+  ]);
+
+  const translateBudgetQualifier = (value) => {
+    const normalised = String(value || "").trim().toLowerCase();
+    if (normalised === "minimum") return t("widget.budget.minimum", "Minimum");
+    if (normalised === "suggested") return t("widget.budget.suggested", "Suggested");
+    return value;
+  };
+
+  const translateAction = (value) => String(value || "").trim().toLowerCase() === "remove"
+    ? t("widget.action.remove", "Remove")
+    : t("widget.action.add", "Add");
+
+  const translateBottleUnit = (value) => String(value || "").trim().toLowerCase() === "bottle"
+    ? t("widget.unit.bottle", "bottle")
+    : t("widget.unit.bottles", "bottles");
+
+  const DYNAMIC_WIDGET_PATTERNS = [
+    [/^Decrease total budget by (.+) to (.+)$/, "widget.budget.decrease_to", "Decrease total budget by {amount} to {total}", (m) => ({ amount: m[1], total: m[2] })],
+    [/^Decrease total budget by (.+)$/, "widget.budget.decrease_by", "Decrease total budget by {amount}", (m) => ({ amount: m[1] })],
+    [/^Increase total budget by (.+) to (.+)$/, "widget.budget.increase_to", "Increase total budget by {amount} to {total}", (m) => ({ amount: m[1], total: m[2] })],
+    [/^Increase total budget by (.+)$/, "widget.budget.increase_by", "Increase total budget by {amount}", (m) => ({ amount: m[1] })],
+    [/^About (.+) per bottle$/, "widget.budget.about_per_bottle", "About {amount} per bottle", (m) => ({ amount: m[1] })],
+    [/^Use (minimum|suggested) total budget of (.+)$/i, "widget.budget.use_qualified", "Use {qualifier} total budget of {amount}", (m) => ({ qualifier: translateBudgetQualifier(m[1]).toLocaleLowerCase(widgetUiLocale), amount: m[2] })],
+    [/^Use total budget of (.+)$/, "widget.budget.use", "Use total budget of {amount}", (m) => ({ amount: m[1] })],
+    [/^(.+) (Minimum|Suggested)$/, "widget.budget.choice_qualified", "{amount} {qualifier}", (m) => ({ amount: m[1], qualifier: translateBudgetQualifier(m[2]) })],
+    [/^Question (\d+) of (\d+)$/, "widget.wizard.progress", "Question {current} of {total}", (m) => ({ current: m[1], total: m[2] })],
+    [/^Try (.+) budget$/, "widget.budget.try", "Try {amount} budget", (m) => ({ amount: m[1] })],
+    [/^Try (.+) \(([-+−]\d+%)\)$/, "widget.budget.try_change", "Try {amount} ({change})", (m) => ({ amount: m[1], change: m[2] })],
+    [/^Try a budget of (.+), (ten percent lower|ten percent higher)\.$/, "widget.budget.try_change_accessible", "Try a budget of {amount}, {change}.", (m) => ({ amount: m[1], change: t(DYNAMIC_WIDGET_KEYS_BY_TEXT.get(m[2]) || "", m[2]) })],
+    [/^Rebuilding your current selection around (.+)…$/, "widget.budget.rebuilding", "Rebuilding your current selection around {amount}…", (m) => ({ amount: m[1] })],
+    [/^Your selection has been rebuilt around (.+)\.$/, "widget.budget.rebuilt", "Your selection has been rebuilt around {amount}.", (m) => ({ amount: m[1] })],
+    [/^Rebuilding your selection around (.+)…$/, "widget.refine.rebuilding", "Rebuilding your selection around {amount}…", (m) => ({ amount: m[1] })],
+    [/^Your selection now uses a budget of (.+)\.$/, "widget.refine.new_budget", "Your selection now uses a budget of {amount}.", (m) => ({ amount: m[1] })],
+    [/^We do not have enough exact matches in stock\. A complete alternative selection starts at (.+?)(?: — (.+) above your current budget)?\.$/, "widget.budget.guidance_start", "We do not have enough exact matches in stock. A complete alternative selection starts at {amount}{difference}.", (m) => ({ amount: m[1], difference: m[2] ? t("widget.budget.guidance_difference", " — {amount} above your current budget", { amount: m[2] }) : "" })],
+    [/^We replaced unavailable or expensive exact matches with similar styles\. Total (.+?)(?: — (.+) under budget)?\.$/, "widget.alternative.replaced", "We replaced unavailable or expensive exact matches with similar styles. Total {total}{difference}.", (m) => ({ total: m[1], difference: m[2] ? t("widget.alternative.under_difference", " — {amount} under budget", { amount: m[2] }) : "" })],
+    [/^Show exact (.+) selection$/, "widget.alternative.show_exact", "Show exact {amount} selection", (m) => ({ amount: m[1] })],
+    [/^We do not have enough exact matches in stock\. This selection is (.+) — (.+) over your (.+) budget\.$/, "widget.alternative.not_enough_exact", "We do not have enough exact matches in stock. This selection is {total} — {difference} over your {budget} budget.", (m) => ({ total: m[1], difference: m[2], budget: m[3] })],
+    [/^These are the closest suitable alternatives from current stock\. The total is (.+) — (.+) over budget\.$/, "widget.alternative.closest_over", "These are the closest suitable alternatives from current stock. The total is {total} — {difference} over budget.", (m) => ({ total: m[1], difference: m[2] })],
+    [/^Exact matches total (.+) — (.+) over your (.+) budget\.$/, "widget.budget.exact_total", "Exact matches total {total} — {difference} over your {budget} budget.", (m) => ({ total: m[1], difference: m[2], budget: m[3] })],
+    [/^A similar option is (.+)\.$/, "widget.budget.similar_option", "A similar option is {amount}.", (m) => ({ amount: m[1] })],
+    [/^View (.+) alternative$/, "widget.alternative.view", "View {amount} alternative", (m) => ({ amount: m[1] })],
+    [/^The minimum budget for (\d+) (bottle|bottles) is (.+)\.$/, "widget.validation.minimum_budget", "The minimum budget for {count} {bottles} is {amount}.", (m) => ({ count: m[1], bottles: translateBottleUnit(m[2]), amount: m[3] })],
+    [/^The maximum supported budget is (.+)\.$/, "widget.validation.maximum_budget", "The maximum supported budget is {amount}.", (m) => ({ amount: m[1] })],
+    [/^The bottle mix adds up to (\d+), not (\d+)\.$/, "widget.validation.mix_total", "The bottle mix adds up to {actual}, not {expected}.", (m) => ({ actual: m[1], expected: m[2] })],
+    [/^Quick view: (.+)$/, "widget.quick_view.title", "Quick view: {wine}", (m) => ({ wine: m[1] })],
+    [/^Read the My Next Wine note for (.+)$/, "widget.quick_view.note_for", "Read the My Next Wine note for {name}", (m) => ({ name: m[1] })],
+    [/^Producer: (.+)$/, "widget.quick_view.producer", "Producer: {value}", (m) => ({ value: m[1] })],
+    [/^Region: (.+)$/, "widget.quick_view.region", "Region: {value}", (m) => ({ value: m[1] })],
+    [/^Country: (.+)$/, "widget.quick_view.country", "Country: {value}", (m) => ({ value: m[1] })],
+    [/^Grape: (.+)$/, "widget.quick_view.grape", "Grape: {value}", (m) => ({ value: m[1] })],
+    [/^Swap (.+) with another$/, "widget.quick_view.swap", "Swap {wine} with another", (m) => ({ wine: m[1] })],
+    [/^Remove (.+) from selection$/, "widget.selection.remove", "Remove {wine} from selection", (m) => ({ wine: m[1] })],
+    [/^Add (.+) back to selection$/, "widget.selection.add_back_wine", "Add {wine} back to selection", (m) => ({ wine: m[1] })],
+    [/^(\d+) bottle selected$/, "widget.selection.count_one", "{count} bottle selected", (m) => ({ count: m[1] })],
+    [/^(\d+) bottles selected$/, "widget.selection.count_many", "{count} bottles selected", (m) => ({ count: m[1] })],
+    [/^(.+) of (.+)$/, "widget.selection.total_of_budget", "{total} of {budget}", (m) => ({ total: m[1], budget: m[2] })],
+    [/^Add (\d+) wine to basket$/, "widget.selection.add_one", "Add {count} wine to basket", (m) => ({ count: m[1] })],
+    [/^Add (\d+) wines to basket$/, "widget.selection.add_many", "Add {count} wines to basket", (m) => ({ count: m[1] })],
+    [/^(\d+) bottle$/, "widget.selection.bottle_one", "{count} bottle", (m) => ({ count: m[1] })],
+    [/^(\d+) bottles$/, "widget.selection.bottle_many", "{count} bottles", (m) => ({ count: m[1] })],
+    [/^(.+) under budget$/, "widget.selection.under_budget", "{amount} under budget", (m) => ({ amount: m[1] })],
+    [/^(.+) over budget$/, "widget.selection.over_budget", "{amount} over budget", (m) => ({ amount: m[1] })],
+    [/^That refinement would need (.+), (.+) above your current (.+) budget\. Is that okay\?$/, "widget.refine.budget_question", "That refinement would need {suggested}, {difference} above your current {current} budget. Is that okay?", (m) => ({ suggested: m[1], difference: m[2], current: m[3] })],
+    [/^The nearest available replacement needs (.+), (.+) above your current (.+) budget\. Is that okay\?$/, "widget.swap.budget_question", "The nearest available replacement needs {suggested}, {difference} above your current {current} budget. Is that okay?", (m) => ({ suggested: m[1], difference: m[2], current: m[3] })],
+    [/^Yes, use (.+)$/, "widget.refine.accept_budget", "Yes, use {amount}", (m) => ({ amount: m[1] })],
+    [/^That exact refinement needs at least (.+)\. Your current selection has been kept\.$/, "widget.refine.exact_needs", "That exact refinement needs at least {amount}. Your current selection has been kept.", (m) => ({ amount: m[1] })],
+    [/^For (\d+) (bottle|bottles), the minimum budget is (.+)\.$/, "widget.budget.minimum_for", "For {count} {bottles}, the minimum budget is {amount}.", (m) => ({ count: m[1], bottles: translateBottleUnit(m[2]), amount: m[3] })],
+    [/^(.+) bottles$/, "widget.category.bottles", "{label} bottles", (m) => ({ label: m[1] })],
+    [/^(Add|Remove) one (.+) bottle$/, "widget.category.adjust", "{action} one {label} bottle", (m) => ({ action: translateAction(m[1]), label: m[2] })],
+    [/^(\d+) bottle selected$/, "widget.allocation.selected_one", "{count} bottle selected", (m) => ({ count: m[1] })],
+    [/^(\d+) bottles selected$/, "widget.allocation.selected_many", "{count} bottles selected", (m) => ({ count: m[1] })],
+    [/^(.+)\. Choose at least (\d+)\.$/, "widget.allocation.choose_min", "{labels}. Choose at least {min}.", (m) => ({ labels: m[1], min: m[2] })],
+    [/^(.+)\. Choose no more than (\d+)\.$/, "widget.allocation.choose_max", "{labels}. Choose no more than {max}.", (m) => ({ labels: m[1], max: m[2] })],
+    [/^The linked merchant (.+) is invalid\.$/, "widget.config.invalid_value", "The linked merchant {label} is invalid.", (m) => ({ label: m[1] })],
+    [/^Sub: (.+)$/, "widget.recommendation.substitute", "Sub: {label}", (m) => ({ label: m[1] })],
+    [/^Considered substitute for (.+)$/, "widget.recommendation.substitute_title", "Considered substitute for {label}", (m) => ({ label: m[1] })],
+    [/^Keep the refinement to (\d+) characters or fewer\.$/, "widget.refine.character_limit", "Keep the refinement to {max} characters or fewer.", (m) => ({ max: m[1] })]
+  ];
+
+  const translateKnownWidgetText = (value) => {
+    const text = String(value ?? "").trim();
+    if (!text) return text;
+    const staticKey = STATIC_WIDGET_KEYS_BY_TEXT.get(text);
+    if (staticKey) return t(staticKey, text);
+    const dynamicKey = DYNAMIC_WIDGET_KEYS_BY_TEXT.get(text);
+    if (dynamicKey) return t(dynamicKey, text);
+    for (const [pattern, key, fallback, values] of DYNAMIC_WIDGET_PATTERNS) {
+      const match = text.match(pattern);
+      if (match) return t(key, fallback, values(match));
+    }
+    return text;
+  };
+
+  const localiseWidgetNode = (node) => {
+    if (!node || node.nodeType !== Node.TEXT_NODE) return;
+    const original = String(node.textContent || "");
+    const trimmed = original.trim();
+    if (!trimmed) return;
+    const translated = translateKnownWidgetText(trimmed);
+    if (translated === trimmed) return;
+    const start = original.indexOf(trimmed);
+    node.textContent = original.slice(0, start) + translated + original.slice(start + trimmed.length);
+  };
+
+  const localiseWidgetElementAttributes = (element) => {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) return;
+    ["aria-label", "placeholder", "title", "data-mnw-wizard-title"].forEach((attribute) => {
+      if (!element.hasAttribute(attribute)) return;
+      const original = String(element.getAttribute(attribute) || "").trim();
+      const translated = translateKnownWidgetText(original);
+      if (translated !== original) element.setAttribute(attribute, translated);
+    });
+  };
+
+  const observeWidgetTranslations = (root) => {
+    if (!root || typeof MutationObserver !== "function" || root.mnwTranslationObserver) return;
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "characterData") {
+          localiseWidgetNode(mutation.target);
+          return;
+        }
+        if (mutation.type === "attributes") {
+          localiseWidgetElementAttributes(mutation.target);
+          return;
+        }
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            localiseWidgetNode(node);
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            localiseWidgetElementAttributes(node);
+            node.querySelectorAll?.("*").forEach(localiseWidgetElementAttributes);
+            const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) localiseWidgetNode(walker.currentNode);
+          }
+        });
+      });
+    });
+    observer.observe(root, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "placeholder", "title", "data-mnw-wizard-title"]
+    });
+    root.mnwTranslationObserver = observer;
+  };
+
+  const requestedWidgetLocale = () => {
+    const documentLocale = String(document.documentElement?.lang || "").trim();
+    return documentLocale || String(navigator.language || "en").trim() || "en";
+  };
+
+  const endpointWithLocale = (endpoint) => {
+    const url = new URL(endpoint, window.location.href);
+    url.searchParams.set("locale", requestedWidgetLocale());
+    return url.toString();
+  };
+
+  const applyStaticWidgetTranslations = (root) => {
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) localiseWidgetNode(walker.currentNode);
+    root.querySelectorAll("*").forEach(localiseWidgetElementAttributes);
+    root.setAttribute("lang", widgetUiLocale);
+  };
+
   const MIN_BOTTLE_COUNT = 1;
   const MAX_BOTTLE_COUNT = 12;
   const MAX_FREE_TEXT_LENGTH = 500;
@@ -1033,6 +1399,7 @@
       try {
         const payload = readRecommendationForm(form, configuredCategories);
         payload.sessionId = pageSessionId;
+        payload.locale = widgetUiLocale;
         validateRecommendationPayload(
           payload,
           minimumBottlePrice,
@@ -1578,6 +1945,14 @@
 
     loadWidgetConfiguration(configEndpoint)
       .then((configuration) => {
+        widgetUiLocale = String(configuration.locale || requestedWidgetLocale()).trim() || "en";
+        widgetMessages = Object.freeze(
+          configuration.messages && typeof configuration.messages === "object"
+            ? { ...configuration.messages }
+            : {}
+        );
+        applyStaticWidgetTranslations(root);
+        observeWidgetTranslations(root);
         storeCurrency = requireCurrencyCode(configuration.currency);
         serviceLocale = normaliseMarketLocale(configuration.marketLocale);
         storeCurrencySymbol = String(configuration.currencySymbol || "").trim() || null;
@@ -1688,20 +2063,20 @@
     if (status === "ALTERNATIVE_ONLY"
         || status === "CONSIDERED_SUBSTITUTIONS"
         || status === "CONSIDERED_SUBSTITUTIONS_OVER_BUDGET") {
-      return "Chosen as the closest suitable alternative to your requested wines, within this shop's current range.";
+      return t("widget.reason.closest", "Chosen as the closest suitable alternative to your requested wines, within this shop's current range.");
     }
     const usualWines = String(request?.usualWines || "").trim();
     const foodPairings = String(request?.foodPairings || "").trim();
     if (usualWines && foodPairings) {
-      return "Chosen to fit your wine preferences and the food you described.";
+      return t("widget.reason.preferences_food", "Chosen to fit your wine preferences and the food you described.");
     }
     if (usualWines) {
-      return "Chosen to match the wine preferences and style you described as closely as possible.";
+      return t("widget.reason.preferences", "Chosen to match the wine preferences and style you described as closely as possible.");
     }
     if (foodPairings) {
-      return "Chosen with the food pairing you described in mind.";
+      return t("widget.reason.food", "Chosen with the food pairing you described in mind.");
     }
-    return "Chosen for balance, value and fit with the rest of your selection.";
+    return t("widget.reason.balance", "Chosen for balance, value and fit with the rest of your selection.");
   };
 
   const renderWines = (
@@ -1926,8 +2301,12 @@
     return {
       disabled: selectedCount === 0,
       label: selectedCount === 0
-        ? "Select at least one wine"
-        : `Add ${selectedCount} wine${selectedCount === 1 ? "" : "s"} to basket`
+        ? t("widget.selection.select_one", "Select at least one wine")
+        : t(
+            selectedCount === 1 ? "widget.selection.add_one" : "widget.selection.add_many",
+            selectedCount === 1 ? "Add {count} wine to basket" : "Add {count} wines to basket",
+            { count: selectedCount }
+          )
     };
   };
 
@@ -1955,11 +2334,15 @@
       : {};
     const categoryParts = CATEGORY_DEFINITIONS
       .map((category) => ({
-        label: category.label.toLowerCase(),
+        label: t(`widget.category.${category.key}.summary`, category.label.toLowerCase()),
         count: Number(categoryCounts[category.key] || 0)
       }))
       .filter((category) => Number.isInteger(category.count) && category.count > 0)
-      .map((category) => `${category.count} ${category.label}`);
+      .map((category) => t(
+        "widget.selection.category_count",
+        "{count} {category}",
+        { count: category.count, category: category.label }
+      ));
     const requestedCount = Number(request?.bottleCount || 0);
     const derivedCount = Object.values(categoryCounts)
       .reduce((sum, value) => sum + (Number.isFinite(Number(value)) ? Number(value) : 0), 0);
@@ -1967,10 +2350,12 @@
       ? requestedCount
       : derivedCount;
     if (!Number.isInteger(bottleCount) || bottleCount <= 0) return String(fallback || "");
-    return [
-      `${bottleCount} bottle${bottleCount === 1 ? "" : "s"}`,
-      ...categoryParts
-    ].join(" · ");
+    const bottleText = t(
+      bottleCount === 1 ? "widget.selection.bottle_one" : "widget.selection.bottle_many",
+      bottleCount === 1 ? "{count} bottle" : "{count} bottles",
+      { count: bottleCount }
+    );
+    return [bottleText, ...categoryParts].join(" · ");
   };
 
   const formatBudgetPosition = (
@@ -1986,11 +2371,14 @@
       return { state: "none", text: "" };
     }
     const difference = numericBudget - numericTotal;
-    if (Math.abs(difference) <= 0.0001) return { state: "on", text: "On budget" };
+    if (Math.abs(difference) <= 0.0001) return {
+      state: "on",
+      text: t("widget.selection.on_budget", "On budget")
+    };
     const formatter = createCurrencyFormatter(currency, currencyPrecision, locale);
     return difference > 0
-      ? { state: "under", text: `${formatter.format(difference)} under budget` }
-      : { state: "over", text: `${formatter.format(Math.abs(difference))} over budget` };
+      ? { state: "under", text: t("widget.selection.under_budget", "{amount} under budget", { amount: formatter.format(difference) }) }
+      : { state: "over", text: t("widget.selection.over_budget", "{amount} over budget", { amount: formatter.format(Math.abs(difference)) }) };
   };
 
   const calculateSelectionSummary = (
@@ -2634,7 +3022,12 @@
         catch { throw new Error("The service returned an unexpected response. Please try again."); }
       }
       if (!response.ok) {
-        const error = new Error(body.error || body.description || body.message || `Request failed (${response.status}).`);
+        const rawMessage = body.error || body.description || body.message || `Request failed (${response.status}).`;
+        const translatedMessage = translateKnownWidgetText(rawMessage);
+        const safeMessage = widgetUiLocale.toLowerCase().startsWith("en") || translatedMessage !== rawMessage
+          ? translatedMessage
+          : t("widget.error.generic_request", "We could not complete that request. Please try again.");
+        const error = new Error(safeMessage);
         error.details = body;
         error.status = response.status;
         throw error;
@@ -2673,10 +3066,14 @@
       const chip = document.createElement("span");
       chip.className = `mnw-recommendation-tag mnw-recommendation-tag--${tag.type.toLowerCase()}`;
       chip.textContent = tag.type === "SUBSTITUTE"
-        ? `Sub: ${tag.label}`
+        ? t("widget.recommendation.substitute", "Sub: {label}", { label: tag.label })
         : tag.label;
       if (tag.type === "SUBSTITUTE") {
-        chip.title = `Considered substitute for ${tag.label}`;
+        chip.title = t(
+          "widget.recommendation.substitute_title",
+          "Considered substitute for {label}",
+          { label: tag.label }
+        );
       }
       container.appendChild(chip);
     });
@@ -2737,8 +3134,14 @@
     const definitions = categories
       .map((key) => CATEGORY_DEFINITIONS.find((category) => category.key === key))
       .filter(Boolean);
-    const first = definitions[0]?.plural || "bottles";
-    const second = definitions[1]?.plural || "other bottles";
+    const firstDefinition = definitions[0];
+    const secondDefinition = definitions[1];
+    const first = firstDefinition
+      ? t(`widget.category.${firstDefinition.key}.plural`, firstDefinition.plural)
+      : t("widget.unit.bottles", "bottles");
+    const second = secondDefinition
+      ? t(`widget.category.${secondDefinition.key}.plural`, secondDefinition.plural)
+      : t("widget.category.other_bottles", "other bottles");
     return `Try “Make it 4 ${first} and 2 ${second}”, “Give me a better gift bottle” or “Make the selection more adventurous”.`;
   };
 
@@ -3089,12 +3492,18 @@
   };
 
   const loadWidgetConfiguration = async (endpoint) => {
-    if (!endpoint) throw new Error("The Wine Finder configuration endpoint is missing.");
-    return fetchJson(endpoint, {
+    if (!endpoint) throw new Error(t(
+      "widget.config.endpoint_missing",
+      "The Wine Finder configuration endpoint is missing."
+    ));
+    return fetchJson(endpointWithLocale(endpoint), {
       method: "GET",
       headers: { "Accept": "application/json" },
       cache: "no-store"
-    }, CONFIGURATION_TIMEOUT_MS, "The wine finder configuration took too long to load.");
+    }, CONFIGURATION_TIMEOUT_MS, t(
+      "widget.config.timeout",
+      "The wine finder configuration took too long to load."
+    ));
   };
 
   if (typeof module !== "undefined" && module.exports) {

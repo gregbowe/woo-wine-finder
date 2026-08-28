@@ -52,7 +52,8 @@ final class MyNextWine_Woo_REST_Controller {
     }
 
     public function configuration(WP_REST_Request $request): WP_REST_Response {
-        return $this->proxy('GET', '/api/woocommerce/widget/configuration', null);
+        $locale = sanitize_text_field((string) $request->get_param('locale'));
+        return $this->proxy('GET', '/api/woocommerce/widget/configuration', null, $locale);
     }
 
     public function recommendations(WP_REST_Request $request): WP_REST_Response {
@@ -185,7 +186,7 @@ final class MyNextWine_Woo_REST_Controller {
     }
 
     /** @param array<string,mixed>|null $payload */
-    private function proxy(string $method, string $backend_path, ?array $payload): WP_REST_Response {
+    private function proxy(string $method, string $backend_path, ?array $payload, string $locale = ''): WP_REST_Response {
         if (!$this->client->is_enabled()) {
             return $this->error(__('The wine finder is not enabled.', 'my-next-wine-for-woocommerce'), 503);
         }
@@ -200,7 +201,8 @@ final class MyNextWine_Woo_REST_Controller {
             $backend_path,
             $payload,
             $this->client->client_key(),
-            $timeout_seconds
+            $timeout_seconds,
+            $locale
         );
         if (is_wp_error($result)) {
             $data = $result->get_error_data();

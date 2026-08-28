@@ -5,6 +5,15 @@
   if (!root) return;
   var $ = function (selector) { return root.querySelector(selector); };
   var config = window.MyNextWineWooPalate || {};
+  var text = function (key, fallback) { return config[key] || fallback; };
+  var format = function (value) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    var index = 0;
+    return String(value || '').replace(/%[sd]/g, function () {
+      var replacement = args[index++];
+      return replacement === undefined || replacement === null ? '' : String(replacement);
+    });
+  };
   var configured = root.getAttribute('data-configured') === 'true';
   var discoveryInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-discovery-style]'));
   var pairingInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-pairing-style]'));
@@ -35,7 +44,7 @@
   function safeWine(wine) {
     return {
       id: Number(wine && wine.id || 0),
-      name: String(wine && wine.name || 'Wine'),
+      name: String(wine && wine.name || text('wine', 'Wine')),
       imageSrc: String(wine && wine.imageSrc || ''),
       price: Number(wine && wine.price || 0),
       storeId: String(wine && wine.storeId || '')
@@ -96,8 +105,8 @@
     dirty = true;
     syncPayload();
     if (palateStatus) palateStatus.textContent = configured
-      ? 'Unsaved changes.'
-      : 'Connect the store from Setup before saving.';
+      ? text('unsavedChanges', 'Unsaved changes.')
+      : text('connectBeforeSaving', 'Connect the store from Setup before saving.');
     if (saveButton) saveButton.disabled = !configured;
   }
 
@@ -125,7 +134,7 @@
     remove.type = 'button';
     remove.className = 'mnw-palate-admin__remove';
     remove.textContent = '×';
-    remove.setAttribute('aria-label', 'Remove ' + wine.name);
+    remove.setAttribute('aria-label', format(text('removeWine', 'Remove %s'), wine.name));
     remove.addEventListener('click', removeHandler);
     row.appendChild(thumb(wine));
     row.appendChild(name);
@@ -165,7 +174,11 @@
       var dish = document.createElement('strong');
       dish.textContent = pairing.dish;
       var detail = document.createElement('small');
-      detail.textContent = pairing.wines.length + ' preferred ' + (pairing.wines.length === 1 ? 'wine' : 'wines');
+      detail.textContent = format(
+        text(pairing.wines.length === 1 ? 'preferredWine' : 'preferredWines',
+          pairing.wines.length === 1 ? '%d preferred wine' : '%d preferred wines'),
+        pairing.wines.length
+      );
       copy.appendChild(dish);
       copy.appendChild(detail);
       var wines = document.createElement('div');
@@ -175,12 +188,12 @@
       var edit = document.createElement('button');
       edit.type = 'button';
       edit.className = 'mnw-palate-admin__pairing-action';
-      edit.textContent = 'Edit';
+      edit.textContent = text('edit', 'Edit');
       edit.addEventListener('click', function () { openDialog(index); });
       var remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'mnw-palate-admin__pairing-action';
-      remove.textContent = 'Remove';
+      remove.textContent = text('remove', 'Remove');
       remove.addEventListener('click', function () {
         palate.signaturePairings.splice(index, 1);
         renderPairings();
@@ -217,7 +230,7 @@
 
   function money(amount) {
     try {
-      return new Intl.NumberFormat(undefined, { style: 'currency', currency: config.currency || 'EUR' }).format(amount || 0);
+      return new Intl.NumberFormat(String(config.locale || '').replace('_', '-') || undefined, { style: 'currency', currency: config.currency || 'EUR' }).format(amount || 0);
     } catch (ignore) {
       return String(amount || '');
     }
@@ -246,7 +259,7 @@
     if (!container.childElementCount) {
       var empty = document.createElement('div');
       empty.className = 'mnw-palate-admin__search-result';
-      empty.textContent = config.noResults || 'No matching available wines.';
+      empty.textContent = text('noResults', 'No matching available wines.');
       container.appendChild(empty);
     }
     container.hidden = false;
@@ -269,7 +282,7 @@
           ? response.data.wines.map(safeWine) : [];
         showResults(container, wines, excludedIds, chooseHandler);
       }).catch(function (error) {
-        palateStatus.textContent = error.message || config.searchFailed || 'Wine search failed.';
+        palateStatus.textContent = error.message || text('searchFailed', 'Wine search failed.');
       });
   }
 
@@ -281,8 +294,8 @@
     pairingSearch.value = '';
     pairingWineDraft = pairing ? pairing.wines.map(safeWine) : [];
     pairingError.textContent = '';
-    pairingTitle.textContent = pairing ? 'Edit pairing' : 'Add a pairing';
-    confirmPairing.textContent = pairing ? 'Save pairing' : 'Add pairing';
+    pairingTitle.textContent = pairing ? text('editPairing', 'Edit pairing') : text('addAPairing', 'Add a pairing');
+    confirmPairing.textContent = pairing ? text('savePairing', 'Save pairing') : text('addPairing', 'Add pairing');
     renderPairingWineDraft();
     dialog.showModal();
     pairingDish.focus();
@@ -312,7 +325,7 @@
     favouriteTimer = window.setTimeout(function () {
       search(query, favouriteResults, palate.staffFavourites.map(function (wine) { return wine.id; }), function (wine) {
         if (palate.staffFavourites.length >= 12) {
-          palateStatus.textContent = 'Choose no more than 12 staff favourites.';
+          palateStatus.textContent = text('maxStaffFavourites', 'Choose no more than 12 staff favourites.');
           return;
         }
         palate.staffFavourites.push(wine);
@@ -328,7 +341,7 @@
 
   $('[data-mnw-add-pairing]').addEventListener('click', function () {
     if (palate.signaturePairings.length >= 12) {
-      palateStatus.textContent = 'Choose no more than 12 signature pairings.';
+      palateStatus.textContent = text('maxSignaturePairings', 'Choose no more than 12 signature pairings.');
       return;
     }
     openDialog(-1);
@@ -343,7 +356,7 @@
     pairingTimer = window.setTimeout(function () {
       search(query, pairingResults, pairingWineDraft.map(function (wine) { return wine.id; }), function (wine) {
         if (pairingWineDraft.length >= 3) {
-          pairingError.textContent = 'Choose up to three wines for this pairing.';
+          pairingError.textContent = text('maxPairingWines', 'Choose up to three wines for this pairing.');
           return;
         }
         pairingWineDraft.push(wine);
@@ -359,12 +372,12 @@
   confirmPairing.addEventListener('click', function () {
     var dish = pairingDish.value.replace(/\s+/g, ' ').trim();
     var rationale = pairingRationale.value.replace(/\s+/g, ' ').trim();
-    if (!dish) { pairingError.textContent = 'Describe the specific dish or pairing.'; pairingDish.focus(); return; }
-    if (!pairingWineDraft.length) { pairingError.textContent = 'Choose at least one preferred wine.'; pairingSearch.focus(); return; }
+    if (!dish) { pairingError.textContent = text('describePairing', 'Describe the specific dish or pairing.'); pairingDish.focus(); return; }
+    if (!pairingWineDraft.length) { pairingError.textContent = text('choosePairingWine', 'Choose at least one preferred wine.'); pairingSearch.focus(); return; }
     var duplicate = palate.signaturePairings.some(function (item, index) {
       return index !== editingPairingIndex && item.dish.toLowerCase() === dish.toLowerCase();
     });
-    if (duplicate) { pairingError.textContent = 'A signature pairing for this dish already exists.'; return; }
+    if (duplicate) { pairingError.textContent = text('duplicatePairing', 'A signature pairing for this dish already exists.'); return; }
     var saved = { dish: dish, rationale: rationale, wines: pairingWineDraft.map(safeWine) };
     if (editingPairingIndex >= 0) palate.signaturePairings[editingPairingIndex] = saved;
     else palate.signaturePairings.push(saved);
@@ -376,12 +389,12 @@
   $('[data-mnw-palate-form]').addEventListener('submit', function (event) {
     if (!configured) {
       event.preventDefault();
-      palateStatus.textContent = 'Connect the store from Setup before saving.';
+      palateStatus.textContent = text('connectBeforeSaving', 'Connect the store from Setup before saving.');
       return;
     }
     syncPayload();
     if (saveButton) saveButton.disabled = true;
-    palateStatus.textContent = 'Saving…';
+    palateStatus.textContent = text('saving', 'Saving…');
   });
 
   render();

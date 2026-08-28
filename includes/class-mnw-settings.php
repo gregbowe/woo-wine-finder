@@ -236,6 +236,7 @@ final class MyNextWine_Woo_Settings {
         $billing_status = is_array($status) ? (string) ($status['billingStatus'] ?? 'NOT_STARTED') : 'NOT_STARTED';
         $billing_currency = is_array($status) ? (string) ($status['billingCurrency'] ?? 'EUR') : 'EUR';
         $billing_price = is_array($status) ? (string) ($status['billingPrice'] ?? '29.99') : '29.99';
+        $billing_price_display = $this->format_price($billing_price);
         $billing_trial_days = is_array($status) ? max(0, (int) ($status['billingTrialDays'] ?? 14)) : 14;
         $plans = is_array($status) && !empty($status['plans']) && is_array($status['plans'])
             ? $status['plans']
@@ -377,7 +378,7 @@ final class MyNextWine_Woo_Settings {
                     <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php
                         /* translators: 1: plan name, 2: billing currency code, 3: monthly price. */
-                        echo esc_html(sprintf(__('%1$s — %2$s %3$s per month', 'my-next-wine-for-woocommerce'), $plan_name, $billing_currency, $billing_price));
+                        echo esc_html(sprintf(__('%1$s — %2$s %3$s per month', 'my-next-wine-for-woocommerce'), $plan_name, $billing_currency, $billing_price_display));
                         ?>
                     </p>
                     <p class="description"><?php echo esc_html__('The store currency and subscription billing currency can differ. Stripe Checkout and the Stripe invoice are authoritative for the amount and any tax shown before payment.', 'my-next-wine-for-woocommerce'); ?></p>
@@ -472,7 +473,7 @@ final class MyNextWine_Woo_Settings {
                                             <label style="display:block;border:1px solid #c3c4c7;border-radius:6px;padding:12px;background:#fff;">
                                                 <input type="radio" name="plan_code" value="<?php echo esc_attr($candidate_code); ?>" <?php checked($plan_code, $candidate_code); ?> required>
                                                 <strong><?php echo esc_html((string) ($plan['name'] ?? ucfirst(strtolower($candidate_code)))); ?></strong><br>
-                                                <span><?php echo esc_html($billing_currency . ' ' . (string) ($plan['monthlyPrice'] ?? '')); ?>/<?php echo esc_html__('month', 'my-next-wine-for-woocommerce'); ?></span><br>
+                                                <span><?php echo esc_html($this->format_price((string) ($plan['monthlyPrice'] ?? '')) . ' ' . $billing_currency); ?> / <?php echo esc_html__('month', 'my-next-wine-for-woocommerce'); ?></span><br>
                                                 <small><?php echo esc_html(number_format_i18n((int) ($plan['completedSessionsPerMonth'] ?? 0)) . ' ' . __('completed sessions', 'my-next-wine-for-woocommerce')); ?></small>
                                             </label>
                                         <?php endforeach; ?>
@@ -636,6 +637,13 @@ final class MyNextWine_Woo_Settings {
         );
         $key = strtoupper($status);
         return (string) ($labels[$key] ?? $status);
+    }
+
+    private function format_price(string $value): string {
+        $normalised = trim($value);
+        return is_numeric($normalised)
+            ? number_format_i18n((float) $normalised, 2)
+            : sanitize_text_field($normalised);
     }
 
     private function format_status_date(string $value): string {

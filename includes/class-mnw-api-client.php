@@ -55,20 +55,33 @@ final class MyNextWine_Woo_API_Client {
                 "Answer a few questions and get a selection from this shop's current range.",
                 'Four quick questions. We will choose from our cellar.',
                 'Four quick questions and we will pick the perfect wines from our cellar',
+                'A complete selection from our available wines, built around your budget, preferences and occasion.',
+                'Eine vollständige Auswahl aus unseren verfügbaren Weinen – abgestimmt auf Ihr Budget, Ihre Vorlieben und Ihren Anlass.',
             ),
             true
         )) {
             $settings['intro'] = __('A complete selection from our available wines, built around your budget, preferences and occasion.', 'my-next-wine-for-woocommerce');
         }
-        if ('Need help choosing wine?' === ($settings['heading'] ?? '')) {
+        if (in_array(
+            ($settings['heading'] ?? ''),
+            array('Need help choosing wine?', 'Not sure what to choose?', 'Sie wissen nicht genau, was Sie wählen sollen?'),
+            true
+        )) {
             $settings['heading'] = __('Not sure what to choose?', 'my-next-wine-for-woocommerce');
         }
         if (in_array(
             ($settings['launcher_label'] ?? ''),
-            array('Find my wines', 'Use our wine matcher'),
+            array('Find my wines', 'Use our wine matcher', 'Build my wine selection', 'Meine Weinauswahl zusammenstellen'),
             true
         )) {
             $settings['launcher_label'] = __('Build my wine selection', 'my-next-wine-for-woocommerce');
+        }
+        if (in_array(
+            ($settings['button_label'] ?? ''),
+            array('Add selected to basket', 'Auswahl in den Warenkorb legen'),
+            true
+        )) {
+            $settings['button_label'] = __('Add selected to basket', 'my-next-wine-for-woocommerce');
         }
         $settings['api_base_url'] = $this->default_api_base_url();
         $settings['wine_categories'] = $this->normalise_wine_categories($settings['wine_categories'] ?? null);
@@ -111,7 +124,9 @@ final class MyNextWine_Woo_API_Client {
      * @return array<string,mixed>|WP_Error
      */
     public function bootstrap(array $payload) {
-        return $this->raw_request('POST', '/api/woocommerce/widget/install', $payload, array());
+        return $this->raw_request('POST', '/api/woocommerce/widget/install', $payload, array(
+            'X-MNW-Locale' => $this->admin_locale(),
+        ));
     }
 
     /**
@@ -123,7 +138,8 @@ final class MyNextWine_Woo_API_Client {
         string $path,
         ?array $payload = null,
         string $client_key = '',
-        int $timeout_seconds = 40
+        int $timeout_seconds = 40,
+        string $locale = ''
     ) {
         if (!$this->is_configured()) {
             return new WP_Error('mynextwine_woo_not_configured', __('My Next Wine is still connecting this store.', 'my-next-wine-for-woocommerce'));
@@ -153,13 +169,17 @@ final class MyNextWine_Woo_API_Client {
         if ('' !== $client_key) {
             $headers['X-MNW-Client-Key'] = substr($client_key, 0, 128);
         }
+        $locale = trim($locale);
+        if ('' !== $locale) {
+            $headers['X-MNW-Locale'] = substr($locale, 0, 35);
+        }
 
         return $this->raw_request($method, $path, $payload, $headers, $raw_body, $timeout_seconds);
     }
 
     /** @return array<string,mixed>|WP_Error */
     public function status() {
-        $result = $this->request('GET', '/api/woocommerce/widget/merchant/status');
+        $result = $this->request('GET', '/api/woocommerce/widget/merchant/status', null, '', 40, $this->admin_locale());
         if (!is_wp_error($result)) {
             $settings = $this->settings();
             $settings['last_service_contact_at'] = gmdate('c');
@@ -176,7 +196,7 @@ final class MyNextWine_Woo_API_Client {
         }
         return $this->request('POST', '/api/woocommerce/widget/merchant/billing/start', array(
             'planCode' => $plan_code,
-        ));
+        ), '', 40, $this->admin_locale());
     }
 
     /** Compatibility alias for older plugin builds. @return array<string,mixed>|WP_Error */
@@ -186,7 +206,7 @@ final class MyNextWine_Woo_API_Client {
 
     /** @return array<string,mixed>|WP_Error */
     public function manage_billing() {
-        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/manage', array());
+        return $this->request('POST', '/api/woocommerce/widget/merchant/billing/manage', array(), '', 40, $this->admin_locale());
     }
 
     /** @return array<string,mixed>|WP_Error */
@@ -200,19 +220,19 @@ final class MyNextWine_Woo_API_Client {
         if (null !== $wine_categories) {
             $payload['wineCategories'] = $this->normalise_wine_categories($wine_categories);
         }
-        return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', $payload);
+        return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', $payload, '', 40, $this->admin_locale());
     }
 
     /** @param array<string,mixed> $payload @return array<string,mixed>|WP_Error */
     public function update_store_palate(array $payload) {
-        return $this->request('POST', '/api/woocommerce/widget/merchant/store-palate', $payload);
+        return $this->request('POST', '/api/woocommerce/widget/merchant/store-palate', $payload, '', 40, $this->admin_locale());
     }
 
     /** @return array<string,mixed>|WP_Error */
     public function search_store_palate_wines(string $query) {
         return $this->request('POST', '/api/woocommerce/widget/merchant/store-palate/wines', array(
             'query' => sanitize_text_field($query),
-        ));
+        ), '', 40, $this->admin_locale());
     }
 
     /** @param mixed $value @return array<int,string> */
@@ -430,9 +450,12 @@ final class MyNextWine_Woo_API_Client {
         }
 
         if ($status < 200 || $status >= 300) {
-            $message = isset($decoded['error']) && is_string($decoded['error'])
-                ? $decoded['error']
-                : __('My Next Wine could not complete the request.', 'my-next-wine-for-woocommerce');
+            $message = $this->localised_backend_error($decoded);
+            if ('' === $message) {
+                $message = isset($decoded['error']) && is_string($decoded['error'])
+                    ? $decoded['error']
+                    : __('My Next Wine could not complete the request.', 'my-next-wine-for-woocommerce');
+            }
             return new WP_Error('mynextwine_woo_backend_error', $message, array(
                 'status' => $status,
                 'body' => $decoded,
@@ -441,6 +464,35 @@ final class MyNextWine_Woo_API_Client {
         }
 
         return $decoded;
+    }
+
+    private function admin_locale(): string {
+        if (function_exists('determine_locale')) {
+            return (string) determine_locale();
+        }
+        return function_exists('get_locale') ? (string) get_locale() : 'en_US';
+    }
+
+    /** @param array<string,mixed> $decoded */
+    private function localised_backend_error(array $decoded): string {
+        $code = isset($decoded['code']) && is_string($decoded['code'])
+            ? strtoupper(trim($decoded['code']))
+            : '';
+        $messages = array(
+            'BILLING_REQUEST_INVALID' => __('The billing request is invalid. Review the selected plan and try again.', 'my-next-wine-for-woocommerce'),
+            'BILLING_NOT_AVAILABLE' => __('Billing is not available yet. Refresh the setup status and try again.', 'my-next-wine-for-woocommerce'),
+            'DISPLAY_SETTINGS_INVALID' => __('The display settings could not be saved. Review the settings and try again.', 'my-next-wine-for-woocommerce'),
+            'STORE_PALATE_INVALID' => __('Store Palate could not be saved. Review the settings and try again.', 'my-next-wine-for-woocommerce'),
+            'STORE_PALATE_SEARCH_INVALID' => __('The wine search could not be completed. Review the search and try again.', 'my-next-wine-for-woocommerce'),
+            'CATALOGUE_NOT_READY' => __('The wine catalogue is not ready yet. Refresh the setup status and try again.', 'my-next-wine-for-woocommerce'),
+            'TERMS_ACCEPTANCE_REQUIRED' => __('Accept the current Merchant Terms before continuing.', 'my-next-wine-for-woocommerce'),
+            'UNSUPPORTED_MARKET' => __('My Next Wine is not yet available for this store market.', 'my-next-wine-for-woocommerce'),
+            'MARKET_DISABLED' => __('Onboarding is temporarily unavailable for this market. Please try again later.', 'my-next-wine-for-woocommerce'),
+            'MARKET_CURRENCY_MISMATCH' => __('The store currency does not match the selected country. Change the store currency and try again.', 'my-next-wine-for-woocommerce'),
+            'MARKET_CONFIGURATION_ERROR' => __('The selected store market is not fully configured yet.', 'my-next-wine-for-woocommerce'),
+            'ACCOUNT_MATCH_REQUIRED' => __('This store must be matched to its existing merchant account before setup can continue.', 'my-next-wine-for-woocommerce'),
+        );
+        return isset($messages[$code]) ? $messages[$code] : '';
     }
 
     private function canonical(string $method, string $path, string $installation_id, string $timestamp, string $request_id, string $raw_body): string {

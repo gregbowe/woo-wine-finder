@@ -59,10 +59,10 @@ final class MyNextWine_Woo_Widget {
         $this->rendered = true;
         $settings = $this->settings();
         $widget_id = 'woo-' . wp_generate_uuid4();
-        $heading = (string) ($settings['heading'] ?? 'Not sure what to choose?');
-        $launcher_label = (string) ($settings['launcher_label'] ?? 'Build my wine selection');
+        $heading = (string) ($settings['heading'] ?? __('Not sure what to choose?', 'my-next-wine-for-woocommerce'));
+        $launcher_label = (string) ($settings['launcher_label'] ?? __('Build my wine selection', 'my-next-wine-for-woocommerce'));
         $intro = (string) ($settings['intro'] ?? __('A complete selection from our available wines, built around your budget, preferences and occasion.', 'my-next-wine-for-woocommerce'));
-        $button_label = (string) ($settings['button_label'] ?? 'Add selected to basket');
+        $button_label = (string) ($settings['button_label'] ?? __('Add selected to basket', 'my-next-wine-for-woocommerce'));
         $launcher_position = 'right' === ($settings['launcher_position'] ?? 'left') ? 'right' : 'left';
         $launcher_image_id = absint($settings['launcher_image_id'] ?? 0);
         $launcher_image_url = $launcher_image_id ? wp_get_attachment_image_url($launcher_image_id, 'full') : '';

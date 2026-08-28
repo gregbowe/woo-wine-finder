@@ -2,7 +2,7 @@
 /**
  * Plugin Name: My Next Wine for WooCommerce
  * Description: Adds the My Next Wine recommendation widget to a WooCommerce wine shop.
- * Version: 1.0.31
+ * Version: 1.0.32
  * Author: My Next Wine
  * Author URI: https://mynextwine.com/
  * Requires at least: 6.5
@@ -11,6 +11,7 @@
  * WC tested up to: 10.9
  * Requires Plugins: woocommerce
  * Text Domain: my-next-wine-for-woocommerce
+ * Domain Path: /languages
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -19,7 +20,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MYNEXTWINE_WOO_VERSION', '1.0.31');
+define('MYNEXTWINE_WOO_VERSION', '1.0.32');
 define('MYNEXTWINE_WOO_FILE', __FILE__);
 define('MYNEXTWINE_WOO_DIR', plugin_dir_path(__FILE__));
 define('MYNEXTWINE_WOO_URL', plugin_dir_url(__FILE__));
@@ -54,6 +55,14 @@ require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-catalogue-controller.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-order-attribution.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-widget.php';
 require_once MYNEXTWINE_WOO_DIR . 'includes/class-mnw-privacy.php';
+
+add_action('plugins_loaded', static function () {
+    load_plugin_textdomain(
+        'my-next-wine-for-woocommerce',
+        false,
+        dirname(plugin_basename(MYNEXTWINE_WOO_FILE)) . '/languages'
+    );
+}, 1);
 
 add_action('plugins_loaded', static function () {
     if (!class_exists('WooCommerce')) {

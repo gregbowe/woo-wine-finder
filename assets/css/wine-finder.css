@@ -5904,3 +5904,57 @@ body.mnw-wine-finder-open {
     --mnw-results-toolbar-clearance: 236px;
   }
 }
+
+/* Follow-up 21: keep the floating launcher readable in longer locales.
+   The launcher must grow with translated copy instead of truncating it to
+   an English-sized single line. */
+.mnw-wine-finder__launcher {
+  width: min(390px, calc(100vw - 44px));
+  height: auto;
+  min-height: 76px;
+}
+
+.mnw-wine-finder__launcher-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+.mnw-wine-finder__launcher-heading {
+  display: block;
+  max-width: none;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.mnw-wine-finder__launcher-action {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.mnw-wine-finder__launcher-action svg {
+  flex: 0 0 17px;
+}
+
+@media (max-width: 749px) {
+  .mnw-wine-finder__launcher,
+  .mnw-wine-finder--right .mnw-wine-finder__launcher {
+    width: min(360px, calc(100vw - 28px));
+    min-height: 70px;
+  }
+}
+
+@media (max-width: 430px) {
+  .mnw-wine-finder__launcher,
+  .mnw-wine-finder--right .mnw-wine-finder__launcher {
+    width: calc(100vw - 28px);
+  }
+
+  .mnw-wine-finder__launcher-heading {
+    max-width: none;
+  }
+}
