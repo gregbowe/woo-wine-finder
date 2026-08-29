@@ -48,7 +48,7 @@ A completed session is one successful selection journey containing the shopper's
 
 Subscription checkout and account management are hosted by Stripe. The trial begins only when the catalogue is ready and the merchant chooses to start it. Activating the plugin alone does not start the trial, create a charge or transmit store or catalogue data.
 
-Stripe Checkout and the Stripe invoice show the authoritative charge and any tax before payment. My Next Wine does not claim that Stripe Automatic Tax is enabled. The Wine Finder pilot accepts stores in Ireland using EUR and stores in the United Kingdom using GBP; store prices and shopper budgets continue to use the store's own currency.
+Stripe Checkout and the Stripe invoice show the authoritative charge and any tax before payment. My Next Wine does not claim that Stripe Automatic Tax is enabled. The Wine Finder is available to merchants in countries where My Next Wine and its required hosting, billing and platform providers make the service available. Merchant subscriptions are billed in EUR; store prices and shopper budgets continue to use the store's own currency.
 
 My Next Wine provides technology only. The merchant remains the seller of every wine and is responsible for alcohol licensing, age verification, product information and condition, payment, fulfilment, delivery, customer service, refunds and legal compliance.
 
