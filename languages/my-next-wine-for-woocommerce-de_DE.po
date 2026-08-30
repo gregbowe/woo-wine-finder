@@ -1,11 +1,11 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: My Next Wine for WooCommerce\n"
-"Language: de_DE\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: My Next Wine for WooCommerce\\n"
+"Language: de_DE\\n"
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\\n"
 
 #: includes/class-mnw-settings.php:323
 msgid "%1$s (%2$s) — %3$s — %4$s"
@@ -45,7 +45,7 @@ msgstr "6 Flaschen ausgewählt"
 
 #: includes/class-mnw-widget.php:64 includes/class-mnw-api-client.php:43 includes/class-mnw-api-client.php:61
 msgid "A complete selection from our available wines, built around your budget, preferences and occasion."
-msgstr "Eine vollständige Auswahl aus unseren verfügbaren Weinen – abgestimmt auf Ihr Budget, Ihre Vorlieben und Ihren Anlass."
+msgstr "Eine vollständige Auswahl aus unseren verfügbaren Weinen – abgestimmt auf dein Budget, deine Vorlieben und deinen Anlass."
 
 #: templates/widget.php:566
 msgid "A little more budget is needed"
@@ -69,7 +69,7 @@ msgstr "Ein ausgewählter Wein ist ungültig."
 
 #: templates/widget.php:437
 msgid "A sentence is plenty. Leave this blank if you would like us to surprise you."
-msgstr "Ein Satz genügt. Lassen Sie das Feld leer, wenn Sie sich überraschen lassen möchten."
+msgstr "Ein Satz genügt. Lass das Feld leer, wenn du dich überraschen lassen möchtest."
 
 #: includes/class-mnw-store-palate-settings.php:78
 msgid "A signature pairing for this dish already exists."
@@ -81,7 +81,7 @@ msgstr "Eine gültige JSON-Anfrage ist erforderlich."
 
 #: includes/class-mnw-rest-controller.php:150
 msgid "A wine price has changed. Please request a fresh selection."
-msgstr "Der Preis eines Weins hat sich geändert. Bitte lassen Sie eine neue Auswahl erstellen."
+msgstr "Der Preis eines Weins hat sich geändert. Bitte fordere eine neue Auswahl an."
 
 #: includes/class-mnw-settings.php:443
 msgid "Accept and continue"
@@ -89,11 +89,11 @@ msgstr "Akzeptieren und fortfahren"
 
 #: includes/class-mnw-api-client.php:475
 msgid "Accept the current Merchant Terms before continuing."
-msgstr "Stimmen Sie den aktuellen Händlerbedingungen zu, bevor Sie fortfahren."
+msgstr "Stimme den aktuellen Händlerbedingungen zu, bevor du fortfährst."
 
 #: includes/class-mnw-installer.php:130
 msgid "Accept the Merchant Terms and data-sharing disclosure to connect My Next Wine."
-msgstr "Akzeptieren Sie die Händlerbedingungen und die Hinweise zur Datenübermittlung, um My Next Wine zu verbinden."
+msgstr "Akzeptiere die Händlerbedingungen und die Hinweise zur Datenübermittlung, um My Next Wine zu verbinden."
 
 #: includes/class-mnw-settings.php:398
 msgid "Access until:"
@@ -109,15 +109,15 @@ msgstr "Kombination hinzufügen"
 
 #: includes/class-mnw-store-palate-settings.php:228
 msgid "Add a specific dish, including its sauce or preparation, and up to three preferred wines. Similar shopper requests receive a gentle preference when those wines still fit."
-msgstr "Fügen Sie ein konkretes Gericht einschließlich Sauce oder Zubereitungsart und bis zu drei bevorzugte Weine hinzu. Bei ähnlichen Kundenanfragen erhalten diese Weine einen dezenten Vorrang, sofern sie weiterhin gut passen."
+msgstr "Füge ein konkretes Gericht einschließlich Sauce oder Zubereitungsart und bis zu drei bevorzugte Weine hinzu. Bei ähnlichen Kundenanfragen erhalten diese Weine einen dezenten Vorrang, sofern sie weiterhin gut passen."
 
 #: templates/widget.php:505
 msgid "Add more than one dish if you need different bottles for different meals."
-msgstr "Fügen Sie mehrere Gerichte hinzu, wenn Sie für verschiedene Speisen unterschiedliche Flaschen möchten."
+msgstr "Füge mehrere Gerichte hinzu, wenn du für verschiedene Speisen unterschiedliche Flaschen möchtest."
 
 #: includes/class-mnw-store-palate-settings.php:310
 msgid "Add no more than 12 signature pairings."
-msgstr "Legen Sie höchstens 12 besondere Speise-Wein-Kombinationen an."
+msgstr "Lege höchstens 12 besondere Speise-Wein-Kombinationen an."
 
 #: includes/class-mnw-settings.php:558
 msgid "Add our wine note and allow shoppers to open notes for the producer, region, country and grapes."
@@ -137,7 +137,7 @@ msgstr "Schwebende Wine-Finder-Schaltfläche auf öffentlichen Shop-Seiten anzei
 
 #: includes/class-mnw-store-palate-settings.php:178
 msgid "Add your team's point of view as a gentle influence on suitable recommendations."
-msgstr "Bringen Sie die Handschrift Ihres Teams dezent in passende Empfehlungen ein."
+msgstr "Bring die Handschrift deines Teams dezent in passende Empfehlungen ein."
 
 #: includes/class-mnw-store-palate-settings.php:205
 msgid "Adventurous"
@@ -165,7 +165,7 @@ msgstr "Zum Beispiel: günstigere Flaschen, mehr Rotwein oder ein anderer Stil�
 
 #: templates/widget.php:531
 msgid "Automated, AI-assisted guidance for people of legal drinking age. Do not enter names, contact details, health information or other sensitive personal data."
-msgstr "Automatisierte, KI-gestützte Orientierung für Personen ab dem gesetzlichen Mindestalter für Alkoholkonsum. Geben Sie keine Namen, Kontaktdaten, Gesundheitsinformationen oder andere sensiblen personenbezogenen Daten ein."
+msgstr "Automatisierte, KI-gestützte Orientierung für Personen ab dem gesetzlichen Mindestalter für Alkoholkonsum. Gib keine Namen, Kontaktdaten, Gesundheitsinformationen oder andere sensiblen personenbezogenen Daten ein."
 
 #: includes/class-mnw-settings.php:500
 msgid "Automatic display"
@@ -189,7 +189,7 @@ msgstr "Warenkorb-Schaltfläche"
 
 #: includes/class-mnw-store-palate-settings.php:250
 msgid "Be specific—sauce and preparation matter."
-msgstr "Seien Sie konkret – Sauce und Zubereitungsart machen einen Unterschied."
+msgstr "Sei konkret – Sauce und Zubereitungsart machen einen Unterschied."
 
 #: includes/class-mnw-settings.php:417
 msgid "Before connecting"
@@ -197,11 +197,11 @@ msgstr "Vor dem Verbinden"
 
 #: includes/class-mnw-api-client.php:470
 msgid "Billing is not available yet. Refresh the setup status and try again."
-msgstr "Die Abrechnung ist noch nicht verfügbar. Aktualisieren Sie den Einrichtungsstatus und versuchen Sie es erneut."
+msgstr "Die Abrechnung ist noch nicht verfügbar. Aktualisiere den Einrichtungsstatus und versuche es erneut."
 
 #: includes/class-mnw-settings.php:296
 msgid "Billing portal closed. Refresh the status to see any subscription changes."
-msgstr "Das Abrechnungsportal wurde geschlossen. Aktualisieren Sie den Status, um Änderungen am Abonnement zu sehen."
+msgstr "Das Abrechnungsportal wurde geschlossen. Aktualisiere den Status, um Änderungen am Abonnement zu sehen."
 
 #: includes/class-mnw-settings.php:374
 msgid "Billing:"
@@ -209,7 +209,7 @@ msgstr "Abrechnung:"
 
 #: includes/class-mnw-settings.php:553
 msgid "Both options are off by default. Enable them only when they suit this store’s own product presentation."
-msgstr "Beide Optionen sind standardmäßig deaktiviert. Aktivieren Sie sie nur, wenn sie zur Produktdarstellung dieses Shops passen."
+msgstr "Beide Optionen sind standardmäßig deaktiviert. Aktiviere sie nur, wenn sie zur Produktdarstellung dieses Shops passen."
 
 #: templates/widget.php:134
 msgid "Bottle mix"
@@ -237,7 +237,7 @@ msgstr "Meine Weinauswahl zusammenstellen"
 
 #: templates/widget.php:532
 msgid "By selecting “Find my wines”, you agree to the"
-msgstr "Mit „Meine Weine finden“ stimmen Sie den"
+msgstr "Mit „Meine Weine finden“ stimmst du den"
 
 #: includes/class-mnw-store-palate-settings.php:263
 msgid "Cancel"
@@ -261,7 +261,7 @@ msgstr "Sortimentssynchronisierung abgeschlossen."
 
 #: includes/class-mnw-settings.php:302
 msgid "Catalogue synchronisation is in progress. Refresh this page to continue."
-msgstr "Die Sortimentssynchronisierung läuft. Aktualisieren Sie diese Seite, um fortzufahren."
+msgstr "Die Sortimentssynchronisierung läuft. Aktualisiere diese Seite, um fortzufahren."
 
 #: includes/class-mnw-settings.php:354
 msgid "Catalogue:"
@@ -269,23 +269,23 @@ msgstr "Sortiment:"
 
 #: templates/widget.php:142
 msgid "Choose 1 to 12 bottles across the categories available in this shop."
-msgstr "Wählen Sie 1 bis 12 Flaschen aus den in diesem Shop verfügbaren Kategorien."
+msgstr "Wähle 1 bis 12 Flaschen aus den in diesem Shop verfügbaren Kategorien."
 
 #: includes/class-mnw-settings.php:516
 msgid "Choose a square image from the Media Library. It replaces the wine glass in the launcher and popup."
-msgstr "Wählen Sie ein quadratisches Bild aus der Mediathek. Es ersetzt das Weinglas in der Schaltfläche und im Popup."
+msgstr "Wähle ein quadratisches Bild aus der Mediathek. Es ersetzt das Weinglas in der Schaltfläche und im Popup."
 
 #: includes/class-mnw-store-palate-settings.php:295
 msgid "Choose a valid discovery style."
-msgstr "Wählen Sie einen gültigen Empfehlungsstil."
+msgstr "Wähle einen gültigen Empfehlungsstil."
 
 #: includes/class-mnw-store-palate-settings.php:298
 msgid "Choose a valid pairing style."
-msgstr "Wählen Sie einen gültigen Stil für Speisebegleitungen."
+msgstr "Wähle einen gültigen Stil für Speisebegleitungen."
 
 #: includes/class-mnw-api-client.php:182
 msgid "Choose a valid Wine Finder plan."
-msgstr "Wählen Sie einen gültigen Wine-Finder-Tarif."
+msgstr "Wähle einen gültigen Wine-Finder-Tarif."
 
 #: includes/class-mnw-settings.php:464
 msgid "Choose a Wine Finder plan"
@@ -293,15 +293,15 @@ msgstr "Wine-Finder-Tarif auswählen"
 
 #: includes/class-mnw-store-palate-settings.php:77
 msgid "Choose at least one preferred wine."
-msgstr "Wählen Sie mindestens einen bevorzugten Wein."
+msgstr "Wähle mindestens einen bevorzugten Wein."
 
 #: includes/class-mnw-settings.php:46 includes/class-mnw-settings.php:105
 msgid "Choose at least two bottle selection categories."
-msgstr "Wählen Sie mindestens zwei Kategorien für die Flaschenauswahl."
+msgstr "Wähle mindestens zwei Kategorien für die Flaschenauswahl."
 
 #: includes/class-mnw-settings.php:528
 msgid "Choose at least two categories to offer on the first Wine Finder question."
-msgstr "Wählen Sie mindestens zwei Kategorien aus, die bei der ersten Frage des Wine Finders angeboten werden."
+msgstr "Wähle mindestens zwei Kategorien aus, die bei der ersten Frage des Wine Finders angeboten werden."
 
 #: includes/class-mnw-settings.php:513
 msgid "Choose image"
@@ -313,15 +313,15 @@ msgstr "Bild für die Schaltfläche auswählen"
 
 #: includes/class-mnw-store-palate-settings.php:74
 msgid "Choose no more than 12 signature pairings."
-msgstr "Legen Sie höchstens 12 besondere Speise-Wein-Kombinationen an."
+msgstr "Lege höchstens 12 besondere Speise-Wein-Kombinationen an."
 
 #: includes/class-mnw-store-palate-settings.php:73 includes/class-mnw-store-palate-settings.php:303
 msgid "Choose no more than 12 staff favourites."
-msgstr "Wählen Sie höchstens 12 Team-Favoriten."
+msgstr "Wähle höchstens 12 Team-Favoriten."
 
 #: includes/class-mnw-store-palate-settings.php:75
 msgid "Choose up to three wines for this pairing."
-msgstr "Wählen Sie für diese Kombination höchstens drei Weine."
+msgstr "Wähle für diese Kombination höchstens drei Weine."
 
 #: includes/class-mnw-store-palate-settings.php:203
 msgid "Classic"
@@ -353,11 +353,11 @@ msgstr "Abgeschlossene Sessions in diesem Monat:"
 
 #: includes/class-mnw-store-palate-settings.php:172
 msgid "Connect the store from Setup before saving Store Palate."
-msgstr "Verbinden Sie den Shop zuerst unter „Einrichtung“, bevor Sie Store Palate speichern."
+msgstr "Verbinde den Shop zuerst unter „Einrichtung“, bevor du Store Palate speicherst."
 
 #: includes/class-mnw-store-palate-settings.php:63
 msgid "Connect the store from Setup before saving."
-msgstr "Verbinden Sie den Shop zuerst unter „Einrichtung“, bevor Sie speichern."
+msgstr "Verbinde den Shop zuerst unter „Einrichtung“, bevor du speicherst."
 
 #: includes/class-mnw-settings.php:314
 msgid "Connected"
@@ -377,7 +377,7 @@ msgstr "Land"
 
 #: includes/class-mnw-store-palate-settings.php:76
 msgid "Describe the specific dish or pairing."
-msgstr "Beschreiben Sie das konkrete Gericht oder die Speise-Wein-Kombination."
+msgstr "Beschreibe das konkrete Gericht oder die Speise-Wein-Kombination."
 
 #: templates/widget.php:248 includes/class-mnw-settings.php:539
 msgid "Dessert"
@@ -437,7 +437,7 @@ msgstr "Vertraut"
 
 #: includes/class-mnw-store-palate-settings.php:215
 msgid "Find a mapped wine"
-msgstr "Wein aus Ihrem Sortiment suchen"
+msgstr "Wein aus deinem Sortiment suchen"
 
 #: templates/widget.php:523
 msgid "Find my wines"
@@ -661,7 +661,7 @@ msgstr "Nächste Verlängerung:"
 
 #: includes/class-mnw-settings.php:411
 msgid "No API keys, Somm IDs or installation credentials are required. The store connects only after an authorised administrator agrees below."
-msgstr "Sie müssen keine API-Schlüssel, Somm-IDs oder Installationszugangsdaten eingeben. Der Shop wird erst verbunden, nachdem eine berechtigte Administratorin oder ein berechtigter Administrator unten zugestimmt hat."
+msgstr "Du musst keine API-Schlüssel, Somm-IDs oder Installationszugangsdaten eingeben. Der Shop wird erst verbunden, nachdem eine berechtigte Person mit Administratorrechten unten zugestimmt hat."
 
 #: includes/class-mnw-store-palate-settings.php:60
 msgid "No matching available wines."
@@ -701,7 +701,7 @@ msgstr "Noch nicht gestartet"
 
 #: includes/class-mnw-widget.php:62 includes/class-mnw-api-client.php:42 includes/class-mnw-api-client.php:64
 msgid "Not sure what to choose?"
-msgstr "Sie wissen nicht genau, was Sie wählen sollen?"
+msgstr "Du weißt nicht genau, was du wählen sollst?"
 
 #: includes/class-mnw-settings.php:501
 msgid "Off by default. If the site exposes the WordPress Consent API, events are sent only when wp_has_consent(\"statistics\") returns true. If that API is not present, enabling this setting confirms that the store has a valid data-protection lawful basis and has obtained any consent or other permission required by applicable ePrivacy or PECR rules. Recommendation and basket requests continue because they are needed to provide the feature."
@@ -709,7 +709,7 @@ msgstr "Standardmäßig deaktiviert. Wenn die Website die WordPress Consent API 
 
 #: includes/class-mnw-api-client.php:477
 msgid "Onboarding is temporarily unavailable for this market. Please try again later."
-msgstr "Das Onboarding ist für diesen Markt vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut."
+msgstr "Das Onboarding ist für diesen Markt vorübergehend nicht verfügbar. Bitte versuche es später erneut."
 
 #: includes/class-mnw-settings.php:390
 msgid "One completed session covers the initial recommendation and up to five combined refinements or bottle swaps in the same selection journey. Starting again creates a new session."
@@ -721,7 +721,7 @@ msgstr "Eine der besonderen Speise-Wein-Kombinationen ist zu lang oder enthält 
 
 #: includes/class-mnw-rest-controller.php:143
 msgid "One recommended wine is no longer available. Please choose your wines again."
-msgstr "Einer der empfohlenen Weine ist nicht mehr verfügbar. Bitte lassen Sie Ihre Weine erneut auswählen."
+msgstr "Einer der empfohlenen Weine ist nicht mehr verfügbar. Bitte wähle deine Weine erneut aus."
 
 #: templates/widget.php:419 templates/widget.php:487
 msgid "Optional"
@@ -733,7 +733,7 @@ msgstr "Optionale aggregierte Nutzungsdaten"
 
 #: templates/widget.php:699
 msgid "Or try a different budget"
-msgstr "Oder probieren Sie ein anderes Budget"
+msgstr "Oder probiere ein anderes Budget"
 
 #: templates/widget.php:224 includes/class-mnw-settings.php:535
 msgid "Orange/Skin-contact"
@@ -853,11 +853,11 @@ msgstr "Nach Wein, Erzeuger, Region oder Rebsorte suchen"
 
 #: includes/class-mnw-store-palate-settings.php:254
 msgid "Search your mapped wines"
-msgstr "Ihre zugeordneten Weine durchsuchen"
+msgstr "Deine zugeordneten Weine durchsuchen"
 
 #: includes/class-mnw-privacy.php:30
 msgid "See the My Next Wine %1$s, %2$s and %3$s."
-msgstr "Lesen Sie die My-Next-Wine-Dokumente %1$s, %2$s und %3$s."
+msgstr "Lies die My-Next-Wine-Dokumente %1$s, %2$s und %3$s."
 
 #: includes/class-mnw-settings.php:284
 msgid "Settings saved."
@@ -873,15 +873,15 @@ msgstr "Einrichtungsstatus"
 
 #: includes/class-mnw-store-palate-settings.php:177
 msgid "Shape how your shop recommends"
-msgstr "Bestimmen Sie, wie Ihr Shop empfiehlt"
+msgstr "Bestimme, wie dein Shop empfiehlt"
 
 #: templates/widget.php:475
 msgid "Share any meals, dishes or snacks you would like us to match with a bottle."
-msgstr "Nennen Sie Speisen, Gerichte oder Snacks, zu denen wir einen passenden Wein finden sollen."
+msgstr "Nenne Speisen, Gerichte oder Snacks, zu denen wir einen passenden Wein finden sollen."
 
 #: templates/widget.php:407
 msgid "Share what you enjoy, anything you would rather avoid, and whether the wines are for a gift or special occasion."
-msgstr "Beschreiben Sie, was Sie mögen, was Sie lieber vermeiden möchten und ob die Weine für ein Geschenk oder einen besonderen Anlass gedacht sind."
+msgstr "Beschreibe, was du magst, was du lieber vermeiden möchtest und ob die Weine für ein Geschenk oder einen besonderen Anlass gedacht sind."
 
 #: templates/widget.php:234 includes/class-mnw-settings.php:537
 msgid "Sherry"
@@ -925,7 +925,7 @@ msgstr "Konkretes Gericht oder Kombination"
 
 #: includes/class-mnw-store-palate-settings.php:227
 msgid "Specific pairings your team stands behind"
-msgstr "Konkrete Kombinationen, hinter denen Ihr Team steht"
+msgstr "Konkrete Kombinationen, hinter denen dein Team steht"
 
 #: includes/class-mnw-store-palate-settings.php:211
 msgid "Staff favourites"
@@ -957,7 +957,7 @@ msgstr "Store Palate"
 
 #: includes/class-mnw-api-client.php:472
 msgid "Store Palate could not be saved. Review the settings and try again."
-msgstr "Store Palate konnte nicht gespeichert werden. Prüfen Sie die Einstellungen und versuchen Sie es erneut."
+msgstr "Store Palate konnte nicht gespeichert werden. Prüfe die Einstellungen und versuche es erneut."
 
 #: includes/class-mnw-store-palate-settings.php:164
 msgid "Store Palate saved."
@@ -973,7 +973,7 @@ msgstr "Shop:"
 
 #: includes/class-mnw-settings.php:290
 msgid "Stripe checkout returned successfully. Access activates only after My Next Wine receives the signed Stripe billing webhook; refresh the status if it does not update immediately."
-msgstr "Der Stripe-Checkout wurde erfolgreich abgeschlossen. Der Zugriff wird erst aktiviert, nachdem My Next Wine den signierten Stripe-Abrechnungs-Webhook erhalten hat. Aktualisieren Sie den Status, falls er nicht sofort wechselt."
+msgstr "Der Stripe-Checkout wurde erfolgreich abgeschlossen. Der Zugriff wird erst aktiviert, nachdem My Next Wine den signierten Stripe-Abrechnungs-Webhook erhalten hat. Aktualisiere den Status, falls er nicht sofort wechselt."
 
 #: includes/class-mnw-settings.php:293
 msgid "Stripe checkout was cancelled. No subscription was started."
@@ -997,7 +997,7 @@ msgstr "Sortiment jetzt synchronisieren"
 
 #: templates/widget.php:403
 msgid "Tell us a little more"
-msgstr "Erzählen Sie uns noch etwas mehr"
+msgstr "Erzähl uns noch etwas mehr"
 
 #: includes/class-mnw-settings.php:500
 msgid "The [mynextwine_wine_finder] shortcode is also available."
@@ -1009,19 +1009,19 @@ msgstr "Die Warenkorbanfrage ist unvollständig."
 
 #: includes/class-mnw-rest-controller.php:81
 msgid "The basket session has expired. Refresh the page and try again."
-msgstr "Die Warenkorb-Session ist abgelaufen. Aktualisieren Sie die Seite und versuchen Sie es erneut."
+msgstr "Die Warenkorb-Session ist abgelaufen. Aktualisiere die Seite und versuche es erneut."
 
 #: includes/class-mnw-api-client.php:469
 msgid "The billing request is invalid. Review the selected plan and try again."
-msgstr "Die Abrechnungsanfrage ist ungültig. Prüfen Sie den ausgewählten Tarif und versuchen Sie es erneut."
+msgstr "Die Abrechnungsanfrage ist ungültig. Prüfe den ausgewählten Tarif und versuche es erneut."
 
 #: includes/class-mnw-api-client.php:471
 msgid "The display settings could not be saved. Review the settings and try again."
-msgstr "Die Anzeigeeinstellungen konnten nicht gespeichert werden. Prüfen Sie die Einstellungen und versuchen Sie es erneut."
+msgstr "Die Anzeigeeinstellungen konnten nicht gespeichert werden. Prüfe die Einstellungen und versuche es erneut."
 
 #: includes/class-mnw-api-client.php:249 includes/class-mnw-api-client.php:273
 msgid "The recommendation has expired. Please choose your wines again."
-msgstr "Die Empfehlung ist abgelaufen. Bitte lassen Sie Ihre Weine erneut auswählen."
+msgstr "Die Empfehlung ist abgelaufen. Bitte wähle deine Weine erneut aus."
 
 #: includes/class-mnw-api-client.php:254 includes/class-mnw-api-client.php:258
 msgid "The recommendation token is invalid."
@@ -1045,7 +1045,7 @@ msgstr "Der ausgewählte Shop-Markt ist noch nicht vollständig eingerichtet."
 
 #: includes/class-mnw-rest-controller.php:131
 msgid "The selected wines have changed. Please request a fresh selection."
-msgstr "Die ausgewählten Weine haben sich geändert. Bitte lassen Sie eine neue Auswahl erstellen."
+msgstr "Die ausgewählten Weine haben sich geändert. Bitte fordere eine neue Auswahl an."
 
 #: includes/class-mnw-settings.php:383
 msgid "The store currency and subscription billing currency can differ. Stripe Checkout and the Stripe invoice are authoritative for the amount and any tax shown before payment."
@@ -1053,7 +1053,7 @@ msgstr "Die Shop-Währung und die Abrechnungswährung des Abonnements können vo
 
 #: includes/class-mnw-api-client.php:478
 msgid "The store currency does not match the selected country. Change the store currency and try again."
-msgstr "Die Shop-Währung passt nicht zum ausgewählten Land. Ändern Sie die Shop-Währung und versuchen Sie es erneut."
+msgstr "Die Shop-Währung passt nicht zum ausgewählten Land. Ändere die Shop-Währung und versuche es erneut."
 
 #: includes/class-mnw-store-palate-settings.php:204
 msgid "The strongest match, including less obvious choices when justified."
@@ -1061,7 +1061,7 @@ msgstr "Die beste passende Kombination – auch weniger offensichtliche Optionen
 
 #: includes/class-mnw-api-client.php:474
 msgid "The wine catalogue is not ready yet. Refresh the setup status and try again."
-msgstr "Das Weinsortiment ist noch nicht bereit. Aktualisieren Sie den Einrichtungsstatus und versuchen Sie es erneut."
+msgstr "Das Weinsortiment ist noch nicht bereit. Aktualisiere den Einrichtungsstatus und versuche es erneut."
 
 #: includes/class-mnw-settings.php:124
 msgid "The Wine Finder cannot be enabled until the catalogue is ready and My Next Wine confirms an active trial or paid plan."
@@ -1073,11 +1073,11 @@ msgstr "Der Wine Finder ist nicht aktiviert."
 
 #: includes/class-mnw-privacy.php:26
 msgid "The Wine Finder uses automated and AI-assisted processing. Do not enter names, contact details, account or payment information, health information or other sensitive personal data in its free-text fields. My Next Wine may use contracted hosting and AI providers; the linked documents explain recipients, international-transfer safeguards, retention, individual rights and how to raise a data-protection complaint."
-msgstr "Der Wine Finder verarbeitet Angaben automatisiert und mit KI-Unterstützung. Geben Sie in Freitextfeldern keine Namen, Kontaktdaten, Konto- oder Zahlungsinformationen, Gesundheitsdaten oder andere sensible personenbezogene Daten ein. My Next Wine kann beauftragte Hosting- und KI-Anbieter einsetzen; die verlinkten Dokumente erläutern Empfänger, Schutzmaßnahmen bei internationalen Datenübermittlungen, Aufbewahrungsfristen, Betroffenenrechte und das Verfahren für Datenschutzbeschwerden."
+msgstr "Der Wine Finder verarbeitet Angaben automatisiert und mit KI-Unterstützung. Gib in Freitextfeldern keine Namen, Kontaktdaten, Konto- oder Zahlungsinformationen, Gesundheitsdaten oder andere sensible personenbezogene Daten ein. My Next Wine kann beauftragte Hosting- und KI-Anbieter einsetzen; die verlinkten Dokumente erläutern Empfänger, Schutzmaßnahmen bei internationalen Datenübermittlungen, Aufbewahrungsfristen, Betroffenenrechte und das Verfahren für Datenschutzbeschwerden."
 
 #: includes/class-mnw-api-client.php:473
 msgid "The wine search could not be completed. Review the search and try again."
-msgstr "Die Weinsuche konnte nicht abgeschlossen werden. Prüfen Sie die Suche und versuchen Sie es erneut."
+msgstr "Die Weinsuche konnte nicht abgeschlossen werden. Prüfe die Suche und versuche es erneut."
 
 #: includes/class-mnw-rest-controller.php:100
 msgid "The wine selection no longer matches this session."
@@ -1085,7 +1085,7 @@ msgstr "Die Weinauswahl gehört nicht mehr zu dieser Session."
 
 #: includes/class-mnw-store-palate-settings.php:213
 msgid "These receive a gentle preference only when they genuinely fit the request. Choose up to 12."
-msgstr "Diese erhalten nur dann einen dezenten Vorrang, wenn sie wirklich zur Anfrage passen. Wählen Sie bis zu 12 aus."
+msgstr "Diese erhalten nur dann einen dezenten Vorrang, wenn sie wirklich zur Anfrage passen. Wähle bis zu 12 aus."
 
 #: includes/class-mnw-store-palate-settings.php:206
 msgid "This changes the style of good pairings—not what counts as a good pairing."
@@ -1157,19 +1157,19 @@ msgstr "Warten auf die erste Sortimentssynchronisierung."
 
 #: templates/widget.php:666
 msgid "Want to adjust your selection?"
-msgstr "Möchten Sie Ihre Auswahl anpassen?"
+msgstr "Möchtest du deine Auswahl anpassen?"
 
 #: templates/widget.php:471
 msgid "What are you pairing with?"
-msgstr "Wozu möchten Sie die Weine servieren?"
+msgstr "Wozu möchtest du die Weine servieren?"
 
 #: templates/widget.php:300
 msgid "What is your total budget?"
-msgstr "Wie hoch ist Ihr Gesamtbudget?"
+msgstr "Wie hoch ist dein Gesamtbudget?"
 
 #: templates/widget.php:138
 msgid "What mix would you like?"
-msgstr "Wie soll Ihre Auswahl aussehen?"
+msgstr "Wie soll deine Auswahl aussehen?"
 
 #: includes/class-mnw-store-palate-settings.php:182
 msgid "What this means"
@@ -1189,7 +1189,7 @@ msgstr "Warum er passt"
 
 #: includes/class-mnw-store-palate-settings.php:259
 msgid "Why your team recommends these wines (optional)"
-msgstr "Warum Ihr Team diese Weine empfiehlt (optional)"
+msgstr "Warum dein Team diese Weine empfiehlt (optional)"
 
 #: templates/widget.php:837 includes/class-mnw-store-palate-settings.php:61
 msgid "Wine"
@@ -1209,7 +1209,7 @@ msgstr "Verkauf und Versand des Weins erfolgen durch diesen Shop."
 
 #: includes/class-mnw-store-palate-settings.php:59
 msgid "Wine search failed. Please try again."
-msgstr "Die Weinsuche ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+msgstr "Die Weinsuche ist fehlgeschlagen. Bitte versuche es erneut."
 
 #: includes/class-mnw-store-palate-settings.php:125
 msgid "Wine search is too long."
@@ -1217,11 +1217,11 @@ msgstr "Die Weinsuche ist zu lang."
 
 #: templates/widget.php:78
 msgid "Wine, picked for you."
-msgstr "Weine – passend für Sie ausgewählt."
+msgstr "Weine – passend für dich ausgewählt."
 
 #: includes/class-mnw-store-palate-settings.php:212
 msgid "Wines your team particularly recommends"
-msgstr "Weine, die Ihr Team besonders gern empfiehlt"
+msgstr "Weine, die dein Team besonders gern empfiehlt"
 
 #: includes/class-mnw-rest-controller.php:116
 msgid "WooCommerce could not start the basket."
@@ -1241,40 +1241,40 @@ msgstr "Ja, höheres Budget verwenden"
 
 #: includes/class-mnw-installer.php:120
 msgid "You do not have permission to connect My Next Wine."
-msgstr "Sie sind nicht berechtigt, My Next Wine zu verbinden."
+msgstr "Du bist nicht berechtigt, My Next Wine zu verbinden."
 
 #: includes/class-mnw-settings.php:171
 msgid "You do not have permission to manage My Next Wine billing."
-msgstr "Sie sind nicht berechtigt, die My-Next-Wine-Abrechnung zu verwalten."
+msgstr "Du bist nicht berechtigt, die My-Next-Wine-Abrechnung zu verwalten."
 
 #: includes/class-mnw-settings.php:70 includes/class-mnw-settings.php:132
 msgid "You do not have permission to manage My Next Wine."
-msgstr "Sie sind nicht berechtigt, My Next Wine zu verwalten."
+msgstr "Du bist nicht berechtigt, My Next Wine zu verwalten."
 
 #: includes/class-mnw-store-palate-settings.php:86
 msgid "You do not have permission to manage Store Palate."
-msgstr "Sie sind nicht berechtigt, Store Palate zu verwalten."
+msgstr "Du bist nicht berechtigt, Store Palate zu verwalten."
 
 #: includes/class-mnw-settings.php:149
 msgid "You do not have permission to start My Next Wine billing."
-msgstr "Sie sind nicht berechtigt, die My-Next-Wine-Abrechnung zu starten."
+msgstr "Du bist nicht berechtigt, die My-Next-Wine-Abrechnung zu starten."
 
 #: includes/class-mnw-catalogue-sync.php:87
 msgid "You do not have permission to synchronise My Next Wine."
-msgstr "Sie sind nicht berechtigt, My Next Wine zu synchronisieren."
+msgstr "Du bist nicht berechtigt, My Next Wine zu synchronisieren."
 
 #: templates/widget.php:416
 msgid "Your preferences"
-msgstr "Ihre Vorlieben"
+msgstr "Deine Vorlieben"
 
 #: includes/class-mnw-store-palate-settings.php:183
 msgid "Your Store Palate influences recommendations when relevant. It does not guarantee that a particular wine will be chosen. My Next Wine still considers the shopper's request, wine suitability, budget and availability."
-msgstr "Ihr Store Palate beeinflusst Empfehlungen dort, wo es sinnvoll ist. Es garantiert nicht, dass ein bestimmter Wein ausgewählt wird. Kundenwunsch, Eignung, Budget und Verfügbarkeit haben für My Next Wine weiterhin Vorrang."
+msgstr "Dein Store Palate beeinflusst Empfehlungen dort, wo es sinnvoll ist. Es garantiert nicht, dass ein bestimmter Wein ausgewählt wird. Kundenwunsch, Eignung, Budget und Verfügbarkeit haben für My Next Wine weiterhin Vorrang."
 
 #: templates/widget.php:398
 msgid "Your taste"
-msgstr "Ihr Geschmack"
+msgstr "Dein Geschmack"
 
 #: templates/widget.php:594
 msgid "Your wine selection"
-msgstr "Ihre Weinauswahl"
+msgstr "Deine Weinauswahl"
