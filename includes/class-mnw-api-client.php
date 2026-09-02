@@ -57,6 +57,7 @@ final class MyNextWine_Woo_API_Client {
                 'Four quick questions and we will pick the perfect wines from our cellar',
                 'A complete selection from our available wines, built around your budget, preferences and occasion.',
                 'Eine vollständige Auswahl aus unseren verfügbaren Weinen – abgestimmt auf Ihr Budget, Ihre Vorlieben und Ihren Anlass.',
+                'Une sélection complète parmi nos vins disponibles, adaptée à votre budget, à vos goûts et à l’occasion.',
             ),
             true
         )) {
@@ -64,21 +65,21 @@ final class MyNextWine_Woo_API_Client {
         }
         if (in_array(
             ($settings['heading'] ?? ''),
-            array('Need help choosing wine?', 'Not sure what to choose?', 'Sie wissen nicht genau, was Sie wählen sollen?'),
+            array('Need help choosing wine?', 'Not sure what to choose?', 'Sie wissen nicht genau, was Sie wählen sollen?', 'Vous ne savez pas quoi choisir ?'),
             true
         )) {
             $settings['heading'] = __('Not sure what to choose?', 'my-next-wine-for-woocommerce');
         }
         if (in_array(
             ($settings['launcher_label'] ?? ''),
-            array('Find my wines', 'Use our wine matcher', 'Build my wine selection', 'Meine Weinauswahl zusammenstellen'),
+            array('Find my wines', 'Use our wine matcher', 'Build my wine selection', 'Meine Weinauswahl zusammenstellen', 'Composer ma sélection de vins'),
             true
         )) {
             $settings['launcher_label'] = __('Build my wine selection', 'my-next-wine-for-woocommerce');
         }
         if (in_array(
             ($settings['button_label'] ?? ''),
-            array('Add selected to basket', 'Auswahl in den Warenkorb legen'),
+            array('Add selected to basket', 'Auswahl in den Warenkorb legen', 'Ajouter la sélection au panier'),
             true
         )) {
             $settings['button_label'] = __('Add selected to basket', 'my-next-wine-for-woocommerce');

@@ -2332,11 +2332,30 @@
     const categoryCounts = request?.categoryCounts && typeof request.categoryCounts === "object"
       ? request.categoryCounts
       : {};
+    const frenchSummaryPlurals = Object.freeze({
+      red: "rouges",
+      white: "blancs",
+      rose: "rosés",
+      sparkling: "effervescents",
+      orange: "oranges",
+      petNat: "pét-nats",
+      sherry: "xérès",
+      otherFortified: "vins fortifiés",
+      dessert: "vins de dessert"
+    });
+    const frenchLocale = /^fr(?:[-_]|$)/i.test(String(widgetUiLocale || ""));
     const categoryParts = CATEGORY_DEFINITIONS
-      .map((category) => ({
-        label: t(`widget.category.${category.key}.summary`, category.label.toLowerCase()),
-        count: Number(categoryCounts[category.key] || 0)
-      }))
+      .map((category) => {
+        const count = Number(categoryCounts[category.key] || 0);
+        const singularLabel = t(`widget.category.${category.key}.summary`, category.label.toLowerCase());
+        const label = frenchLocale && Number.isInteger(count) && count > 1
+          ? t(
+              `widget.category.${category.key}.plural`,
+              frenchSummaryPlurals[category.key] || category.plural
+            ).toLowerCase()
+          : singularLabel;
+        return { label, count };
+      })
       .filter((category) => Number.isInteger(category.count) && category.count > 0)
       .map((category) => t(
         "widget.selection.category_count",

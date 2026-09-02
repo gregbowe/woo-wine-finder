@@ -1,3 +1,6 @@
+= 1.0.33 =
+* Bundled the complete French (France) translation so French stores do not depend on the WordPress.org translation approval queue.
+
 = 1.0.30 =
 * Permanently deleting the plugin now requests immediate Stripe subscription cancellation as well as service revocation.
 * Clarified that deactivation alone does not cancel billing and updated Merchant Terms acceptance to 2026-08-21-UK5.
