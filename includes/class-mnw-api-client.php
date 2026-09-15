@@ -58,6 +58,7 @@ final class MyNextWine_Woo_API_Client {
                 'A complete selection from our available wines, built around your budget, preferences and occasion.',
                 'Eine vollständige Auswahl aus unseren verfügbaren Weinen – abgestimmt auf Ihr Budget, Ihre Vorlieben und Ihren Anlass.',
                 'Une sélection complète parmi nos vins disponibles, adaptée à votre budget, à vos goûts et à l’occasion.',
+                'Uma seleção completa dos nossos vinhos disponíveis, pensada para o seu orçamento, as suas preferências e a ocasião.',
             ),
             true
         )) {
@@ -65,21 +66,21 @@ final class MyNextWine_Woo_API_Client {
         }
         if (in_array(
             ($settings['heading'] ?? ''),
-            array('Need help choosing wine?', 'Not sure what to choose?', 'Sie wissen nicht genau, was Sie wählen sollen?', 'Vous ne savez pas quoi choisir ?'),
+            array('Need help choosing wine?', 'Not sure what to choose?', 'Sie wissen nicht genau, was Sie wählen sollen?', 'Vous ne savez pas quoi choisir ?', 'Não sabe o que escolher?'),
             true
         )) {
             $settings['heading'] = __('Not sure what to choose?', 'my-next-wine-for-woocommerce');
         }
         if (in_array(
             ($settings['launcher_label'] ?? ''),
-            array('Find my wines', 'Use our wine matcher', 'Build my wine selection', 'Meine Weinauswahl zusammenstellen', 'Composer ma sélection de vins'),
+            array('Find my wines', 'Use our wine matcher', 'Build my wine selection', 'Meine Weinauswahl zusammenstellen', 'Composer ma sélection de vins', 'Criar a minha seleção de vinhos'),
             true
         )) {
             $settings['launcher_label'] = __('Build my wine selection', 'my-next-wine-for-woocommerce');
         }
         if (in_array(
             ($settings['button_label'] ?? ''),
-            array('Add selected to basket', 'Auswahl in den Warenkorb legen', 'Ajouter la sélection au panier'),
+            array('Add selected to basket', 'Auswahl in den Warenkorb legen', 'Ajouter la sélection au panier', 'Adicionar selecionados ao carrinho'),
             true
         )) {
             $settings['button_label'] = __('Add selected to basket', 'my-next-wine-for-woocommerce');

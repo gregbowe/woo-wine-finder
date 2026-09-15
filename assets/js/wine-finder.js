@@ -2344,14 +2344,15 @@
       dessert: "vins de dessert"
     });
     const frenchLocale = /^fr(?:[-_]|$)/i.test(String(widgetUiLocale || ""));
+    const portugueseLocale = /^pt(?:[-_]|$)/i.test(String(widgetUiLocale || ""));
     const categoryParts = CATEGORY_DEFINITIONS
       .map((category) => {
         const count = Number(categoryCounts[category.key] || 0);
         const singularLabel = t(`widget.category.${category.key}.summary`, category.label.toLowerCase());
-        const label = frenchLocale && Number.isInteger(count) && count > 1
+        const label = (frenchLocale || portugueseLocale) && Number.isInteger(count) && count > 1
           ? t(
               `widget.category.${category.key}.plural`,
-              frenchSummaryPlurals[category.key] || category.plural
+              (frenchLocale && frenchSummaryPlurals[category.key]) || category.plural
             ).toLowerCase()
           : singularLabel;
         return { label, count };
