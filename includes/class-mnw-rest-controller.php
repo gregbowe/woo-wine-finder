@@ -24,6 +24,11 @@ final class MyNextWine_Woo_REST_Controller {
             'callback' => array($this, 'configuration'),
             'permission_callback' => '__return_true',
         ));
+        register_rest_route(self::NAMESPACE, '/progress', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => array($this, 'progress'),
+            'permission_callback' => '__return_true',
+        ));
         register_rest_route(self::NAMESPACE, '/recommendations', array(
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => array($this, 'recommendations'),
@@ -54,6 +59,17 @@ final class MyNextWine_Woo_REST_Controller {
     public function configuration(WP_REST_Request $request): WP_REST_Response {
         $locale = sanitize_text_field((string) $request->get_param('locale'));
         return $this->proxy('GET', '/api/woocommerce/widget/configuration', null, $locale);
+    }
+
+    public function progress(WP_REST_Request $request): WP_REST_Response {
+        $payload = $this->json_payload($request);
+        if (is_wp_error($payload)) return $this->from_error($payload, 400);
+        $id = isset($payload['progressId']) && is_string($payload['progressId']) ? $payload['progressId'] : '';
+        if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i', $id)) {
+            return new WP_REST_Response(array('state' => 'UNAVAILABLE'), 400, $this->no_store_headers());
+        }
+        // Signed backend request; enums only, no token, catalogue or customer result data returned.
+        return $this->proxy('POST', '/api/woocommerce/widget/progress', array('progressId' => $id));
     }
 
     public function recommendations(WP_REST_Request $request): WP_REST_Response {
@@ -182,11 +198,13 @@ final class MyNextWine_Woo_REST_Controller {
         if (is_wp_error($payload)) {
             return $this->from_error($payload, 400);
         }
-        return $this->proxy('POST', $backend_path, $payload);
+        $query = $request->get_query_params();
+        $progress_id = isset($query['progressId']) && is_string($query['progressId']) ? $query['progressId'] : '';
+        return $this->proxy('POST', $backend_path, $payload, '', $progress_id);
     }
 
     /** @param array<string,mixed>|null $payload */
-    private function proxy(string $method, string $backend_path, ?array $payload, string $locale = ''): WP_REST_Response {
+    private function proxy(string $method, string $backend_path, ?array $payload, string $locale = '', string $progress_id = ''): WP_REST_Response {
         if (!$this->client->is_enabled()) {
             return $this->error(__('The wine finder is not enabled.', 'my-next-wine-for-woocommerce'), 503);
         }
@@ -195,14 +213,15 @@ final class MyNextWine_Woo_REST_Controller {
             '/api/woocommerce/widget/refine',
         ), true)
             ? self::RECOMMENDATION_PROXY_TIMEOUT_SECONDS
-            : 40;
+            : ('/api/woocommerce/widget/progress' === $backend_path ? 4 : 40);
         $result = $this->client->request(
             $method,
             $backend_path,
             $payload,
             $this->client->client_key(),
             $timeout_seconds,
-            $locale
+            $locale,
+            $progress_id
         );
         if (is_wp_error($result)) {
             $data = $result->get_error_data();

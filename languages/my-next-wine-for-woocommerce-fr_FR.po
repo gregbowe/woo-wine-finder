@@ -1281,3 +1281,69 @@ msgstr "Vos goûts"
 #: templates/widget.php:594
 msgid "Your wine selection"
 msgstr "Votre sélection de vins"
+
+# Added for the budget controls and revised widget copy.
+
+#: includes/class-mnw-store-palate-settings.php:193
+msgid "Budget tolerance (%)"
+msgstr "Marge de dépassement du budget (%)"
+
+#: includes/class-mnw-store-palate-settings.php:196
+msgid "0 switches this off. Allow the main recommended basket to exceed the shopper's target by up to this percentage only when better-matching wines materially justify the extra cost. Applies to the whole basket, not each bottle. Explain the changes and respect a fixed budget."
+msgstr "0 désactive cette option. La sélection recommandée peut dépasser le budget du client de ce pourcentage, uniquement si les vins proposés apportent une réelle amélioration qui justifie le supplément. Cette marge s’applique au panier entier, pas à chaque bouteille. Expliquez les changements et respectez un budget ferme."
+
+#: includes/class-mnw-store-palate-settings.php:311
+msgid "Budget tolerance must be a whole percentage between 0 and 20."
+msgstr "La marge de dépassement du budget doit être un pourcentage entier compris entre 0 et 20."
+
+#: templates/widget.php:475
+msgid "What are you eating? Tell us about the dish, including any sauce or spice."
+msgstr "Que mangez-vous ? Précisez le plat, la sauce et les épices."
+
+#: templates/widget.php:594
+msgid "Your wines"
+msgstr "Vos vins"
+
+#: templates/widget.php:628
+msgid "A compromise on:"
+msgstr "Un compromis sur :"
+
+#: templates/widget.php:658
+msgid "Back to the first selection"
+msgstr "Revenir aux premiers vins"
+
+#: templates/widget.php:666
+msgid "Want to change anything?"
+msgstr "Envie de changer quelque chose ?"
+
+#: templates/widget.php:672
+msgid "Undo last change"
+msgstr "Annuler le dernier changement"
+
+#: templates/widget.php:676
+msgid "What would you like to change?"
+msgstr "Que souhaitez-vous changer ?"
+
+#: templates/widget.php:691
+msgid "Make changes"
+msgstr "Modifier"
+
+#: templates/widget.php:735
+msgid "This change would cost more"
+msgstr "Ce changement coûterait plus cher"
+
+#: templates/widget.php:863
+msgid "About this wine"
+msgstr "À propos de ce vin"
+
+msgid "Budget buttons"
+msgstr "Boutons de budget"
+
+msgid "Show the -10% budget button"
+msgstr "Afficher le bouton de budget -10 %"
+
+msgid "Show the +10% budget button"
+msgstr "Afficher le bouton de budget +10 %"
+
+msgid "Show either, both or neither of the budget buttons on the results screen. This does not change budget tolerance."
+msgstr "Affichez un seul bouton de budget, les deux ou aucun sur l’écran des résultats. Cela ne modifie pas la tolérance budgétaire."

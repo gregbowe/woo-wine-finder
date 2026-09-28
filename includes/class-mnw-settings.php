@@ -94,6 +94,8 @@ final class MyNextWine_Woo_Settings {
         $current['button_label'] = sanitize_text_field((string) wp_unslash($_POST['button_label'] ?? ''));
         $current['show_mnw_notes'] = isset($_POST['show_mnw_notes']) ? 'yes' : 'no';
         $current['show_mnw_rating'] = isset($_POST['show_mnw_rating']) ? 'yes' : 'no';
+        $current['show_budget_decrease'] = isset($_POST['show_budget_decrease']) ? 'yes' : 'no';
+        $current['show_budget_increase'] = isset($_POST['show_budget_increase']) ? 'yes' : 'no';
         $submitted_categories = $this->submitted_wine_categories();
         $category_error = count($submitted_categories) < 2;
         if (!$category_error) {
@@ -108,7 +110,9 @@ final class MyNextWine_Woo_Settings {
             $display_result = $this->client->update_display_settings(
                 'yes' === $current['show_mnw_notes'],
                 'yes' === $current['show_mnw_rating'],
-                $this->client->normalise_wine_categories($current['wine_categories'] ?? null)
+                $this->client->normalise_wine_categories($current['wine_categories'] ?? null),
+                'yes' === $current['show_budget_decrease'],
+                'yes' === $current['show_budget_increase']
             );
             if (is_wp_error($display_result)) {
                 $display_error = $display_result;
@@ -249,6 +253,10 @@ final class MyNextWine_Woo_Settings {
         $plan_name = is_array($status) ? (string) ($status['planName'] ?? 'Launch') : 'Launch';
         $completed_sessions = is_array($status) ? max(0, (int) ($status['completedSessionsThisMonth'] ?? 0)) : 0;
         $completed_session_limit = is_array($status) ? max(0, (int) ($status['completedSessionsLimit'] ?? 350)) : 350;
+        $show_budget_decrease = is_array($status) && array_key_exists('showBudgetDecrease', $status)
+            ? (bool) $status['showBudgetDecrease'] : 'yes' === ($settings['show_budget_decrease'] ?? 'yes');
+        $show_budget_increase = is_array($status) && array_key_exists('showBudgetIncrease', $status)
+            ? (bool) $status['showBudgetIncrease'] : 'yes' === ($settings['show_budget_increase'] ?? 'yes');
         $show_mnw_notes = is_array($status)
             ? !empty($status['showMyNextWineNotes'])
             : 'yes' === ($settings['show_mnw_notes'] ?? 'no');
@@ -549,6 +557,11 @@ final class MyNextWine_Woo_Settings {
                         </label>
                     <?php endforeach; ?>
                 </fieldset>
+
+                <h2><?php echo esc_html__('Budget buttons', 'my-next-wine-for-woocommerce'); ?></h2>
+                <p><?php echo esc_html__('Show either, both or neither of the budget buttons on the results screen. This does not change budget tolerance.', 'my-next-wine-for-woocommerce'); ?></p>
+                <p><label><input type="checkbox" name="show_budget_decrease" value="1" <?php checked($show_budget_decrease); ?>> <?php echo esc_html__('Show the -10% budget button', 'my-next-wine-for-woocommerce'); ?></label></p>
+                <p><label><input type="checkbox" name="show_budget_increase" value="1" <?php checked($show_budget_increase); ?>> <?php echo esc_html__('Show the +10% budget button', 'my-next-wine-for-woocommerce'); ?></label></p>
 
                 <h2><?php echo esc_html__('My Next Wine content', 'my-next-wine-for-woocommerce'); ?></h2>
                 <p><?php echo esc_html__('Both options are off by default. Enable them only when they suit this store’s own product presentation.', 'my-next-wine-for-woocommerce'); ?></p>

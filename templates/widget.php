@@ -10,6 +10,8 @@ if (!defined('ABSPATH')) { exit; }
   data-endpoint="<?php echo esc_url($recommendations_endpoint); ?>"
   data-swap-endpoint="<?php echo esc_url($swap_endpoint); ?>"
   data-refine-endpoint="<?php echo esc_url($refine_endpoint); ?>"
+  data-progress-endpoint="<?php echo esc_url($progress_endpoint); ?>"
+  data-progress-method="POST"
   data-events-endpoint="<?php echo esc_url($events_endpoint); ?>"
   data-cart-endpoint="<?php echo esc_url($cart_endpoint); ?>"
   data-mnw-analytics-enabled="<?php echo esc_attr($analytics_enabled); ?>"

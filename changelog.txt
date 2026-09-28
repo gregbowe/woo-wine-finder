@@ -1,3 +1,15 @@
+= 1.0.44 =
+* Retry temporary progress unavailability without submitting another recommendation.
+
+= 1.0.43 =
+* Keep the waiting dialog indeterminate when optional progress is unavailable; localise storage errors.
+
+= 1.0.42 =
+* Independent budget-button controls and a live progress dialog for recommendations and refinements.
+
+= 1.0.41 =
+* Added and compiled missing budget-control and widget-template translations for every bundled locale.
+
 = 1.0.33 =
 * Bundled the complete French (France) translation so French stores do not depend on the WordPress.org translation approval queue.
 

@@ -119,6 +119,7 @@
     ["These wines are over budget", "widget.match.exact_over_budget"],
     ["Finding wines…", "widget.recommendation.finding"],
     ["The wine finder took too long to respond. Please try again.", "widget.recommendation.timeout"],
+    ["The wine finder is temporarily unavailable. Please try again shortly.", "widget.recommendation.storage_unavailable"],
     ["No suitable wines were found for those answers. Try a slightly larger budget or different mix.", "widget.recommendation.none"],
     ["The wine finder response was incomplete. Please try again.", "widget.recommendation.incomplete"],
     ["We could not build the wine selection.", "widget.recommendation.failed"],
@@ -399,6 +400,230 @@
     document.querySelectorAll("[data-mnw-widget]").forEach(initialiseWidget);
   };
 
+  const normaliseBudgetButtonVisibility = (configuration = {}) => ({
+    lower: configuration?.showBudgetDecrease !== false,
+    higher: configuration?.showBudgetIncrease !== false
+  });
+
+  const visibleRetryBudgetChoices = (choices, visibility) => ({
+    lower: visibility.lower ? choices.lower : null,
+    higher: visibility.higher ? choices.higher : null
+  });
+
+  const WORKING_STAGES = Object.freeze({
+    PREPARING: ["widget.working.preparing", "Getting started"],
+    CATALOGUE: ["widget.working.catalogue", "Looking through the available wines"],
+    SELECTING: ["widget.working.selecting", "Choosing bottles for you"],
+    STORE_PALATE: ["widget.working.palate", "Considering the shop's recommendations"],
+    VALUE: ["widget.working.value", "Considering value for money"],
+    CHECKING: ["widget.working.checking", "Checking the bottles and total"],
+    READY: ["widget.working.ready", "Getting your wines ready"]
+  });
+
+  // No timers invent stages or percentages. An unrecognised/missing state stays indeterminate.
+  const normaliseWorkingProgress = (value) => {
+    if (!value || typeof value !== "object") return null;
+    const state = String(value.state || "");
+    if (!["PENDING", "RUNNING", "COMPLETE", "FAILED", "UNAVAILABLE"].includes(state)) return null;
+    const stage = Object.hasOwn(WORKING_STAGES, value.stage) ? value.stage : "PREPARING";
+    const steps = Array.isArray(value.steps) ? [...new Set(value.steps.filter((step) =>
+      Object.hasOwn(WORKING_STAGES, step) && step !== "READY"))].slice(0, 6) : [];
+    return { state, stage, steps };
+  };
+
+  const createProgressId = () => {
+    const crypto = globalThis.crypto;
+    if (typeof crypto?.randomUUID === "function") return crypto.randomUUID();
+    if (typeof crypto?.getRandomValues !== "function") return null;
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 15) | 64; bytes[8] = (bytes[8] & 63) | 128;
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  };
+
+  const withProgressId = (endpoint, id, base = globalThis.location?.href) => {
+    if (!id) return endpoint;
+    const url = new URL(endpoint, base);
+    url.searchParams.set("progressId", id);
+    return url.toString();
+  };
+
+  /** Poll metadata only, one request at a time. It cannot create/charge a recommendation. */
+  const createProgressPoller = ({ endpoint, method = "GET", id, onUpdate,
+    fetcher = (...args) => fetch(...args), scheduler = globalThis, base = globalThis.location?.href,
+    interval = 1500, firstDelay = 800 }) => {
+    let stopped = false, timer = null, abort = null, requestTimer = null, failures = 0, polls = 0;
+    let unavailableResponses = 0;
+    const stop = () => {
+      stopped = true;
+      if (timer !== null) scheduler.clearTimeout(timer);
+      if (requestTimer !== null) scheduler.clearTimeout(requestTimer);
+      timer = null; requestTimer = null;
+      abort?.abort(); abort = null;
+    };
+    const unavailable = () => {
+      if (stopped) return;
+      // Losing optional metadata must not leave a frozen, misleading first stage on screen.
+      stop();
+      onUpdate({ state: "UNAVAILABLE", stage: "PREPARING", steps: [] });
+    };
+    const poll = async () => {
+      if (stopped) return;
+      if (++polls > 80) { unavailable(); return; }
+      let nextDelay = interval;
+      abort = new AbortController();
+      requestTimer = scheduler.setTimeout(() => abort?.abort(), 4000);
+      try {
+        const url = new URL(endpoint, base);
+        const options = { method, headers: { "Accept": "application/json" }, cache: "no-store", signal: abort.signal };
+        if (method === "POST") {
+          options.headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify({ progressId: id });
+        } else {
+          url.searchParams.set("progressId", id);
+          url.searchParams.set("_", String(Date.now()));
+        }
+        const response = await fetcher(url.toString(), options);
+        if (stopped) return;
+        if (!response.ok) {
+          // Old/mixed deployments and rate limits degrade to a spinner, not a failed lookup.
+          if ([400, 401, 403, 404, 405, 429].includes(response.status)) { unavailable(); return; }
+          throw new Error("Progress unavailable");
+        }
+        const snapshot = normaliseWorkingProgress(await response.json());
+        if (stopped) return;
+        if (!snapshot) throw new Error("Invalid progress metadata");
+        failures = 0;
+        onUpdate(snapshot);
+        if (stopped) return; // onUpdate may finish/hide the underlying dialog.
+        if (["COMPLETE", "FAILED"].includes(snapshot.state)) { stop(); return; }
+        if (snapshot.state === "UNAVAILABLE") {
+          // Temporary metadata failure is not completion of the recommendation.
+          // Retry metadata only, bounded and sequential; never submit another lookup.
+          if (++unavailableResponses >= 8) { stop(); return; }
+          nextDelay = Math.min(10000, 2000 * (2 ** (unavailableResponses - 1)));
+        } else {
+          unavailableResponses = 0;
+        }
+      } catch (ignored) {
+        if (!stopped && ++failures >= 3) { unavailable(); return; }
+      } finally {
+        if (requestTimer !== null) scheduler.clearTimeout(requestTimer);
+        requestTimer = null; abort = null;
+      }
+      if (!stopped) timer = scheduler.setTimeout(poll, nextDelay);
+    };
+    if (endpoint && id) timer = scheduler.setTimeout(poll, firstDelay);
+    else unavailable();
+    return { stop, isStopped: () => stopped };
+  };
+
+  /** Separate top-layer dialog: visible even when the main Wine Finder is scrolled. */
+  const createWorkingDialog = (root, parentDialog, options = {}) => {
+    const doc = root.ownerDocument || document;
+    const modal = doc.createElement("dialog");
+    modal.className = "mnw-wine-finder__working";
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("data-mnw-working", "");
+    const titleId = `${root.id || "mnw"}-working-title`;
+    const title = doc.createElement("h2");
+    title.id = titleId; title.tabIndex = -1;
+    modal.setAttribute("aria-labelledby", titleId);
+    const brand = doc.createElement("p");
+    brand.className = "mnw-wine-finder__working-eyebrow";
+    brand.textContent = t("widget.working.eyebrow", "Wine Finder");
+    const close = doc.createElement("button");
+    close.type = "button"; close.className = "mnw-wine-finder__working-close";
+    close.setAttribute("aria-label", t("widget.working.hide", "Hide progress"));
+    close.textContent = "×";
+    const intro = doc.createElement("p"); intro.className = "mnw-wine-finder__working-intro";
+    const live = doc.createElement("p");
+    live.className = "mnw-wine-finder__working-status";
+    live.setAttribute("role", "status"); live.setAttribute("aria-live", "polite"); live.setAttribute("aria-atomic", "true");
+    const bar = doc.createElement("div"); bar.className = "mnw-wine-finder__working-bar";
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-label", t("widget.working.progress", "Wine selection progress"));
+    // Omit aria-valuenow: stage duration/percentage is not measurable.
+    const steps = doc.createElement("ol"); steps.className = "mnw-wine-finder__working-steps";
+    const hint = doc.createElement("p"); hint.className = "mnw-wine-finder__working-hint";
+    hint.textContent = t("widget.working.hint", "You can hide this window while we finish.");
+    modal.append(close, brand, title, intro, live, bar, steps, hint);
+    root.append(modal);
+    let poller = null, active = false, returnFocus = null, epoch = 0, lastView = "", destroyed = false;
+    let parentInert = false;
+    const label = (stage) => t(...WORKING_STAGES[stage]);
+    const render = (snapshot) => {
+      if (!active || destroyed || snapshot.state === "FAILED") return;
+      const indeterminate = snapshot.state === "UNAVAILABLE" || snapshot.state === "PENDING";
+      const stage = snapshot.state === "COMPLETE" ? "READY" : snapshot.stage;
+      const caption = indeterminate ? t("widget.working.waiting", "We’re working on your wines") : label(stage);
+      const reportedSteps = indeterminate ? [] : snapshot.steps;
+      const signature = JSON.stringify([caption, reportedSteps]);
+      if (signature === lastView) return;
+      lastView = signature;
+      live.textContent = caption;
+      bar.setAttribute("aria-valuetext", caption);
+      steps.replaceChildren();
+      for (const step of reportedSteps) {
+        const item = doc.createElement("li");
+        item.textContent = label(step);
+        item.className = step === stage ? "is-current" : "is-done";
+        if (step === stage) item.setAttribute("aria-current", "step");
+        steps.append(item);
+      }
+    };
+    const hide = ({ restoreFocus = true } = {}) => {
+      if (typeof modal.close === "function" && modal.open) modal.close();
+      else modal.removeAttribute("open");
+      if (parentDialog) parentDialog.inert = parentInert;
+      if (restoreFocus) {
+        if (returnFocus?.isConnected && !returnFocus.disabled) returnFocus.focus({ preventScroll: true });
+        else if (parentDialog?.open) parentDialog.focus({ preventScroll: true });
+      }
+    };
+    const finish = ({ restoreFocus = true } = {}) => {
+      if (!active) return;
+      active = false; epoch += 1; poller?.stop(); poller = null;
+      hide({ restoreFocus });
+    };
+    close.addEventListener("click", () => { poller?.stop(); hide(); });
+    modal.addEventListener("cancel", (event) => { event.preventDefault(); poller?.stop(); hide(); });
+    modal.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); poller?.stop(); hide(); }
+      else if (event.key === "Tab") {
+        // The only interactive control is Hide progress; contain fallback-browser focus too.
+        event.preventDefault(); close.focus();
+      }
+    });
+    return {
+      start(kind, requestEndpoint) {
+        finish({ restoreFocus: false });
+        if (destroyed) return requestEndpoint;
+        active = true; const current = ++epoch; lastView = ""; returnFocus = doc.activeElement;
+        parentInert = Boolean(parentDialog?.inert);
+        brand.textContent = t("widget.working.eyebrow", "Wine Finder");
+        close.setAttribute("aria-label", t("widget.working.hide", "Hide progress"));
+        bar.setAttribute("aria-label", t("widget.working.progress", "Wine selection progress"));
+        hint.textContent = t("widget.working.hint", "You can hide this window while we finish.");
+        title.textContent = kind === "REFINE" ? t("widget.working.refine_title", "Updating your wines")
+          : t("widget.working.title", "Choosing your wines");
+        intro.textContent = kind === "REFINE"
+          ? t("widget.working.refine_intro", "Your current wines will stay here until the new selection is ready.")
+          : t("widget.working.intro", "We're putting your selection together.");
+        render({ state: "PENDING", stage: "PREPARING", steps: [] });
+        try { modal.showModal(); } catch (unsupported) { modal.setAttribute("open", ""); }
+        if (parentDialog) parentDialog.inert = true;
+        title.focus({ preventScroll: true });
+        const id = createProgressId();
+        poller = createProgressPoller({ endpoint: options.endpoint, method: options.method || "GET", id,
+          onUpdate: (snapshot) => { if (active && epoch === current) render(snapshot); } });
+        return withProgressId(requestEndpoint, id);
+      },
+      finish,
+      destroy() { finish({ restoreFocus: false }); destroyed = true; modal.remove(); }
+    };
+  };
+
   const initialiseWidget = (root) => {
     if (root.dataset.mnwInitialised === "true") return;
     root.dataset.mnwInitialised = "true";
@@ -529,6 +754,7 @@
     let maximumBudget = null;
     let configurationReady = false;
     let configuredCategories = Array.from(LEGACY_WINE_CATEGORIES);
+    let budgetButtonVisibility = normaliseBudgetButtonVisibility();
     let budgetEdited = false;
     let suggestedBudget = null;
     let retryBudgets = { lower: null, higher: null };
@@ -539,10 +765,10 @@
     const beginNewRecommendationSession = () => {
       pageSessionId = createPageSessionId();
     };
-    const loadingMessages = createLoadingMessageController(
-      statusElement,
-      LOADING_MESSAGES
-    );
+    const workingDialog = createWorkingDialog(root, dialog, {
+      endpoint: root.dataset.progressEndpoint,
+      method: root.dataset.progressMethod || "GET"
+    });
 
     const applyBudgetScreenValue = (value) => {
       if (!configurationReady || !Number.isFinite(value)) return;
@@ -919,7 +1145,7 @@
     };
 
     const closeDialog = () => {
-      loadingMessages.stop();
+      workingDialog.finish({ restoreFocus: false });
       closeQuickView({ restoreFocus: false });
       if (typeof dialog.close === "function" && dialog.open) dialog.close();
       else dialog.removeAttribute("open");
@@ -987,11 +1213,11 @@
     };
 
     const setRetryBudgetChoices = (activeBudget) => {
-      retryBudgets = calculateRetryBudgetChoices(
+      retryBudgets = visibleRetryBudgetChoices(calculateRetryBudgetChoices(
         activeBudget,
         budgetInput.min,
         budgetInput.max
-      );
+      ), budgetButtonVisibility);
       const formatter = createCurrencyFormatter(storeCurrency, currencyPrecision);
       const choices = [
         [retryWithLowerBudgetButton, retryBudgets.lower, "−10%", "ten percent lower"],
@@ -1016,6 +1242,7 @@
     };
 
     const applyRetryBudget = async (direction) => {
+      if (!Object.hasOwn(budgetButtonVisibility, direction) || !budgetButtonVisibility[direction]) return;
       const amount = Number(retryBudgets[direction]);
       if (!Number.isFinite(amount) || amount <= 0 || !currentRequest
           || refinementInFlight || recommendationInFlight || cartInFlight) return;
@@ -1395,7 +1622,7 @@
       if (event.target === dialog && !requestInFlight()) closeDialog();
     });
     dialog.addEventListener("close", () => {
-      loadingMessages.stop();
+      workingDialog.finish({ restoreFocus: false });
       openButton.setAttribute("aria-expanded", "false");
       document.documentElement.classList.remove("mnw-wine-finder-open");
       document.body.classList.remove("mnw-wine-finder-open");
@@ -1405,7 +1632,7 @@
     const cleanupWidget = () => {
       if (destroyed) return;
       destroyed = true;
-      loadingMessages.stop();
+      workingDialog.destroy();
       removalObserver?.disconnect();
       removalObserver = null;
     };
@@ -1497,9 +1724,8 @@
       errorElement.hidden = true;
       if (budgetGuidance) budgetGuidance.hidden = true;
       selectionElement.hidden = true;
-      statusElement.hidden = false;
-      loadingMessages.start();
-      statusElement.focus({ preventScroll: true });
+      statusElement.hidden = true;
+      const trackedEndpoint = workingDialog.start("INITIAL", endpoint);
       submitButton.disabled = true;
       submitLabel.textContent = "Finding wines…";
 
@@ -1522,7 +1748,7 @@
           budget: payload.budget,
           bottleCount: payload.bottleCount
         });
-        const result = await fetchJson(endpoint, {
+        const result = await fetchJson(trackedEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           body: JSON.stringify(payload),
@@ -1553,6 +1779,7 @@
           selectionTotal: Number(result.total || 0)
         });
 
+        workingDialog.finish({ restoreFocus: false });
         statusElement.hidden = true;
         form.hidden = true;
         if (wizardProgress) wizardProgress.hidden = true;
@@ -1561,6 +1788,7 @@
         selectionElement.focus({ preventScroll: true });
         selectionElement.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
+        workingDialog.finish({ restoreFocus: false });
         currentRecommendation = null;
         if (error?.details?.code === "BUDGET_INCREASE_REQUIRED") {
           showBudgetGuidance(error.details);
@@ -1572,7 +1800,7 @@
           showError(error.message || "We could not build the wine selection.");
         }
       } finally {
-        loadingMessages.stop();
+        workingDialog.finish({ restoreFocus: false });
         recommendationInFlight = false;
         setBusy(false);
         submitButton.disabled = false;
@@ -1772,6 +2000,11 @@
       refineStatus.classList.toggle("mnw-wine-finder__refinement-status--error", isError);
       refineStatus.setAttribute("role", isError ? "alert" : "status");
       refineStatus.setAttribute("aria-live", isError ? "assertive" : "polite");
+      if (isError) {
+        refineStatus.tabIndex = -1;
+        refineStatus.focus({ preventScroll: true });
+        refineStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     };
 
     const submitRefinementRequest = async ({
@@ -1798,10 +2031,11 @@
       const originalLabel = refineLabel?.textContent || "Make changes";
       setRefinementControlsBusy(true);
       if (refineLabel) refineLabel.textContent = pendingLabel;
-      announceRefinement(progressMessage);
+      if (refineStatus) refineStatus.hidden = true;
+      const trackedRefineEndpoint = workingDialog.start("REFINE", refineEndpoint);
 
       try {
-        const result = await fetchJson(refineEndpoint, {
+        const result = await fetchJson(trackedRefineEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           body: JSON.stringify(createRefinementRequestPayload(
@@ -1846,6 +2080,7 @@
         announceRefinement(result.refinementSummary || successMessage);
         return true;
       } catch (error) {
+        workingDialog.finish({ restoreFocus: false });
         const confirmationOffered = offerRefinementBudgetConfirmation({
           error,
           request,
@@ -1865,6 +2100,7 @@
         setBusy(false);
         if (refineLabel) refineLabel.textContent = originalLabel;
         setRefinementControlsBusy(false);
+        workingDialog.finish();
       }
     };
 
@@ -2086,6 +2322,7 @@
         }
 
         configuredCategories = normaliseConfiguredCategories(configuration.wineCategories);
+        budgetButtonVisibility = normaliseBudgetButtonVisibility(configuration);
         applyCategoryConfiguration(root, breakdownInputs, configuredCategories);
         bottleCountInput.value = String(readBreakdownTotal(form));
         updateAllocationStatus(form, allocationStatus, submitButton);
@@ -3797,6 +4034,13 @@
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
+      normaliseBudgetButtonVisibility,
+      visibleRetryBudgetChoices,
+      normaliseWorkingProgress,
+      createProgressPoller,
+      createProgressId,
+      withProgressId,
+      createWorkingDialog,
       calculateAdjustedBreakdownValue,
       calculateAdjustedBudgetValue,
       calculateBudgetQuickChoices,

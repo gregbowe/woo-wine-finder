@@ -74,6 +74,7 @@ final class MyNextWine_Woo_Widget {
         $recommendations_endpoint = rest_url('my-next-wine/v1/recommendations');
         $swap_endpoint = rest_url('my-next-wine/v1/swap');
         $refine_endpoint = rest_url('my-next-wine/v1/refine');
+        $progress_endpoint = rest_url('my-next-wine/v1/progress');
         $events_endpoint = rest_url('my-next-wine/v1/events');
         $cart_endpoint = rest_url('my-next-wine/v1/cart');
         $wp_nonce = wp_create_nonce('wp_rest');

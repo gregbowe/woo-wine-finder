@@ -5976,3 +5976,43 @@ body.mnw-wine-finder-open {
 @media (max-width: 540px) {
   .mnw-wine-finder__improvement-actions button { width: 100%; }
 }
+
+/* Busy requests live in their own top-layer dialog, not in the scrollable results. */
+.mnw-wine-finder dialog.mnw-wine-finder__working {
+  position: fixed;
+  inset: 0;
+  width: min(520px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 32px;
+  overflow: auto;
+  border: 1px solid rgba(49, 30, 30, .12);
+  border-radius: 20px;
+  background: #fffdfa;
+  color: #211b1c;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .25);
+  font-family: var(--mnw-theme-font, inherit);
+  text-align: left;
+  z-index: 2147483646;
+}
+.mnw-wine-finder__working:not([open]) { display: none; }
+.mnw-wine-finder__working::backdrop { background: rgba(25, 16, 19, .48); backdrop-filter: blur(4px); }
+.mnw-wine-finder__working h2 { margin: 8px 28px 12px 0; font-size: clamp(26px, 5vw, 34px); line-height: 1.15; color: inherit; font-family: Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: -.02em; outline: none; }
+.mnw-wine-finder__working-eyebrow { margin: 0; font-size: 11px; line-height: 1.4; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.mnw-wine-finder__working-intro { margin: 0 0 24px; font-size: 14px; line-height: 1.55; color: #655e60; }
+.mnw-wine-finder__working-status { margin: 0 0 12px; font-size: 15px; line-height: 1.45; font-weight: 600; }
+.mnw-wine-finder__working-bar { height: 4px; overflow: hidden; border-radius: 6px; background: #eae4e0; }
+.mnw-wine-finder__working-bar::after { content: ""; display: block; height: 100%; width: 32%; border-radius: inherit; background: var(--mnw-theme-accent, #722f37); animation: mnw-working-sweep 1.8s ease-in-out infinite alternate; }
+@keyframes mnw-working-sweep { from { transform: translateX(0); } to { transform: translateX(215%); } }
+.mnw-wine-finder__working-steps { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
+.mnw-wine-finder__working-steps:empty { display: none; }
+.mnw-wine-finder__working-steps li { display: flex; gap: 10px; align-items: center; margin: 0; font-size: 13px; line-height: 1.4; color: #6c6366; }
+.mnw-wine-finder__working-steps li::before { content: "✓"; display: grid; place-items: center; width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%; background: #edf3ed; color: #315c40; font-size: 12px; }
+.mnw-wine-finder__working-steps li.is-current { color: #211b1c; font-weight: 600; }
+.mnw-wine-finder__working-steps li.is-current::before { content: "•"; background: #f1e9e8; color: var(--mnw-theme-accent, #722f37); }
+.mnw-wine-finder__working-hint { margin: 24px 0 0; font-size: 12px; line-height: 1.5; color: #756c70; }
+.mnw-wine-finder .mnw-wine-finder__working-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; padding: 0; display: grid; place-items: center; border: 1px solid #eae4e0; border-radius: 50%; background: white; color: inherit; font: 24px/1 sans-serif; cursor: pointer; box-shadow: none; }
+.mnw-wine-finder__working-close:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (max-width: 480px) { .mnw-wine-finder dialog.mnw-wine-finder__working { padding: 26px 22px; } }
+@media (prefers-reduced-motion: reduce) { .mnw-wine-finder__working-bar::after { animation: none; width: 100%; opacity: .55; } }

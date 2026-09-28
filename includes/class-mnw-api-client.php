@@ -45,6 +45,8 @@ final class MyNextWine_Woo_API_Client {
             'button_label' => __('Add selected to basket', 'my-next-wine-for-woocommerce'),
             'show_mnw_notes' => 'no',
             'show_mnw_rating' => 'no',
+            'show_budget_decrease' => 'yes',
+            'show_budget_increase' => 'yes',
             'wine_categories' => self::DEFAULT_WINE_CATEGORIES,
         );
         $saved = get_option(MYNEXTWINE_WOO_OPTION, array());
@@ -141,7 +143,8 @@ final class MyNextWine_Woo_API_Client {
         ?array $payload = null,
         string $client_key = '',
         int $timeout_seconds = 40,
-        string $locale = ''
+        string $locale = '',
+        string $progress_id = ''
     ) {
         if (!$this->is_configured()) {
             return new WP_Error('mynextwine_woo_not_configured', __('My Next Wine is still connecting this store.', 'my-next-wine-for-woocommerce'));
@@ -168,6 +171,10 @@ final class MyNextWine_Woo_API_Client {
             'X-MNW-Request-Id' => $request_id,
             'X-MNW-Signature' => $signature,
         );
+        // Optional stage-only capability. Never part of the recommendation body/cache key.
+        if (preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i', $progress_id)) {
+            $headers['X-MNW-Progress-Id'] = $progress_id;
+        }
         if ('' !== $client_key) {
             $headers['X-MNW-Client-Key'] = substr($client_key, 0, 128);
         }
@@ -212,7 +219,8 @@ final class MyNextWine_Woo_API_Client {
     }
 
     /** @return array<string,mixed>|WP_Error */
-    public function update_display_settings(bool $show_notes, bool $show_rating, ?array $wine_categories = null) {
+    public function update_display_settings(bool $show_notes, bool $show_rating, ?array $wine_categories = null,
+        ?bool $show_budget_decrease = null, ?bool $show_budget_increase = null) {
         $payload = array(
             'showMyNextWineNotes' => $show_notes,
             'showMyNextWineRating' => $show_rating,
@@ -222,6 +230,8 @@ final class MyNextWine_Woo_API_Client {
         if (null !== $wine_categories) {
             $payload['wineCategories'] = $this->normalise_wine_categories($wine_categories);
         }
+        if (null !== $show_budget_decrease) $payload['showBudgetDecrease'] = $show_budget_decrease;
+        if (null !== $show_budget_increase) $payload['showBudgetIncrease'] = $show_budget_increase;
         return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', $payload, '', 40, $this->admin_locale());
     }
 
