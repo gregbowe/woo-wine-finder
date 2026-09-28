@@ -472,7 +472,7 @@ if (!defined('ABSPATH')) { exit; }
               </legend>
 
               <p class="mnw-wine-finder__question-help">
-                <?php echo esc_html__('Share any meals, dishes or snacks you would like us to match with a bottle.', 'my-next-wine-for-woocommerce'); ?>
+                <?php echo esc_html__('What are you eating? Tell us about the dish, including any sauce or spice.', 'my-next-wine-for-woocommerce'); ?>
               </p>
 
               <div class="mnw-wine-finder__pairing-panel">
@@ -591,7 +591,7 @@ if (!defined('ABSPATH')) { exit; }
             <div class="mnw-wine-finder__selection-header">
               <div>
                 <h3 class="mnw-wine-finder__selection-title">
-                  <?php echo esc_html__('Your wine selection', 'my-next-wine-for-woocommerce'); ?>
+                  <?php echo esc_html__('Your wines', 'my-next-wine-for-woocommerce'); ?>
                 </h3>
 
                 <p
@@ -625,7 +625,7 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-request-match-unmet
                   hidden
                 >
-                  <span><?php echo esc_html__('Not fully matched:', 'my-next-wine-for-woocommerce'); ?></span>
+                  <span><?php echo esc_html__('A compromise on:', 'my-next-wine-for-woocommerce'); ?></span>
                   <span data-mnw-request-match-unmet-copy></span>
                 </p>
               </div>
@@ -655,7 +655,7 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-show-exact-selection
                   hidden
                 >
-                  <?php echo esc_html__('Show exact matches', 'my-next-wine-for-woocommerce'); ?>
+                  <?php echo esc_html__('Back to the first selection', 'my-next-wine-for-woocommerce'); ?>
                 </button>
 
               </div>
@@ -663,17 +663,17 @@ if (!defined('ABSPATH')) { exit; }
 
             <section class="mnw-wine-finder__refinement" data-mnw-refinement>
               <div class="mnw-wine-finder__refinement-heading">
-                <h4><?php echo esc_html__('Want to adjust your selection?', 'my-next-wine-for-woocommerce'); ?></h4>
+                <h4><?php echo esc_html__('Want to change anything?', 'my-next-wine-for-woocommerce'); ?></h4>
                 <button
                   class="mnw-wine-finder__refinement-undo"
                   type="button"
                   data-mnw-refine-undo
                   hidden
-                ><?php echo esc_html__('Undo last refinement', 'my-next-wine-for-woocommerce'); ?></button>
+                ><?php echo esc_html__('Undo last change', 'my-next-wine-for-woocommerce'); ?></button>
               </div>
               <form class="mnw-wine-finder__refinement-form" data-mnw-refine-form>
                 <label class="mnw-visually-hidden" for="mnw-refine-<?php echo esc_attr($widget_id); ?>">
-                  <?php echo esc_html__('How should we refine this selection?', 'my-next-wine-for-woocommerce'); ?>
+                  <?php echo esc_html__('What would you like to change?', 'my-next-wine-for-woocommerce'); ?>
                 </label>
                 <input
                   id="mnw-refine-<?php echo esc_attr($widget_id); ?>"
@@ -688,7 +688,7 @@ if (!defined('ABSPATH')) { exit; }
                   class="mnw-wine-finder__primary-button mnw-wine-finder__refinement-button"
                   type="submit"
                   data-mnw-refine-submit
-                ><span data-mnw-refine-label><?php echo esc_html__('Refine', 'my-next-wine-for-woocommerce'); ?></span></button>
+                ><span data-mnw-refine-label><?php echo esc_html__('Make changes', 'my-next-wine-for-woocommerce'); ?></span></button>
               </form>
               <div
                 class="mnw-wine-finder__quick-budgets"
@@ -732,7 +732,7 @@ if (!defined('ABSPATH')) { exit; }
                   id="mnw-refinement-budget-title-<?php echo esc_attr($widget_id); ?>"
                   data-mnw-refinement-budget-title
                 >
-                  <?php echo esc_html__('This refinement is a little over budget', 'my-next-wine-for-woocommerce'); ?>
+                  <?php echo esc_html__('This change would cost more', 'my-next-wine-for-woocommerce'); ?>
                 </strong>
                 <p data-mnw-refinement-budget-copy></p>
                 <div class="mnw-wine-finder__refinement-budget-actions">
@@ -749,6 +749,9 @@ if (!defined('ABSPATH')) { exit; }
                 </div>
               </div>
             </section>
+
+            <aside class="mnw-wine-finder__budget-improvement" data-mnw-budget-improvement
+                   aria-live="polite" hidden></aside>
 
             <div
               class="mnw-wine-finder__results"
@@ -857,7 +860,7 @@ if (!defined('ABSPATH')) { exit; }
                   data-mnw-quick-view-reason-tags
                   hidden
                 ></div>
-                <span data-mnw-quick-view-reason-label><?php echo esc_html__('Why it fits', 'my-next-wine-for-woocommerce'); ?></span>
+                <span data-mnw-quick-view-reason-label><?php echo esc_html__('About this wine', 'my-next-wine-for-woocommerce'); ?></span>
                 <p data-mnw-quick-view-reason></p>
               </section>
               <p class="mnw-wine-quick-view__rating" data-mnw-quick-view-rating-row hidden>

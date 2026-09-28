@@ -15,6 +15,7 @@
     });
   };
   var configured = root.getAttribute('data-configured') === 'true';
+  var budgetToleranceInput = $('[data-mnw-budget-tolerance]');
   var discoveryInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-discovery-style]'));
   var pairingInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-pairing-style]'));
   var favouriteSearch = $('[data-mnw-favourite-search]');
@@ -58,6 +59,9 @@
     var pairing = ['CLASSIC', 'BALANCED', 'ADVENTUROUS'].indexOf(value.pairingStyle) >= 0
       ? value.pairingStyle : 'BALANCED';
     return {
+      budgetTolerancePercent: Number.isInteger(value.budgetTolerancePercent)
+        && value.budgetTolerancePercent >= 0 && value.budgetTolerancePercent <= 20
+        ? value.budgetTolerancePercent : 0,
       discoveryStyle: discovery,
       pairingStyle: pairing,
       staffFavourites: Array.isArray(value.staffFavourites)
@@ -84,6 +88,7 @@
 
   function payload() {
     return {
+      budgetTolerancePercent: palate.budgetTolerancePercent,
       discoveryStyle: palate.discoveryStyle,
       pairingStyle: palate.pairingStyle,
       staffFavouriteWineIds: palate.staffFavourites.map(function (wine) { return wine.id; }),
@@ -220,6 +225,7 @@
   }
 
   function render() {
+    if (budgetToleranceInput) budgetToleranceInput.value = String(palate.budgetTolerancePercent);
     discoveryInputs.forEach(function (input) { input.checked = input.value === palate.discoveryStyle; });
     pairingInputs.forEach(function (input) { input.checked = input.value === palate.pairingStyle; });
     renderFavourites();
@@ -300,6 +306,11 @@
     dialog.showModal();
     pairingDish.focus();
   }
+
+  if (budgetToleranceInput) budgetToleranceInput.addEventListener('input', function () {
+    palate.budgetTolerancePercent = Number(budgetToleranceInput.value);
+    markDirty();
+  });
 
   discoveryInputs.forEach(function (input) {
     input.addEventListener('change', function () {
@@ -387,6 +398,10 @@
   });
 
   $('[data-mnw-palate-form]').addEventListener('submit', function (event) {
+    if (budgetToleranceInput && !budgetToleranceInput.reportValidity()) {
+      event.preventDefault();
+      return;
+    }
     if (!configured) {
       event.preventDefault();
       palateStatus.textContent = text('connectBeforeSaving', 'Connect the store from Setup before saving.');

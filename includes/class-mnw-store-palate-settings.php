@@ -141,6 +141,7 @@ final class MyNextWine_Woo_Store_Palate_Settings {
         $palate = is_array($status) && isset($status['storePalate']) && is_array($status['storePalate'])
             ? $status['storePalate']
             : array(
+                'budgetTolerancePercent' => 0,
                 'discoveryStyle' => 'BALANCED',
                 'pairingStyle' => 'BALANCED',
                 'staffFavourites' => array(),
@@ -188,6 +189,12 @@ final class MyNextWine_Woo_Store_Palate_Settings {
                 <input type="hidden" name="store_palate_json" value="" data-mnw-palate-json>
                 <?php wp_nonce_field('mynextwine_woo_save_store_palate'); ?>
 
+                <section class="mnw-palate-admin__card mnw-palate-admin__card--wide">
+                    <label for="mnw-budget-tolerance"><strong><?php echo esc_html__('Budget tolerance (%)', 'my-next-wine-for-woocommerce'); ?></strong></label>
+                    <input id="mnw-budget-tolerance" type="number" min="0" max="20" step="1" value="0" required
+                           aria-describedby="mnw-budget-tolerance-help" data-mnw-budget-tolerance>
+                    <p id="mnw-budget-tolerance-help"><?php echo esc_html__('0 switches this off. Allow the main recommended basket to exceed the shopper\'s target by up to this percentage only when better-matching wines materially justify the extra cost. Applies to the whole basket, not each bottle. Explain the changes and respect a fixed budget.', 'my-next-wine-for-woocommerce'); ?></p>
+                </section>
                 <div class="mnw-palate-admin__grid">
                     <section class="mnw-palate-admin__card">
                         <p class="mnw-palate-admin__eyebrow"><?php echo esc_html__('Discovery style', 'my-next-wine-for-woocommerce'); ?></p>
@@ -298,6 +305,12 @@ final class MyNextWine_Woo_Store_Palate_Settings {
             throw new InvalidArgumentException(__('Choose a valid pairing style.', 'my-next-wine-for-woocommerce'));
         }
 
+        // Null preserves the stored setting for older clients that omit this field.
+        $tolerance = $input['budgetTolerancePercent'] ?? null;
+        if (null !== $tolerance && (!is_int($tolerance) || $tolerance < 0 || $tolerance > 20)) {
+            throw new InvalidArgumentException(__('Budget tolerance must be a whole percentage between 0 and 20.', 'my-next-wine-for-woocommerce'));
+        }
+
         $favourites = $this->normalise_ids($input['staffFavouriteWineIds'] ?? array());
         if (count($favourites) > self::MAX_STAFF_FAVOURITES) {
             throw new InvalidArgumentException(__('Choose no more than 12 staff favourites.', 'my-next-wine-for-woocommerce'));
@@ -331,6 +344,7 @@ final class MyNextWine_Woo_Store_Palate_Settings {
         }
 
         return array(
+            'budgetTolerancePercent' => $tolerance,
             'discoveryStyle' => $discovery,
             'pairingStyle' => $pairing,
             'staffFavouriteWineIds' => $favourites,

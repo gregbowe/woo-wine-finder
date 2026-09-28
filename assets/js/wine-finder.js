@@ -29,7 +29,7 @@
     "widget.static.optional": "Optional",
     "widget.static.a_sentence_is_plenty_leave_this_blank_if_you_would_like_us_to_surpri": "A sentence is plenty. Leave this blank if you would like us to surprise you.",
     "widget.static.what_are_you_pairing_with": "What are you pairing with?",
-    "widget.static.share_any_meals_dishes_or_snacks_you_would_like_us_to_match_with_a_b": "Share any meals, dishes or snacks you would like us to match with a bottle.",
+    "widget.static.share_any_meals_dishes_or_snacks_you_would_like_us_to_match_with_a_b": "What are you eating? Tell us about the dish, including any sauce or spice.",
     "widget.static.food_pairings": "Food pairings",
     "widget.static.add_more_than_one_dish_if_you_need_different_bottles_for_different_m": "Add more than one dish if you need different bottles for different meals.",
     "widget.static.find_my_wines": "Find my wines",
@@ -40,16 +40,16 @@
     "widget.static.privacy_statement": "Privacy Statement",
     "widget.static.a_little_more_budget_is_needed": "A little more budget is needed",
     "widget.static.edit_my_request": "Edit my request",
-    "widget.static.your_wine_selection": "Your wine selection",
-    "widget.static.not_fully_matched": "Not fully matched:",
+    "widget.static.your_wine_selection": "Your wines",
+    "widget.static.not_fully_matched": "A compromise on:",
     "widget.static.show_budget_friendly_alternatives": "Show budget-friendly alternatives",
-    "widget.static.show_exact_matches": "Show exact matches",
-    "widget.static.want_to_adjust_your_selection": "Want to adjust your selection?",
-    "widget.static.undo_last_refinement": "Undo last refinement",
-    "widget.static.how_should_we_refine_this_selection": "How should we refine this selection?",
-    "widget.static.refine": "Refine",
+    "widget.static.show_exact_matches": "Back to the first selection",
+    "widget.static.want_to_adjust_your_selection": "Want to change anything?",
+    "widget.static.undo_last_refinement": "Undo last change",
+    "widget.static.how_should_we_refine_this_selection": "What would you like to change?",
+    "widget.static.refine": "Make changes",
     "widget.static.or_try_a_different_budget": "Or try a different budget",
-    "widget.static.this_refinement_is_a_little_over_budget": "This refinement is a little over budget",
+    "widget.static.this_refinement_is_a_little_over_budget": "This change would cost more",
     "widget.static.yes_use_the_higher_budget": "Yes, use the higher budget",
     "widget.static.no_keep_current_selection": "No, keep current selection",
     "widget.static.edit_answers": "Edit answers",
@@ -57,7 +57,7 @@
     "widget.static.my_next_wine": "My Next Wine",
     "widget.static.wine_is_sold_and_fulfilled_by_this_shop": ". Wine is sold and fulfilled by this shop.",
     "widget.static.wine": "Wine",
-    "widget.static.why_it_fits": "Why it fits",
+    "widget.static.why_it_fits": "About this wine",
     "widget.static.my_next_wine_rating": "My Next Wine rating",
     "widget.static.producer": "Producer",
     "widget.static.region": "Region",
@@ -111,12 +111,12 @@
     ["Updating budget…", "widget.budget.updating"],
     ["We could not build a complete selection at that budget. Try increasing it or changing your request.", "widget.budget.incomplete_increase"],
     ["We could not build a complete selection at that budget. Please edit your wine preferences or bottle mix and try again.", "widget.budget.incomplete_edit"],
-    ["Matched to your request", "widget.match.matched"],
+    ["Chosen for you", "widget.match.matched"],
     ["Chosen from wines currently in stock.", "widget.match.current_stock"],
-    ["Closest alternatives", "widget.match.closest_alternatives"],
-    ["Closest complete selection", "widget.match.closest_complete"],
-    ["Considered substitutions", "widget.match.substitutions"],
-    ["Exact matches are over budget", "widget.match.exact_over_budget"],
+    ["Other wines to consider", "widget.match.closest_alternatives"],
+    ["Another selection to consider", "widget.match.closest_complete"],
+    ["A note about your wines", "widget.match.substitutions"],
+    ["These wines are over budget", "widget.match.exact_over_budget"],
     ["Finding wines…", "widget.recommendation.finding"],
     ["The wine finder took too long to respond. Please try again.", "widget.recommendation.timeout"],
     ["No suitable wines were found for those answers. Try a slightly larger budget or different mix.", "widget.recommendation.none"],
@@ -126,14 +126,14 @@
     ["The wine swap took too long. Please try again.", "widget.swap.timeout"],
     ["No alternative wine was returned. Please try again.", "widget.swap.none"],
     ["That wine could not be swapped. Please try again.", "widget.swap.failed"],
-    ["This refinement is a little over budget", "widget.refine.over_budget"],
-    ["Refining your current selection…", "widget.refine.running"],
-    ["Refining…", "widget.refine.short"],
-    ["Your selection has been refined.", "widget.refine.done"],
-    ["The refinement took too long. Your current selection has been kept.", "widget.refine.timeout"],
+    ["This change would cost more", "widget.refine.over_budget"],
+    ["Choosing your wines again…", "widget.refine.running"],
+    ["Making changes…", "widget.refine.short"],
+    ["Your wines have been updated.", "widget.refine.done"],
+    ["That took too long. We have kept your current wines.", "widget.refine.timeout"],
     ["Tell us what you want to change.", "widget.refine.tell_change"],
     ["No changes made. Your current selection has been kept.", "widget.refine.no_changes"],
-    ["The most recent refinement was undone.", "widget.refine.undone"],
+    ["Last change undone.", "widget.refine.undone"],
     ["Adding to basket…", "widget.cart.adding"],
     ["The wines could not be added to the basket. Please try again.", "widget.cart.failed"],
     ["This shop's Wine Finder configuration is unavailable.", "widget.config.unavailable"],
@@ -144,21 +144,16 @@
     ["The available bottle categories are invalid. Refresh and try again.", "widget.validation.categories_invalid"],
     ["Every bottle mix value must be a whole number of zero or more.", "widget.validation.mix_whole_numbers"],
     ["One of your answers is too long.", "widget.validation.answer_too_long"],
-    ["Chosen as the closest suitable alternative to your requested wines, within this shop's current range.", "widget.reason.closest"],
-    ["Chosen to fit your wine preferences and the food you described.", "widget.reason.preferences_food"],
-    ["Chosen to match the wine preferences and style you described as closely as possible.", "widget.reason.preferences"],
-    ["Chosen with the food pairing you described in mind.", "widget.reason.food"],
-    ["Chosen for balance, value and fit with the rest of your selection.", "widget.reason.balance"],
     ["Why we picked it", "widget.quick_view.why"],
     ["Quick view", "widget.quick_view.label"],
     ["Select at least one wine", "widget.selection.select_one"],
     ["Add back", "widget.selection.add_back"],
     ["On budget", "widget.selection.on_budget"],
     ["The retry budget is invalid.", "widget.retry.invalid"],
-    ["The refinement response was incomplete. Your current selection has been kept.", "widget.refine.response_incomplete"],
-    ["The refinement changed an unavailable bottle category. Your current selection has been kept.", "widget.refine.category_changed"],
-    ["The refinement response was invalid. Your current selection has been kept.", "widget.refine.response_invalid"],
-    ["We could not refine that selection.", "widget.refine.failed"],
+    ["We could not finish that change. We have kept your current wines.", "widget.refine.response_incomplete"],
+    ["That change included a wine type this shop does not offer. We have kept your current wines.", "widget.refine.category_changed"],
+    ["We could not make that change. We have kept your current wines.", "widget.refine.response_invalid"],
+    ["We could not make that change.", "widget.refine.failed"],
     ["One recommended wine is temporarily unavailable. Change your answers and try again.", "widget.cart.unavailable"],
     ["The basket took too long to respond. Please try again.", "widget.cart.timeout"],
     ["The service returned an unexpected response. Please try again.", "widget.http.unexpected"],
@@ -185,8 +180,8 @@
     ["other bottles", "widget.category.other_bottles"],
     ["The linked merchant currency is invalid.", "widget.config.invalid_currency"],
     ["No further description is available for this wine.", "widget.wine.no_description"],
-    ["We could not match every preference exactly, so we chose the closest suitable alternatives within budget.", "widget.alternative.within_budget"],
-    ["Some exact matches were unavailable, so we chose the closest suitable alternatives and stayed within budget.", "widget.alternative.closest_within"],
+    ["We could not give you everything you asked for at this price. These alternatives stay within your budget.", "widget.alternative.within_budget"],
+    ["We have stayed within your budget, with the compromises noted above.", "widget.alternative.closest_within"],
     ["Minimum", "widget.budget.minimum"],
     ["Suggested", "widget.budget.suggested"],
     ["Add", "widget.action.add"],
@@ -198,7 +193,7 @@
     ["Swap", "widget.action.swap"],
     ["wine", "widget.unit.wine"],
     ["This swap is a little over budget", "widget.swap.over_budget"],
-    ["One or more requests could not be matched exactly, so the closest safe selection is shown honestly.", "widget.match.partial_fallback"],
+    ["There are a few compromises here. Please check the notes before adding these wines to your basket.", "widget.match.partial_fallback"],
   ]);
 
   const translateBudgetQualifier = (value) => {
@@ -233,12 +228,12 @@
     [/^Your selection has been rebuilt around (.+)\.$/, "widget.budget.rebuilt", "Your selection has been rebuilt around {amount}.", (m) => ({ amount: m[1] })],
     [/^Rebuilding your selection around (.+)…$/, "widget.refine.rebuilding", "Rebuilding your selection around {amount}…", (m) => ({ amount: m[1] })],
     [/^Your selection now uses a budget of (.+)\.$/, "widget.refine.new_budget", "Your selection now uses a budget of {amount}.", (m) => ({ amount: m[1] })],
-    [/^We do not have enough exact matches in stock\. A complete alternative selection starts at (.+?)(?: — (.+) above your current budget)?\.$/, "widget.budget.guidance_start", "We do not have enough exact matches in stock. A complete alternative selection starts at {amount}{difference}.", (m) => ({ amount: m[1], difference: m[2] ? t("widget.budget.guidance_difference", " — {amount} above your current budget", { amount: m[2] }) : "" })],
-    [/^We replaced unavailable or expensive exact matches with similar styles\. Total (.+?)(?: — (.+) under budget)?\.$/, "widget.alternative.replaced", "We replaced unavailable or expensive exact matches with similar styles. Total {total}{difference}.", (m) => ({ total: m[1], difference: m[2] ? t("widget.alternative.under_difference", " — {amount} under budget", { amount: m[2] }) : "" })],
-    [/^Show exact (.+) selection$/, "widget.alternative.show_exact", "Show exact {amount} selection", (m) => ({ amount: m[1] })],
-    [/^We do not have enough exact matches in stock\. This selection is (.+) — (.+) over your (.+) budget\.$/, "widget.alternative.not_enough_exact", "We do not have enough exact matches in stock. This selection is {total} — {difference} over your {budget} budget.", (m) => ({ total: m[1], difference: m[2], budget: m[3] })],
-    [/^These are the closest suitable alternatives from current stock\. The total is (.+) — (.+) over budget\.$/, "widget.alternative.closest_over", "These are the closest suitable alternatives from current stock. The total is {total} — {difference} over budget.", (m) => ({ total: m[1], difference: m[2] })],
-    [/^Exact matches total (.+) — (.+) over your (.+) budget\.$/, "widget.budget.exact_total", "Exact matches total {total} — {difference} over your {budget} budget.", (m) => ({ total: m[1], difference: m[2], budget: m[3] })],
+    [/^We do not have enough exact matches in stock\. A complete alternative selection starts at (.+?)(?: — (.+) above your current budget)?\.$/, "widget.budget.guidance_start", "We cannot put together everything you asked for from the wines in stock. An alternative selection starts at {amount}{difference}.", (m) => ({ amount: m[1], difference: m[2] ? t("widget.budget.guidance_difference", " — {amount} above your current budget", { amount: m[2] }) : "" })],
+    [/^We replaced unavailable or expensive exact matches with similar styles\. Total (.+?)(?: — (.+) under budget)?\.$/, "widget.alternative.replaced", "We have chosen alternatives for the wines we could not include. Total {total}{difference}.", (m) => ({ total: m[1], difference: m[2] ? t("widget.alternative.under_difference", " — {amount} under budget", { amount: m[2] }) : "" })],
+    [/^Show exact (.+) selection$/, "widget.alternative.show_exact", "Back to the {amount} selection", (m) => ({ amount: m[1] })],
+    [/^We do not have enough exact matches in stock\. This selection is (.+) — (.+) over your (.+) budget\.$/, "widget.alternative.not_enough_exact", "We could not include everything you asked for. These wines cost {total}, which is {difference} over your {budget} budget.", (m) => ({ total: m[1], difference: m[2], budget: m[3] })],
+    [/^These are the closest suitable alternatives from current stock\. The total is (.+) — (.+) over budget\.$/, "widget.alternative.closest_over", "These alternatives cost {total}, which is {difference} over budget.", (m) => ({ total: m[1], difference: m[2] })],
+    [/^Exact matches total (.+) — (.+) over your (.+) budget\.$/, "widget.budget.exact_total", "These wines cost {total}, which is {difference} over your {budget} budget.", (m) => ({ total: m[1], difference: m[2], budget: m[3] })],
     [/^A similar option is (.+)\.$/, "widget.budget.similar_option", "A similar option is {amount}.", (m) => ({ amount: m[1] })],
     [/^View (.+) alternative$/, "widget.alternative.view", "View {amount} alternative", (m) => ({ amount: m[1] })],
     [/^The minimum budget for (\d+) (bottle|bottles) is (.+)\.$/, "widget.validation.minimum_budget", "The minimum budget for {count} {bottles} is {amount}.", (m) => ({ count: m[1], bottles: translateBottleUnit(m[2]), amount: m[3] })],
@@ -262,10 +257,10 @@
     [/^(\d+) bottles$/, "widget.selection.bottle_many", "{count} bottles", (m) => ({ count: m[1] })],
     [/^(.+) under budget$/, "widget.selection.under_budget", "{amount} under budget", (m) => ({ amount: m[1] })],
     [/^(.+) over budget$/, "widget.selection.over_budget", "{amount} over budget", (m) => ({ amount: m[1] })],
-    [/^That refinement would need (.+), (.+) above your current (.+) budget\. Is that okay\?$/, "widget.refine.budget_question", "That refinement would need {suggested}, {difference} above your current {current} budget. Is that okay?", (m) => ({ suggested: m[1], difference: m[2], current: m[3] })],
+    [/^That refinement would need (.+), (.+) above your current (.+) budget\. Is that okay\?$/, "widget.refine.budget_question", "That change would cost {suggested}, which is {difference} above your {current} budget. Is that okay?", (m) => ({ suggested: m[1], difference: m[2], current: m[3] })],
     [/^The nearest available replacement needs (.+), (.+) above your current (.+) budget\. Is that okay\?$/, "widget.swap.budget_question", "The nearest available replacement needs {suggested}, {difference} above your current {current} budget. Is that okay?", (m) => ({ suggested: m[1], difference: m[2], current: m[3] })],
     [/^Yes, use (.+)$/, "widget.refine.accept_budget", "Yes, use {amount}", (m) => ({ amount: m[1] })],
-    [/^That exact refinement needs at least (.+)\. Your current selection has been kept\.$/, "widget.refine.exact_needs", "That exact refinement needs at least {amount}. Your current selection has been kept.", (m) => ({ amount: m[1] })],
+    [/^That exact refinement needs at least (.+)\. Your current selection has been kept\.$/, "widget.refine.exact_needs", "That change needs at least {amount}. We have kept your current wines.", (m) => ({ amount: m[1] })],
     [/^For (\d+) (bottle|bottles), the minimum budget is (.+)\.$/, "widget.budget.minimum_for", "For {count} {bottles}, the minimum budget is {amount}.", (m) => ({ count: m[1], bottles: translateBottleUnit(m[2]), amount: m[3] })],
     [/^(.+) bottles$/, "widget.category.bottles", "{label} bottles", (m) => ({ label: m[1] })],
     [/^(Add|Remove) one (.+) bottle$/, "widget.category.adjust", "{action} one {label} bottle", (m) => ({ action: translateAction(m[1]), label: m[2] })],
@@ -274,9 +269,9 @@
     [/^(.+)\. Choose at least (\d+)\.$/, "widget.allocation.choose_min", "{labels}. Choose at least {min}.", (m) => ({ labels: m[1], min: m[2] })],
     [/^(.+)\. Choose no more than (\d+)\.$/, "widget.allocation.choose_max", "{labels}. Choose no more than {max}.", (m) => ({ labels: m[1], max: m[2] })],
     [/^The linked merchant (.+) is invalid\.$/, "widget.config.invalid_value", "The linked merchant {label} is invalid.", (m) => ({ label: m[1] })],
-    [/^Sub: (.+)$/, "widget.recommendation.substitute", "Sub: {label}", (m) => ({ label: m[1] })],
-    [/^Considered substitute for (.+)$/, "widget.recommendation.substitute_title", "Considered substitute for {label}", (m) => ({ label: m[1] })],
-    [/^Keep the refinement to (\d+) characters or fewer\.$/, "widget.refine.character_limit", "Keep the refinement to {max} characters or fewer.", (m) => ({ max: m[1] })]
+    [/^Sub: (.+)$/, "widget.recommendation.substitute", "Instead of: {label}", (m) => ({ label: m[1] })],
+    [/^Considered substitute for (.+)$/, "widget.recommendation.substitute_title", "An alternative for {label}", (m) => ({ label: m[1] })],
+    [/^Keep the refinement to (\d+) characters or fewer\.$/, "widget.refine.character_limit", "Please keep your message to {max} characters or fewer.", (m) => ({ max: m[1] })]
   ];
 
   const translateKnownWidgetText = (value) => {
@@ -443,6 +438,7 @@
     const editPreferencesButton = root.querySelector("[data-mnw-edit-preferences]");
     const selectionElement = root.querySelector("[data-mnw-selection]");
     const resultsElement = root.querySelector("[data-mnw-results]");
+    const budgetImprovementElement = root.querySelector("[data-mnw-budget-improvement]");
     const summaryElement = root.querySelector("[data-mnw-summary]");
     const totalElement = root.querySelector("[data-mnw-total]");
     const requestMatch = root.querySelector("[data-mnw-request-match]");
@@ -538,6 +534,7 @@
     let retryBudgets = { lower: null, higher: null };
     let pendingRefinementBudgetProposal = null;
     let destroyed = false;
+    let visitId = getOrCreateVisitId(endpoint);
     let pageSessionId = createPageSessionId();
     const beginNewRecommendationSession = () => {
       pageSessionId = createPageSessionId();
@@ -705,7 +702,7 @@
       quickViewPrice.textContent = createCurrencyFormatter(wine.currency || currentRecommendation?.currency || storeCurrency)
         .format(Number(wine.price || 0));
 
-      const recommendationLabel = String(wine.recommendationLabel || "Why it fits").trim();
+      const recommendationLabel = String(wine.recommendationLabel || "About this wine").trim();
       const recommendationReason = directAddressRecommendationCopy(
         wine.recommendationReason || ""
       );
@@ -717,8 +714,8 @@
           quickViewReasonTags.hidden = recommendationTags.length === 0;
         }
         if (quickViewReasonLabel) {
-          quickViewReasonLabel.hidden = recommendationTags.length > 0;
-          quickViewReasonLabel.textContent = recommendationLabel || "Why it fits";
+          quickViewReasonLabel.hidden = !recommendationReason || recommendationTags.length > 0;
+          quickViewReasonLabel.textContent = recommendationLabel || "About this wine";
         }
         quickViewReason.textContent = recommendationReason;
       }
@@ -841,6 +838,9 @@
     const setBusy = (busy) => {
       dialog.setAttribute("aria-busy", String(Boolean(busy)));
       root.classList.toggle("mnw-wine-finder--busy", Boolean(busy));
+      budgetImprovementElement?.querySelectorAll("button").forEach((button) => {
+        button.disabled = Boolean(busy);
+      });
     };
 
     const focusCurrentWizardStep = () => {
@@ -1056,7 +1056,10 @@
       const difference = Math.max(0, suggested - requested);
       statusElement.hidden = true;
       errorElement.hidden = true;
-      budgetGuidanceCopy.textContent = `We do not have enough exact matches in stock. A complete alternative selection starts at ${formatter.format(suggested)}${difference > 0 ? ` — ${formatter.format(difference)} above your current budget.` : "."}`;
+      budgetGuidanceCopy.textContent = t("widget.budget.guidance_start", "We cannot put together everything you asked for from the wines in stock. An alternative selection starts at {amount}{difference}.", {
+        amount: formatter.format(suggested),
+        difference: difference > 0 ? t("widget.budget.guidance_difference", " — {amount} above your current budget", { amount: formatter.format(difference) }) : ""
+      });
       setSuggestedBudget(suggested, trySuggestedBudgetButton);
       budgetGuidance.hidden = false;
       budgetGuidance.focus({ preventScroll: true });
@@ -1091,9 +1094,77 @@
       requestMatch.hidden = summaryTags.length === 0 && unmet.length === 0;
       const partial = substituteTags.length > 0 || unmet.length > 0;
       requestMatch.classList.toggle("mnw-wine-finder__request-match--partial", partial);
-      requestMatchTitle.textContent = "Matched to your request";
+      requestMatchTitle.textContent = "Chosen for you";
       requestMatchUnmet.hidden = unmet.length === 0;
       requestMatchUnmetCopy.textContent = unmet.join("; ");
+    };
+
+    const renderBudgetImprovement = () => {
+      if (!budgetImprovementElement) return;
+      budgetImprovementElement.replaceChildren();
+      budgetImprovementElement.hidden = true;
+      const improvement = currentSelectionMode === "exact"
+        ? validateBudgetImprovement(currentRecommendation, currentRequest, currencyPrecision) : null;
+      if (!improvement) return;
+      const selected = getSelectedWineIds(resultsElement);
+      if (selected.size !== improvement.selectedWineIds.length
+          || !improvement.selectedWineIds.every((id) => selected.has(String(id)))) return;
+      const money = createCurrencyFormatter(currentRecommendation.currency || storeCurrency, currencyPrecision);
+      const heading = document.createElement("h3");
+      heading.textContent = t("widget.tolerance.title", "Why we'd go {above} over budget", {
+        above: money.format(improvement.aboveBudgetAmount)
+      });
+      budgetImprovementElement.append(heading);
+      for (const change of improvement.changes) {
+        const oldWine = improvement.wines.find((wine) => String(wine.sommWineId) === String(change.replacedWineId));
+        const newWine = currentRecommendation.wines.find((wine) => String(wine.sommWineId) === String(change.replacementWineId));
+        const comparison = document.createElement("p");
+        comparison.textContent = t("widget.tolerance.comparison",
+          "For {extra} more, we'd go with {chosen} ({chosenPrice}) rather than {current} ({currentPrice}).", {
+            current: oldWine.title, currentPrice: money.format(oldWine.price),
+            chosen: newWine.title, chosenPrice: money.format(newWine.price), extra: money.format(change.addedCost)
+          });
+        const reason = document.createElement("p");
+        reason.textContent = change.explanation;
+        budgetImprovementElement.append(comparison, reason);
+      }
+      const totals = document.createElement("p");
+      totals.className = "mnw-wine-finder__improvement-total";
+      totals.textContent = t("widget.tolerance.total",
+        "These wines come to {total}, which is {above} over your {budget} budget. The original selection costs {baseline}.", {
+          total: money.format(improvement.total), above: money.format(improvement.aboveBudgetAmount),
+          budget: money.format(currentRequest.budget), baseline: money.format(improvement.originalTotal)
+        });
+      const actions = document.createElement("div");
+      actions.className = "mnw-wine-finder__improvement-actions";
+      const withinBudget = document.createElement("button");
+      withinBudget.type = "button";
+      withinBudget.className = "mnw-wine-finder__secondary-button";
+      withinBudget.textContent = t("widget.tolerance.keep_budget", "Keep to my {budget} budget", {
+        budget: money.format(currentRequest.budget)
+      });
+      withinBudget.disabled = requestInFlight();
+      withinBudget.addEventListener("click", () => {
+        if (requestInFlight() || currentSelectionMode !== "exact") return;
+        const selectedNow = getSelectedWineIds(resultsElement);
+        if (selectedNow.size !== improvement.selectedWineIds.length
+            || !improvement.selectedWineIds.every((id) => selectedNow.has(String(id)))) return;
+        const baseline = chooseWithinBudgetSelection(currentRecommendation, currentRequest, currencyPrecision);
+        if (!baseline) { renderBudgetImprovement(); return; }
+        previousRefinement = createRefinementSnapshot(currentRecommendation, currentRequest,
+          currentSelectionMode, selectedNow);
+        currentRecommendation = baseline.recommendation;
+        currentRequest = baseline.request; // Original target unchanged; future refinements are strict.
+        dismissRefinementBudgetConfirmation();
+        showRecommendationSelection("exact");
+        if (refineUndo) { refineUndo.hidden = false; refineUndo.focus({ preventScroll: true }); }
+        announceRefinement(t("widget.tolerance.kept_budget", "We have kept it within your {budget} budget.", {
+          budget: money.format(currentRequest.budget)
+        }));
+      });
+      actions.append(withinBudget);
+      budgetImprovementElement.append(totals, actions);
+      budgetImprovementElement.hidden = false;
     };
 
     const showRecommendationSelection = (mode) => {
@@ -1115,7 +1186,7 @@
       currentRecommendation.summary = selection.summary;
 
       const currency = currentRecommendation.currency || storeCurrency;
-      const formatter = createCurrencyFormatter(currency);
+      const formatter = createCurrencyFormatter(currency, currencyPrecision);
       const requestedBudget = Number(currentRequest?.budget || currentRecommendation.requestedBudget || 0);
       const exactTotal = Number(currentRecommendation.exactSelection?.total || 0);
       const derivedOverBudget = Number.isFinite(requestedBudget)
@@ -1131,9 +1202,19 @@
         || selectionStatus === "ALTERNATIVE_ONLY_OVER_BUDGET"
         || derivedOverBudget;
       currentRecommendation.overBudget = exactOverBudget;
+      const appliedImprovement = currentSelectionMode === "exact"
+        ? validateBudgetImprovement(currentRecommendation, currentRequest, currencyPrecision) : null;
+      if (appliedImprovement) {
+        currentRecommendation.budgetToleranceAllowance = {
+          requestedBudget, selectedTotal: appliedImprovement.total,
+          maximumTotal: appliedImprovement.maximumTotal, tolerancePercent: appliedImprovement.tolerancePercent
+        };
+      }
+      const withinTolerance = currentSelectionMode === "exact"
+        && toleranceSwapAllowed(currentRecommendation, currentRequest, currencyPrecision);
       const allowSwap = currentSelectionMode === "exact"
         && selectionStatus !== "ALTERNATIVE_ONLY"
-        && !exactOverBudget;
+        && (!exactOverBudget || withinTolerance);
 
       renderWines(
         resultsElement,
@@ -1162,6 +1243,7 @@
         addSelectedLabel
       });
       renderRequestMatch(selection);
+      renderBudgetImprovement();
       setRetryBudgetChoices(requestedBudget);
 
       if (!budgetNotice || !budgetNoticeTitle || !budgetNoticeCopy) return;
@@ -1171,16 +1253,34 @@
         const underBudget = Math.max(0, requestedBudget - alternativeTotal);
         budgetNotice.hidden = false;
         budgetNotice.dataset.mnwBudgetState = "alternative";
-        budgetNoticeTitle.textContent = "Closest alternatives";
+        budgetNoticeTitle.textContent = "Other wines to consider";
         budgetNoticeCopy.textContent = recommendationNoticeCopy(
           selection,
-          `We replaced unavailable or expensive exact matches with similar styles. Total ${formatter.format(alternativeTotal)}${underBudget > 0.0001 ? ` — ${formatter.format(underBudget)} under budget.` : "."}`
+          t("widget.alternative.replaced", "We have chosen alternatives for the wines we could not include. Total {total}{difference}.", {
+            total: formatter.format(alternativeTotal),
+            difference: underBudget > 0.0001 ? t("widget.alternative.under_difference", " — {amount} under budget", { amount: formatter.format(underBudget) }) : ""
+          })
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) {
           showExactSelectionButton.hidden = false;
-          showExactSelectionButton.textContent = `Show exact ${formatter.format(exactTotal)} selection`;
+          showExactSelectionButton.textContent = t("widget.alternative.show_exact", "Back to the {amount} selection", { amount: formatter.format(exactTotal) });
         }
+        return;
+      }
+
+      if (withinTolerance) {
+        budgetNotice.hidden = false;
+        budgetNotice.dataset.mnwBudgetState = "tolerance";
+        budgetNoticeTitle.textContent = t("widget.tolerance.notice_title", "Why we'd spend more");
+        budgetNoticeCopy.textContent = t("widget.tolerance.notice",
+          "These wines come to {total}, which is {above} over your {budget} budget.", {
+            total: formatter.format(Number(selection.total)),
+            above: formatter.format(Math.max(0, Number(selection.total) - requestedBudget)),
+            budget: formatter.format(requestedBudget)
+          });
+        if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
+        if (showExactSelectionButton) showExactSelectionButton.hidden = true;
         return;
       }
 
@@ -1188,13 +1288,15 @@
         budgetNotice.hidden = false;
         budgetNotice.dataset.mnwBudgetState = exactOverBudget ? "over" : "alternative";
         budgetNoticeTitle.textContent = exactOverBudget
-          ? "Closest complete selection"
-          : "Considered substitutions";
+          ? "Another selection to consider"
+          : "A note about your wines";
         budgetNoticeCopy.textContent = recommendationNoticeCopy(
           selection,
           exactOverBudget
-            ? `We do not have enough exact matches in stock. This selection is ${formatter.format(Number(selection.total || 0))} — ${formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))} over your ${formatter.format(requestedBudget)} budget.`
-            : "We could not match every preference exactly, so we chose the closest suitable alternatives within budget."
+            ? t("widget.alternative.not_enough_exact", "We could not include everything you asked for. These wines cost {total}, which is {difference} over your {budget} budget.", {
+                total: formatter.format(Number(selection.total || 0)), difference: formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget)), budget: formatter.format(requestedBudget)
+              })
+            : "We could not give you everything you asked for at this price. These alternatives stay within your budget."
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
@@ -1202,15 +1304,18 @@
       }
 
       if (consideredSubstitutions) {
-        budgetNotice.hidden = false;
-        budgetNotice.dataset.mnwBudgetState = exactOverBudget ? "over" : "alternative";
-        budgetNoticeTitle.textContent = "Considered substitutions";
-        budgetNoticeCopy.textContent = recommendationNoticeCopy(
-          selection,
+        // The requirement pills already identify any unmet wish. Show an extra panel
+        // only for an actual explanation or a monetary disclosure, not a blanket warning.
+        const note = substitutionNoticeCopy(selection, exactOverBudget,
           exactOverBudget
-            ? `These are the closest suitable alternatives from current stock. The total is ${formatter.format(Number(selection.total || 0))} — ${formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))} over budget.`
-            : "Some exact matches were unavailable, so we chose the closest suitable alternatives and stayed within budget."
-        );
+            ? t("widget.alternative.closest_over", "These alternatives cost {total}, which is {difference} over budget.", {
+                total: formatter.format(Number(selection.total || 0)), difference: formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget))
+              })
+            : "");
+        budgetNotice.hidden = !note;
+        budgetNotice.dataset.mnwBudgetState = exactOverBudget ? "over" : "alternative";
+        budgetNoticeTitle.textContent = "A note about your wines";
+        budgetNoticeCopy.textContent = note;
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
         return;
@@ -1226,9 +1331,11 @@
       const difference = Number(currentRecommendation.budgetDifference || Math.max(0, exactTotal - requestedBudget));
       budgetNotice.hidden = false;
       budgetNotice.dataset.mnwBudgetState = "over";
-      budgetNoticeTitle.textContent = "Exact matches are over budget";
+      budgetNoticeTitle.textContent = "These wines are over budget";
 
-      let notice = `Exact matches total ${formatter.format(exactTotal)} — ${formatter.format(difference)} over your ${formatter.format(requestedBudget)} budget.`;
+      let notice = t("widget.budget.exact_total", "These wines cost {total}, which is {difference} over your {budget} budget.", {
+        total: formatter.format(exactTotal), difference: formatter.format(difference), budget: formatter.format(requestedBudget)
+      });
       if (alternative) {
         const alternativeTotal = Number(alternative.total || 0);
         notice += ` A similar option is ${formatter.format(alternativeTotal)}.`;
@@ -1399,6 +1506,8 @@
       try {
         const payload = readRecommendationForm(form, configuredCategories);
         payload.sessionId = pageSessionId;
+        visitId = getOrCreateVisitId(endpoint);
+        payload.visitId = visitId;
         payload.locale = widgetUiLocale;
         validateRecommendationPayload(
           payload,
@@ -1424,6 +1533,9 @@
           throw new Error("No suitable wines were found for those answers. Try a slightly larger budget or different mix.");
         }
         if (!result.sessionId) throw new Error("The wine finder response was incomplete. Please try again.");
+        // A replay returns the original billable session. All follow-up actions/cart attribution use it.
+        pageSessionId = result.sessionId;
+        payload.sessionId = result.sessionId;
 
         storeCurrency = normaliseCurrencyCode(result.currency || storeCurrency);
         result.currency = storeCurrency;
@@ -1495,7 +1607,7 @@
         allowBudgetProposal = true
       } = {}
     ) => {
-      if (!swapEndpoint || !currentRecommendation || !currentRequest || swapInFlight || cartInFlight) return;
+      if (!swapEndpoint || !currentRecommendation || !currentRequest || requestInFlight()) return;
 
       const selectedIds = getSelectedWineIds(resultsElement);
       const originalLabel = trigger?.textContent || "Swap";
@@ -1525,6 +1637,8 @@
         currentRecommendation.wines = currentRecommendation.wines.map((wine) =>
           String(wine.sommWineId) === String(wineToReplace.sommWineId) ? response.wine : wine
         );
+        // A previously calculated offer is no longer valid after a manual swap.
+        currentRecommendation.budgetImprovement = null;
         currentRecommendation.total = response.total;
         currentRecommendation.sessionId = response.sessionId || currentRecommendation.sessionId;
         currentRecommendation.recommendationToken = response.recommendationToken || currentRecommendation.recommendationToken;
@@ -1586,7 +1700,7 @@
     const dismissRefinementBudgetConfirmation = () => {
       pendingRefinementBudgetProposal = null;
       if (refinementBudgetConfirmation) refinementBudgetConfirmation.hidden = true;
-      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This refinement is a little over budget";
+      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This change would cost more";
       if (refinementBudgetCopy) refinementBudgetCopy.textContent = "";
     };
 
@@ -1615,7 +1729,7 @@
         clearInput: Boolean(clearInput)
       };
       if (refineStatus) refineStatus.hidden = true;
-      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This refinement is a little over budget";
+      if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This change would cost more";
       refinementBudgetCopy.textContent = proposal.prompt;
       acceptRefinementBudgetLabel.textContent = proposal.acceptLabel;
       refinementBudgetConfirmation.hidden = false;
@@ -1663,15 +1777,15 @@
     const submitRefinementRequest = async ({
       instruction,
       request = currentRequest,
-      progressMessage = "Refining your current selection…",
-      pendingLabel = "Refining…",
-      successMessage = "Your selection has been refined.",
+      progressMessage = "Choosing your wines again…",
+      pendingLabel = "Making changes…",
+      successMessage = "Your wines have been updated.",
       clearInput = false,
       synchroniseBudgetInput = false,
       refinementMode = "FREE_TEXT"
     }) => {
       if (!refineEndpoint || !currentRecommendation || !currentRequest || !request
-          || refinementInFlight || recommendationInFlight || cartInFlight) return false;
+          || requestInFlight()) return false;
 
       const snapshot = createRefinementSnapshot(
         currentRecommendation,
@@ -1681,7 +1795,7 @@
       );
       refinementInFlight = true;
       setBusy(true);
-      const originalLabel = refineLabel?.textContent || "Refine";
+      const originalLabel = refineLabel?.textContent || "Make changes";
       setRefinementControlsBusy(true);
       if (refineLabel) refineLabel.textContent = pendingLabel;
       announceRefinement(progressMessage);
@@ -1697,7 +1811,7 @@
             refinementMode
           )),
           cache: "no-store"
-        }, REQUEST_TIMEOUT_MS, "The refinement took too long. Your current selection has been kept.");
+        }, REQUEST_TIMEOUT_MS, "That took too long. We have kept your current wines.");
 
         validateRefinementResponse(result, configuredCategories);
         if (refinementMode === "BUDGET_ONLY") {
@@ -1766,7 +1880,7 @@
         return;
       }
       if (instruction.length > MAX_REFINEMENT_LENGTH) {
-        announceRefinement(`Keep the refinement to ${MAX_REFINEMENT_LENGTH} characters or fewer.`, true);
+        announceRefinement(t("widget.refine.character_limit", "Please keep your message to {max} characters or fewer.", { max: MAX_REFINEMENT_LENGTH }), true);
         refineInput?.focus({ preventScroll: true });
         return;
       }
@@ -1811,22 +1925,29 @@
       }
     });
 
+    resultsElement?.addEventListener("change", (event) => {
+      if (event.target?.matches("[data-mnw-wine-checkbox]")) renderBudgetImprovement();
+    });
+
     refineUndo?.addEventListener("click", () => {
-      if (!previousRefinement || refinementInFlight || cartInFlight) return;
+      if (!previousRefinement || requestInFlight()) return;
       const snapshot = previousRefinement;
       dismissRefinementBudgetConfirmation();
       previousRefinement = null;
       currentRecommendation = snapshot.recommendation;
       currentRequest = snapshot.request;
+      budgetEdited = true;
+      budgetInput.value = String(currentRequest.budget);
       showRecommendationSelection(snapshot.selectionMode);
       restoreSelectedWineIds(resultsElement, snapshot.selectedIds);
       refreshCurrentSelectedState();
       refineUndo.hidden = true;
-      announceRefinement("The most recent refinement was undone.");
+      renderBudgetImprovement();
+      announceRefinement("Last change undone.");
     });
 
     addSelectedButton.addEventListener("click", async () => {
-      if (!currentRecommendation || cartInFlight) return;
+      if (!currentRecommendation || requestInFlight()) return;
       const selectedWines = getSelectedWines(resultsElement, currentRecommendation.wines);
       if (selectedWines.length === 0) return;
 
@@ -2005,6 +2126,9 @@
     return {
       bottleCount: Number(data.get("bottleCount")),
       budget: Number(data.get("budget")),
+      // Merchant tolerance applies to every new selection; no shopper opt-in control.
+      // Do not inherit a removed checkbox from autofill/cached markup.
+      strictBudget: false,
       numberRed: Number(categoryCounts.red || 0),
       numberWhite: Number(categoryCounts.white || 0),
       numberSparkling: Number(categoryCounts.sparkling || 0),
@@ -2056,27 +2180,6 @@
     if (payload.usualWines.length > MAX_FREE_TEXT_LENGTH || payload.foodPairings.length > MAX_FREE_TEXT_LENGTH) {
       throw new Error("One of your answers is too long.");
     }
-  };
-
-  const fallbackRecommendationReason = (request, selectionStatus) => {
-    const status = String(selectionStatus || "").trim().toUpperCase();
-    if (status === "ALTERNATIVE_ONLY"
-        || status === "CONSIDERED_SUBSTITUTIONS"
-        || status === "CONSIDERED_SUBSTITUTIONS_OVER_BUDGET") {
-      return t("widget.reason.closest", "Chosen as the closest suitable alternative to your requested wines, within this shop's current range.");
-    }
-    const usualWines = String(request?.usualWines || "").trim();
-    const foodPairings = String(request?.foodPairings || "").trim();
-    if (usualWines && foodPairings) {
-      return t("widget.reason.preferences_food", "Chosen to fit your wine preferences and the food you described.");
-    }
-    if (usualWines) {
-      return t("widget.reason.preferences", "Chosen to match the wine preferences and style you described as closely as possible.");
-    }
-    if (foodPairings) {
-      return t("widget.reason.food", "Chosen with the food pairing you described in mind.");
-    }
-    return t("widget.reason.balance", "Chosen for balance, value and fit with the rest of your selection.");
   };
 
   const renderWines = (
@@ -2162,7 +2265,7 @@
       content.append(title, meta, price);
 
       const recommendationReason = directAddressRecommendationCopy(
-        wine.recommendationReason || fallbackRecommendationReason(request, selectionStatus)
+        wine.recommendationReason || ""
       );
       const recommendationTags = recommendationTagsForWine(wine);
       if (recommendationReason || recommendationTags.length > 0) {
@@ -2176,15 +2279,17 @@
           reason.appendChild(reasonTags);
         }
 
-        const reasonLabel = document.createElement("span");
-        reasonLabel.className = "mnw-wine-card__reason-label";
-        reasonLabel.textContent = "Why we picked it";
-        reason.appendChild(reasonLabel);
+        if (recommendationReason) {
+          const reasonLabel = document.createElement("span");
+          reasonLabel.className = "mnw-wine-card__reason-label";
+          reasonLabel.textContent = "Why we picked it";
+          reason.appendChild(reasonLabel);
 
-        const reasonCopy = document.createElement("p");
-        reasonCopy.className = "mnw-wine-card__reason-copy";
-        reasonCopy.textContent = recommendationReason;
-        reason.appendChild(reasonCopy);
+          const reasonCopy = document.createElement("p");
+          reasonCopy.className = "mnw-wine-card__reason-copy";
+          reasonCopy.textContent = recommendationReason;
+          reason.appendChild(reasonCopy);
+        }
         content.appendChild(reason);
       }
 
@@ -2453,6 +2558,132 @@
     return JSON.parse(JSON.stringify(value));
   };
 
+  // The backend has ALREADY selected the better basket. This validates the
+  // explanation/fallback; it never promotes a client-side upgrade or changes the budget.
+  const validateBudgetImprovement = (recommendation, request, precision = 2) => {
+    try {
+      const improvement = recommendation?.budgetImprovement;
+      const selected = recommendation?.wines;
+      const baseline = improvement?.wines;
+      if (!improvement || improvement.appliedToMainSelection !== true || request?.strictBudget === true
+          || !Array.isArray(selected) || !selected.length || !Array.isArray(baseline)
+          || baseline.length !== selected.length || !Array.isArray(improvement.baseWineIds)
+          || !Array.isArray(improvement.selectedWineIds) || !Array.isArray(improvement.changes)
+          || !improvement.changes.length || improvement.changes.length > selected.length
+          || !Number.isInteger(precision) || precision < 0 || precision > 4) return null;
+      const factor = 10 ** precision;
+      const minor = (value) => {
+        if (value === null || value === undefined || value === "") return NaN;
+        const scaled = Number(value) * factor;
+        const rounded = Math.round(scaled);
+        return Number.isSafeInteger(rounded) && Math.abs(scaled - rounded) < 0.00001 ? rounded : NaN;
+      };
+      const ids = (wines) => wines.map((wine) => String(wine.sommWineId));
+      const validWine = (wine) => wine && Number.isSafeInteger(Number(wine.sommWineId))
+        && Number(wine.sommWineId) > 0 && /^\d+$/.test(String(wine.variantId || ""))
+        && String(wine.title || "").trim() && Number.isSafeInteger(minor(wine.price)) && minor(wine.price) > 0;
+      if (!selected.every(validWine) || !baseline.every(validWine)) return null;
+      const sameIds = (actual, declared) => actual.length === declared.length
+        && new Set(actual).size === actual.length && new Set(declared.map(String)).size === declared.length
+        && declared.every((id) => actual.includes(String(id)));
+      if (!sameIds(ids(selected), improvement.selectedWineIds)
+          || !sameIds(ids(baseline), improvement.baseWineIds)) return null;
+      const before = new Map(baseline.map((wine) => [String(wine.sommWineId), wine]));
+      const after = new Map(selected.map((wine) => [String(wine.sommWineId), wine]));
+      const removed = new Set();
+      const inserted = new Set();
+      let changedCost = 0;
+      for (const change of improvement.changes) {
+        const from = String(change?.replacedWineId);
+        const to = String(change?.replacementWineId);
+        const oldWine = before.get(from);
+        const newWine = after.get(to);
+        if (!oldWine || !newWine || after.has(from) || before.has(to)
+            || removed.has(from) || inserted.has(to) || !String(change.explanation || "").trim()) return null;
+        const extra = minor(newWine.price) - minor(oldWine.price);
+        if (extra <= 0 || minor(change.addedCost) !== extra) return null;
+        changedCost += extra;
+        removed.add(from); inserted.add(to);
+      }
+      for (const [id, wine] of before) {
+        if (removed.has(id)) continue;
+        const retained = after.get(id);
+        if (!retained || String(wine.variantId) !== String(retained.variantId)
+            || minor(wine.price) !== minor(retained.price)) return null;
+      }
+      if ([...after.keys()].some((id) => !before.has(id) && !inserted.has(id))) return null;
+      const budget = minor(request?.budget ?? recommendation.requestedBudget);
+      const baseTotal = baseline.reduce((sum, wine) => sum + minor(wine.price), 0);
+      const total = selected.reduce((sum, wine) => sum + minor(wine.price), 0);
+      const percent = improvement.tolerancePercent;
+      const maximum = minor(improvement.maximumTotal);
+      if (![budget, baseTotal, total, changedCost, maximum].every(Number.isSafeInteger)
+          || budget <= 0 || baseTotal > budget || total <= budget
+          || !Number.isInteger(percent) || percent < 1 || percent > 20
+          || total > maximum || maximum > Math.floor(budget * (100 + percent) / 100)
+          || minor(recommendation.total) !== total || minor(recommendation.requestedBudget) !== budget
+          || minor(improvement.originalTotal) !== baseTotal || minor(improvement.total) !== total
+          || total - baseTotal !== changedCost || minor(improvement.addedCost) !== changedCost
+          || minor(improvement.aboveBudgetAmount) !== total - budget
+          || !Array.isArray(improvement.matchedPreferences) || !Array.isArray(improvement.unmetPreferences)
+          // No named preferences/foods can legitimately produce an empty semantic ledger.
+          || typeof improvement.requirementInterpretation !== "string") return null;
+      return improvement;
+    } catch (_) {
+      return null; // Malformed comparison metadata cannot destroy the server's main selection.
+    }
+  };
+
+  const chooseWithinBudgetSelection = (recommendation, request, precision = 2) => {
+    const improvement = validateBudgetImprovement(recommendation, request, precision);
+    if (!improvement) return null;
+    const fixedRequest = { ...clonePlainData(request), strictBudget: true };
+    const baseline = {
+      ...clonePlainData(recommendation),
+      summary: improvement.summary,
+      total: improvement.originalTotal,
+      requestedBudget: fixedRequest.budget,
+      overBudget: false,
+      budgetDifference: 0,
+      requirementInterpretation: improvement.requirementInterpretation,
+      selectionStatus: improvement.selectionStatus,
+      customerMessage: improvement.customerMessage,
+      matchedPreferences: clonePlainData(improvement.matchedPreferences),
+      unmetPreferences: clonePlainData(improvement.unmetPreferences),
+      wines: clonePlainData(improvement.wines),
+      budgetAlternative: null,
+      budgetImprovement: null,
+      budgetToleranceAllowance: null,
+      refinedRequest: fixedRequest
+    };
+    baseline.exactSelection = {
+      summary: baseline.summary, total: baseline.total,
+      explanation: String(baseline.customerMessage || "").trim(),
+      matchedPreferences: baseline.matchedPreferences,
+      unmetPreferences: baseline.unmetPreferences, wines: baseline.wines
+    };
+    return { recommendation: baseline, request: fixedRequest };
+  };
+
+  // After an equal/cheaper swap the comparison may be stale, but swapping may remain available.
+  // The backend independently checks live prices, merchant limits and non-increasing spend.
+  const toleranceSwapAllowed = (recommendation, request, precision = 2) => {
+    const allowance = recommendation?.budgetToleranceAllowance;
+    if (!allowance || request?.strictBudget === true || !Number.isInteger(precision)
+        || precision < 0 || precision > 4) return false;
+    const factor = 10 ** precision;
+    const minor = (value) => Math.round(Number(value) * factor);
+    const budget = minor(request?.budget);
+    const total = minor(recommendation?.total);
+    const maximum = minor(allowance.maximumTotal);
+    const initialTotal = minor(allowance.selectedTotal);
+    return [budget, total, maximum, initialTotal].every(Number.isSafeInteger)
+      && budget > 0 && total > budget && minor(allowance.requestedBudget) === budget
+      && Number.isInteger(allowance.tolerancePercent) && allowance.tolerancePercent >= 1
+      && allowance.tolerancePercent <= 20 && total <= initialTotal && initialTotal <= maximum
+      && maximum <= Math.floor(budget * (100 + allowance.tolerancePercent) / 100);
+  };
+
   const createRefinementSnapshot = (recommendation, request, selectionMode, selectedIds) => ({
     recommendation: clonePlainData(recommendation),
     request: clonePlainData(request),
@@ -2474,6 +2705,7 @@
       occasion: request.occasion,
       style: request.style,
       budget: request.budget,
+      strictBudget: request.strictBudget === true,
       numberRed: request.numberRed,
       numberWhite: request.numberWhite,
       numberSparkling: request.numberSparkling,
@@ -2553,7 +2785,7 @@
 
   const validateRefinementResponse = (result, configuredCategories = null) => {
     if (!result || !result.sessionId || !result.refinedRequest) {
-      throw new Error("The refinement response was incomplete. Your current selection has been kept.");
+      throw new Error("We could not finish that change. We have kept your current wines.");
     }
     const wines = Array.isArray(result.wines) ? result.wines : [];
     const bottleCount = Number(result.refinedRequest.bottleCount);
@@ -2566,7 +2798,7 @@
           || configuredCategories.some((category) => !refinedCategoryKeys.includes(category))
           || Object.values(refinedCounts).some((count) => !Number.isInteger(Number(count)) || Number(count) < 0)
           || Object.values(refinedCounts).reduce((sum, count) => sum + Number(count), 0) !== bottleCount)) {
-      throw new Error("The refinement changed an unavailable bottle category. Your current selection has been kept.");
+      throw new Error("That change included a wine type this shop does not offer. We have kept your current wines.");
     }
     const ids = wines.map((wine) => String(wine?.sommWineId || ""));
     if (!Number.isInteger(bottleCount)
@@ -2574,7 +2806,7 @@
         || ids.some((id) => !/^\d+$/.test(id))
         || new Set(ids).size !== ids.length
         || wines.some((wine) => !Number.isFinite(Number(wine?.price)) || Number(wine.price) <= 0)) {
-      throw new Error("The refinement response was invalid. Your current selection has been kept.");
+      throw new Error("We could not make that change. We have kept your current wines.");
     }
     return true;
   };
@@ -2625,7 +2857,9 @@
       formattedRequestedBudget,
       formattedSuggestedBudget,
       formattedDifference,
-      prompt: `That refinement would need ${formattedSuggestedBudget}, ${formattedDifference} above your current ${formattedRequestedBudget} budget. Is that okay?`,
+      prompt: t("widget.refine.budget_question", "That change would cost {suggested}, which is {difference} above your {current} budget. Is that okay?", {
+        suggested: formattedSuggestedBudget, difference: formattedDifference, current: formattedRequestedBudget
+      }),
       acceptLabel: `Yes, use ${formattedSuggestedBudget}`
     };
   };
@@ -2693,10 +2927,10 @@
         currencyPrecision,
         locale
       ).format(suggestedBudget);
-      return `That exact refinement needs at least ${formatted}. Your current selection has been kept.`;
+      return t("widget.refine.exact_needs", "That change needs at least {amount}. We have kept your current wines.", { amount: formatted });
     }
     const message = String(
-      error?.message || "We could not refine that selection."
+      error?.message || "We could not make that change."
     ).trim();
     return /current selection has been kept/i.test(message)
       ? message
@@ -2786,6 +3020,25 @@
   const createPageSessionId = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
     return `wf-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
+
+  // Per-tab, first-party identity only. No preferences, wine selections or customer details are stored here.
+  const visitIdsInMemory = new Map();
+  const getOrCreateVisitId = (scope) => {
+    const key = `mnw:visit:v1:${String(scope || "widget").split("?")[0]}`;
+    const now = Date.now();
+    const valid = (value) => value && /^[A-Za-z0-9._:-]{8,100}$/.test(value.id || "")
+      && Number.isFinite(value.createdAt) && value.createdAt <= now
+      && now - value.createdAt < 24 * 60 * 60 * 1000;
+    let stored = visitIdsInMemory.get(key);
+    try {
+      const candidate = JSON.parse(window.sessionStorage.getItem(key) || "null");
+      if (valid(candidate)) stored = candidate;
+    } catch (_) { /* Storage may be blocked. Keep this page's in-memory identity. */ }
+    if (!valid(stored)) stored = { id: createPageSessionId(), createdAt: now };
+    visitIdsInMemory.set(key, stored);
+    try { window.sessionStorage.setItem(key, JSON.stringify(stored)); } catch (_) { /* Page-only fallback. */ }
+    return stored.id;
   };
 
   const createEventId = (prefix) => `${String(prefix || "event")}:${createPageSessionId()}`.slice(0, 100);
@@ -3086,12 +3339,12 @@
       const chip = document.createElement("span");
       chip.className = `mnw-recommendation-tag mnw-recommendation-tag--${tag.type.toLowerCase()}`;
       chip.textContent = tag.type === "SUBSTITUTE"
-        ? t("widget.recommendation.substitute", "Sub: {label}", { label: tag.label })
+        ? t("widget.recommendation.substitute", "Instead of: {label}", { label: tag.label })
         : tag.label;
       if (tag.type === "SUBSTITUTE") {
         chip.title = t(
           "widget.recommendation.substitute_title",
-          "Considered substitute for {label}",
+          "An alternative for {label}",
           { label: tag.label }
         );
       }
@@ -3130,6 +3383,22 @@
   const recommendationNoticeCopy = (selection, fallback) => {
     const explanation = String(selection?.explanation || "").replace(/\s+/g, " ").trim();
     return explanation || String(fallback || "").trim();
+  };
+
+  const substitutionNoticeCopy = (selection, overBudget, monetaryFallback) => {
+    const explanation = String(selection?.explanation || "").replace(/\s+/g, " ").trim();
+    const generic = new Set([
+      "there are a few compromises here. please check the notes before adding these wines to your basket.",
+      "one or more requests could not be matched exactly, so the closest safe selection is shown honestly.",
+      "we have stayed within your budget, with the compromises noted above.",
+      "hier gibt es einige kompromisse. bitte lesen sie die hinweise, bevor sie die weine in den warenkorb legen.",
+      "il y a quelques compromis. consultez les précisions avant d’ajouter ces vins au panier.",
+      "há alguns compromissos. leia as notas antes de adicionar estes vinhos ao carrinho."
+    ]);
+    const specific = generic.has(explanation.toLowerCase()) ? "" : explanation;
+    // Never lose the monetary disclosure merely because a specific caveat is present.
+    const money = overBudget ? String(monetaryFallback || "").trim() : "";
+    return [money, specific && specific !== money ? specific : ""].filter(Boolean).join(" ");
   };
 
   const applyCategoryConfiguration = (root, inputs, categories) => {
@@ -3548,6 +3817,7 @@
       preserveBudgetOnlyRequestState,
       preserveRetainedRecommendationEvidence,
       recommendationNoticeCopy,
+      substitutionNoticeCopy,
       readRecommendationForm,
       refinementFailureMessage,
       refinementExamples,
@@ -3555,6 +3825,9 @@
       selectionActionState,
       stableVisualPhase,
       trapModalFocus,
+      validateBudgetImprovement,
+      chooseWithinBudgetSelection,
+      toleranceSwapAllowed,
       validateRecommendationPayload,
       validateRefinementResponse
     };

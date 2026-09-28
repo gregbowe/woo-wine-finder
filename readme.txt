@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.34
+Stable tag: 1.0.40
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,27 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.40 =
+* Only show a substitution panel for a concrete explanation; retain unmet-request pills and price disclosures.
+
+= 1.0.39 =
+* Plain wine-shop wording for shopper messages, notices and controls.
+* Keep validated notes and compromise tags; omit empty generic explanation paragraphs.
+
+= 1.0.38 =
+* Removed the initial budget-lock checkbox; merchant tolerance applies automatically to new selections.
+* Clear good-wine/better-wine price comparisons, with actual extra cost and the backend's explanation.
+
+= 1.0.36 =
+* Put materially better wines directly in the main selection within the configured whole-basket tolerance.
+* Support several explained improvements, an unchanged stated budget and a strict-budget fallback.
+* Preserve request continuity and signed cart products through refinements, swaps and Undo.
+
+= 1.0.35 =
+* Optional merchant-configured, consent-based budget improvements with exact price differences.
+* Preserve wine-request continuity, cart tokens and undo when accepting a better-match bottle.
+
 
 = 1.0.34 =
 * Added bundled Portuguese (Portugal) merchant translations, independent of WordPress.org translation approval.

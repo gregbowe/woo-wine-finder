@@ -226,7 +226,7 @@ final class MyNextWine_Woo_REST_Controller {
         if (isset($payload['wines']) && is_array($payload['wines'])) {
             $payload['wines'] = $this->with_local_wine_image_list($payload['wines']);
         }
-        foreach (array('exactSelection', 'budgetAlternative') as $selection_key) {
+        foreach (array('exactSelection', 'budgetAlternative', 'budgetImprovement') as $selection_key) {
             if (isset($payload[$selection_key])
                 && is_array($payload[$selection_key])
                 && isset($payload[$selection_key]['wines'])
