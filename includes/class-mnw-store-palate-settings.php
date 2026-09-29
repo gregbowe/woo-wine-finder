@@ -193,7 +193,7 @@ final class MyNextWine_Woo_Store_Palate_Settings {
                     <label for="mnw-budget-tolerance"><strong><?php echo esc_html__('Budget tolerance (%)', 'my-next-wine-for-woocommerce'); ?></strong></label>
                     <input id="mnw-budget-tolerance" type="number" min="0" max="20" step="1" value="0" required
                            aria-describedby="mnw-budget-tolerance-help" data-mnw-budget-tolerance>
-                    <p id="mnw-budget-tolerance-help"><?php echo esc_html__('0 switches this off. Allow the main recommended basket to exceed the shopper\'s target by up to this percentage only when better-matching wines materially justify the extra cost. Applies to the whole basket, not each bottle. Explain the changes and respect a fixed budget.', 'my-next-wine-for-woocommerce'); ?></p>
+                    <p id="mnw-budget-tolerance-help"><?php echo esc_html__('0 switches optional upgrades off. For a selection that meets the shopper\'s requests and costs at least 90% of their budget, this percentage limits the extra spend on the whole basket. In EUR, each worthwhile bottle upgrade may cost up to 20% or EUR 5 more, whichever is lower. Other currencies retain this percentage as their bottle limit. Explain every extra cost; never spend more without a good reason.', 'my-next-wine-for-woocommerce'); ?></p>
                 </section>
                 <div class="mnw-palate-admin__grid">
                     <section class="mnw-palate-admin__card">

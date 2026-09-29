@@ -1524,3 +1524,11 @@ msgstr "Mostrar o botão de orçamento +10%"
 
 msgid "Show either, both or neither of the budget buttons on the results screen. This does not change budget tolerance."
 msgstr "Mostre um, ambos ou nenhum dos botões de orçamento no ecrã de resultados. A tolerância orçamental mantém-se."
+
+#. Optional bottle and whole-case upgrade caps.
+msgid "0 switches optional upgrades off. For a selection that meets the shopper's requests and costs at least 90% of their budget, allow worthwhile replacements up to this percentage above each original bottle price. The whole selection must also stay within this percentage above the original budget. Explain the extra cost; never spend more without a good reason."
+msgstr "0 desativa as melhorias opcionais. Se uma seleção satisfaz os pedidos do cliente e custa pelo menos 90% do orçamento, permita substituições que valham a pena até esta percentagem acima do preço original de cada garrafa. O total também deve ficar dentro desta percentagem acima do orçamento original. Explique o custo adicional; nunca gaste mais sem uma boa razão."
+
+#. Modest EUR bottle safeguard, separate from the whole-basket percentage.
+msgid "0 switches optional upgrades off. For a selection that meets the shopper's requests and costs at least 90% of their budget, this percentage limits the extra spend on the whole basket. In EUR, each worthwhile bottle upgrade may cost up to 20% or EUR 5 more, whichever is lower. Other currencies retain this percentage as their bottle limit. Explain every extra cost; never spend more without a good reason."
+msgstr "0 desativa as melhorias opcionais. Numa seleção que satisfaz os pedidos do cliente e custa pelo menos 90% do seu orçamento, esta percentagem limita o valor acima do orçamento total. Em EUR, cada substituição justificada pode custar até 20% ou 5 EUR mais por garrafa, consoante o menor valor. Nas outras moedas, esta percentagem mantém-se também como limite por garrafa. Explique cada custo adicional; nunca gaste mais sem uma boa razão."

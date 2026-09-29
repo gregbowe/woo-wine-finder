@@ -1,3 +1,9 @@
+= 1.0.46 =
+* Separate the EUR bottle safeguard (20% / EUR 5) from the merchant whole-basket tolerance; retain other currencies and all existing validation.
+
+= 1.0.45 =
+* Explain useful within-budget upgrades and enforce individual bottle and whole-basket limits.
+
 = 1.0.44 =
 * Retry temporary progress unavailability without submitting another recommendation.
 

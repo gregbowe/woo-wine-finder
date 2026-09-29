@@ -1344,3 +1344,11 @@ msgstr "Budget-Schaltfläche +10 % anzeigen"
 
 msgid "Show either, both or neither of the budget buttons on the results screen. This does not change budget tolerance."
 msgstr "Zeigen Sie auf der Ergebnisseite eine, beide oder keine Budget-Schaltfläche an. Die Budgettoleranz bleibt unverändert."
+
+#. Optional bottle and whole-case upgrade caps.
+msgid "0 switches optional upgrades off. For a selection that meets the shopper's requests and costs at least 90% of their budget, allow worthwhile replacements up to this percentage above each original bottle price. The whole selection must also stay within this percentage above the original budget. Explain the extra cost; never spend more without a good reason."
+msgstr "0 deaktiviert optionale Verbesserungen. Erfüllt eine Auswahl die Kundenwünsche und kostet mindestens 90 % des Budgets, sind sinnvolle Ersatzweine bis zu diesem Prozentsatz über dem ursprünglichen Flaschenpreis erlaubt. Auch die gesamte Auswahl darf das ursprüngliche Budget höchstens um diesen Prozentsatz überschreiten. Erklären Sie die Mehrkosten; ohne guten Grund wird nicht mehr ausgegeben."
+
+#. Modest EUR bottle safeguard, separate from the whole-basket percentage.
+msgid "0 switches optional upgrades off. For a selection that meets the shopper's requests and costs at least 90% of their budget, this percentage limits the extra spend on the whole basket. In EUR, each worthwhile bottle upgrade may cost up to 20% or EUR 5 more, whichever is lower. Other currencies retain this percentage as their bottle limit. Explain every extra cost; never spend more without a good reason."
+msgstr "0 deaktiviert optionale Verbesserungen. Erfüllt die Auswahl die Wünsche des Kunden und kostet mindestens 90 % seines Budgets, begrenzt dieser Prozentsatz die Überschreitung des Gesamtbudgets. Bei Preisen in EUR darf eine sinnvoll bessere Flasche höchstens 20 % oder 5 EUR mehr kosten – es gilt der niedrigere Betrag. Bei anderen Währungen bleibt dieser Prozentsatz auch die Grenze je Flasche. Begründen Sie jeden Aufpreis; geben Sie nie ohne guten Grund mehr aus."

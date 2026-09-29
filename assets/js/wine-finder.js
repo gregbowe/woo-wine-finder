@@ -1338,9 +1338,10 @@
           || !improvement.selectedWineIds.every((id) => selected.has(String(id)))) return;
       const money = createCurrencyFormatter(currentRecommendation.currency || storeCurrency, currencyPrecision);
       const heading = document.createElement("h3");
-      heading.textContent = t("widget.tolerance.title", "Why we'd go {above} over budget", {
-        above: money.format(improvement.aboveBudgetAmount)
-      });
+      const aboveBudget = Number(improvement.aboveBudgetAmount) > 0;
+      heading.textContent = aboveBudget
+        ? t("widget.tolerance.title", "Why we'd go {above} over budget", { above: money.format(improvement.aboveBudgetAmount) })
+        : t("widget.tolerance.within_title", "Why we chose these bottles");
       budgetImprovementElement.append(heading);
       for (const change of improvement.changes) {
         const oldWine = improvement.wines.find((wine) => String(wine.sommWineId) === String(change.replacedWineId));
@@ -1362,6 +1363,17 @@
           total: money.format(improvement.total), above: money.format(improvement.aboveBudgetAmount),
           budget: money.format(currentRequest.budget), baseline: money.format(improvement.originalTotal)
         });
+      if (!aboveBudget) {
+        const under = Number(currentRequest.budget) - Number(improvement.total);
+        totals.textContent = under > 0
+          ? t("widget.tolerance.within_total", "These wines come to {total}, still {under} below your {budget} budget.", {
+              total: money.format(improvement.total), under: money.format(under), budget: money.format(currentRequest.budget)
+            })
+          : t("widget.tolerance.on_total", "These wines come to {total}, exactly your budget.", { total: money.format(improvement.total) });
+        budgetImprovementElement.append(totals);
+        budgetImprovementElement.hidden = false;
+        return; // No misleading 'keep to budget' action when this case already does.
+      }
       const actions = document.createElement("div");
       actions.className = "mnw-wine-finder__improvement-actions";
       const withinBudget = document.createElement("button");
@@ -2829,6 +2841,13 @@
       const after = new Map(selected.map((wine) => [String(wine.sommWineId), wine]));
       const removed = new Set();
       const inserted = new Set();
+      const percent = improvement.tolerancePercent;
+      if (!Number.isInteger(percent) || percent < 1 || percent > 20) return null;
+      // Currency, not locale: EUR has the agreed 20% / EUR 5 safeguard. Other currencies
+      // (and legacy responses without currency) retain their previous percentage cap.
+      const euro = String(recommendation.currency || "").trim().toUpperCase() === "EUR";
+      const bottlePercent = euro ? 20 : percent;
+      const maximumBottleExtra = euro ? minor(5) : null;
       let changedCost = 0;
       for (const change of improvement.changes) {
         const from = String(change?.replacedWineId);
@@ -2838,7 +2857,13 @@
         if (!oldWine || !newWine || after.has(from) || before.has(to)
             || removed.has(from) || inserted.has(to) || !String(change.explanation || "").trim()) return null;
         const extra = minor(newWine.price) - minor(oldWine.price);
-        if (extra <= 0 || minor(change.addedCost) !== extra) return null;
+        // Integer minor-unit arithmetic; preserve strict rounding at fractional-cent boundaries.
+        const sourceMinor = minor(oldWine.price);
+        const percentNumerator = sourceMinor * bottlePercent;
+        if (!Number.isSafeInteger(percentNumerator)) return null;
+        const proportionalExtra = Math.floor(percentNumerator / 100);
+        const permittedExtra = euro ? Math.min(proportionalExtra, maximumBottleExtra) : proportionalExtra;
+        if (extra <= 0 || minor(change.addedCost) !== extra || extra > permittedExtra) return null;
         changedCost += extra;
         removed.add(from); inserted.add(to);
       }
@@ -2852,16 +2877,15 @@
       const budget = minor(request?.budget ?? recommendation.requestedBudget);
       const baseTotal = baseline.reduce((sum, wine) => sum + minor(wine.price), 0);
       const total = selected.reduce((sum, wine) => sum + minor(wine.price), 0);
-      const percent = improvement.tolerancePercent;
       const maximum = minor(improvement.maximumTotal);
       if (![budget, baseTotal, total, changedCost, maximum].every(Number.isSafeInteger)
-          || budget <= 0 || baseTotal > budget || total <= budget
+          || budget <= 0 || baseTotal > budget || total <= baseTotal
           || !Number.isInteger(percent) || percent < 1 || percent > 20
           || total > maximum || maximum > Math.floor(budget * (100 + percent) / 100)
           || minor(recommendation.total) !== total || minor(recommendation.requestedBudget) !== budget
           || minor(improvement.originalTotal) !== baseTotal || minor(improvement.total) !== total
           || total - baseTotal !== changedCost || minor(improvement.addedCost) !== changedCost
-          || minor(improvement.aboveBudgetAmount) !== total - budget
+          || minor(improvement.aboveBudgetAmount) !== Math.max(0, total - budget)
           || !Array.isArray(improvement.matchedPreferences) || !Array.isArray(improvement.unmetPreferences)
           // No named preferences/foods can legitimately produce an empty semantic ledger.
           || typeof improvement.requirementInterpretation !== "string") return null;
