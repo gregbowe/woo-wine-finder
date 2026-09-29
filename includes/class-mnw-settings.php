@@ -96,6 +96,30 @@ final class MyNextWine_Woo_Settings {
         $current['show_mnw_rating'] = isset($_POST['show_mnw_rating']) ? 'yes' : 'no';
         $current['show_budget_decrease'] = isset($_POST['show_budget_decrease']) ? 'yes' : 'no';
         $current['show_budget_increase'] = isset($_POST['show_budget_increase']) ? 'yes' : 'no';
+        $suggested_price_raw = trim(sanitize_text_field((string) wp_unslash($_POST['suggested_bottle_price'] ?? '')));
+        $suggested_price_error = false;
+        if ('' === $suggested_price_raw) {
+            $current['suggested_bottle_price'] = '';
+        } else {
+            $suggested_price = wc_format_decimal($suggested_price_raw, 2);
+            if (!is_numeric($suggested_price) || (float) $suggested_price <= 0) {
+                $suggested_price_error = true;
+            } else {
+                $current['suggested_bottle_price'] = $suggested_price;
+            }
+        }
+        $minimum_spend_raw = trim(sanitize_text_field((string) wp_unslash($_POST['minimum_spend'] ?? '')));
+        $minimum_spend_error = false;
+        if ('' === $minimum_spend_raw) {
+            $current['minimum_spend'] = '';
+        } else {
+            $minimum_spend = wc_format_decimal($minimum_spend_raw, 2);
+            if (!is_numeric($minimum_spend) || (float) $minimum_spend <= 0) {
+                $minimum_spend_error = true;
+            } else {
+                $current['minimum_spend'] = $minimum_spend;
+            }
+        }
         $submitted_categories = $this->submitted_wine_categories();
         $category_error = count($submitted_categories) < 2;
         if (!$category_error) {
@@ -105,14 +129,24 @@ final class MyNextWine_Woo_Settings {
 
         $display_error = $category_error
             ? new WP_Error('mynextwine_woo_categories', __('Choose at least two bottle selection categories.', 'my-next-wine-for-woocommerce'))
-            : null;
+            : ($suggested_price_error
+                ? new WP_Error('mynextwine_woo_suggested_price', __('Enter a positive suggested bottle price or leave it blank.', 'my-next-wine-for-woocommerce'))
+                : ($minimum_spend_error
+                    ? new WP_Error('mynextwine_woo_minimum_spend', __('Enter a positive minimum spend per bottle or leave it blank.', 'my-next-wine-for-woocommerce'))
+                    : null));
         if ($this->client->is_configured()) {
             $display_result = $this->client->update_display_settings(
                 'yes' === $current['show_mnw_notes'],
                 'yes' === $current['show_mnw_rating'],
                 $this->client->normalise_wine_categories($current['wine_categories'] ?? null),
                 'yes' === $current['show_budget_decrease'],
-                'yes' === $current['show_budget_increase']
+                'yes' === $current['show_budget_increase'],
+                '' !== (string) ($current['suggested_bottle_price'] ?? '')
+                    ? (float) $current['suggested_bottle_price'] : null,
+                '' === (string) ($current['suggested_bottle_price'] ?? ''),
+                '' !== (string) ($current['minimum_spend'] ?? '')
+                    ? (float) $current['minimum_spend'] : null,
+                '' === (string) ($current['minimum_spend'] ?? '')
             );
             if (is_wp_error($display_result)) {
                 $display_error = $display_result;
@@ -257,6 +291,12 @@ final class MyNextWine_Woo_Settings {
             ? (bool) $status['showBudgetDecrease'] : 'yes' === ($settings['show_budget_decrease'] ?? 'yes');
         $show_budget_increase = is_array($status) && array_key_exists('showBudgetIncrease', $status)
             ? (bool) $status['showBudgetIncrease'] : 'yes' === ($settings['show_budget_increase'] ?? 'yes');
+        $suggested_bottle_price = is_array($status) && array_key_exists('suggestedBottlePrice', $status)
+            ? (null === $status['suggestedBottlePrice'] ? '' : (string) $status['suggestedBottlePrice'])
+            : (string) ($settings['suggested_bottle_price'] ?? '');
+        $minimum_spend = is_array($status) && array_key_exists('minimumSpend', $status)
+            ? (null === $status['minimumSpend'] ? '' : (string) $status['minimumSpend'])
+            : (string) ($settings['minimum_spend'] ?? '');
         $show_mnw_notes = is_array($status)
             ? !empty($status['showMyNextWineNotes'])
             : 'yes' === ($settings['show_mnw_notes'] ?? 'no');
@@ -557,6 +597,24 @@ final class MyNextWine_Woo_Settings {
                         </label>
                     <?php endforeach; ?>
                 </fieldset>
+
+                <h2><?php echo esc_html__('Budget defaults', 'my-next-wine-for-woocommerce'); ?></h2>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="mynextwine-minimum-spend"><?php echo esc_html__('Minimum spend per bottle', 'my-next-wine-for-woocommerce'); ?></label></th>
+                        <td>
+                            <input id="mynextwine-minimum-spend" name="minimum_spend" type="number" min="0.01" step="0.01" inputmode="decimal" class="small-text" value="<?php echo esc_attr($minimum_spend); ?>">
+                            <p class="description"><?php echo esc_html__('Used to calculate the first budget choice on question 2. For example, 18 per bottle gives a minimum of 126 for 7 bottles. The catalogue minimum can still make the floor higher. Leave blank to use the catalogue-derived minimum.', 'my-next-wine-for-woocommerce'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="mynextwine-suggested-bottle-price"><?php echo esc_html__('Suggested bottle price', 'my-next-wine-for-woocommerce'); ?></label></th>
+                        <td>
+                            <input id="mynextwine-suggested-bottle-price" name="suggested_bottle_price" type="number" min="0.01" step="0.01" inputmode="decimal" class="small-text" value="<?php echo esc_attr($suggested_bottle_price); ?>">
+                            <p class="description"><?php echo esc_html__('Used to calculate the Suggested total on question 2. For example, 22 per bottle gives a suggested total of 88 for 4 bottles. Leave blank to use the automatic suggestion.', 'my-next-wine-for-woocommerce'); ?></p>
+                        </td>
+                    </tr>
+                </table>
 
                 <h2><?php echo esc_html__('Budget buttons', 'my-next-wine-for-woocommerce'); ?></h2>
                 <p><?php echo esc_html__('Show either, both or neither of the budget buttons on the results screen. This does not change budget tolerance.', 'my-next-wine-for-woocommerce'); ?></p>

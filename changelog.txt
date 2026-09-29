@@ -1,3 +1,9 @@
+= 1.0.49 =
+* Fix minimum spend so the configured value is applied per bottle when calculating the question 2 floor and first quick-choice pill.
+
+= 1.0.48 =
+* Added a merchant-configurable minimum total spend for question 2; it becomes the first budget choice and clamps the suggested budget floor.
+
 = 1.0.46 =
 * Separate the EUR bottle safeguard (20% / EUR 5) from the merchant whole-basket tolerance; retain other currencies and all existing validation.
 

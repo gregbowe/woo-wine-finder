@@ -302,9 +302,7 @@ if (!defined('ABSPATH')) { exit; }
                 <?php echo esc_html__('What is your total budget?', 'my-next-wine-for-woocommerce'); ?>
               </legend>
 
-              <p class="mnw-wine-finder__question-help" data-mnw-budget-help>
-                <?php echo esc_html__("Loading this shop's currency and spend limits.", 'my-next-wine-for-woocommerce'); ?>
-              </p>
+              <p class="mnw-wine-finder__question-help" data-mnw-budget-help hidden></p>
 
               <div class="mnw-wine-finder__budget-panel">
                 <p class="mnw-wine-finder__budget-label">

@@ -1352,3 +1352,24 @@ msgstr "0 deaktiviert optionale Verbesserungen. Erfüllt eine Auswahl die Kunden
 #. Modest EUR bottle safeguard, separate from the whole-basket percentage.
 msgid "0 switches optional upgrades off. For a selection that meets the shopper's requests and costs at least 90% of their budget, this percentage limits the extra spend on the whole basket. In EUR, each worthwhile bottle upgrade may cost up to 20% or EUR 5 more, whichever is lower. Other currencies retain this percentage as their bottle limit. Explain every extra cost; never spend more without a good reason."
 msgstr "0 deaktiviert optionale Verbesserungen. Erfüllt die Auswahl die Wünsche des Kunden und kostet mindestens 90 % seines Budgets, begrenzt dieser Prozentsatz die Überschreitung des Gesamtbudgets. Bei Preisen in EUR darf eine sinnvoll bessere Flasche höchstens 20 % oder 5 EUR mehr kosten – es gilt der niedrigere Betrag. Bei anderen Währungen bleibt dieser Prozentsatz auch die Grenze je Flasche. Begründen Sie jeden Aufpreis; geben Sie nie ohne guten Grund mehr aus."
+
+msgid "Enter a positive suggested bottle price or leave it blank."
+msgstr "Geben Sie einen positiven empfohlenen Flaschenpreis ein oder lassen Sie das Feld leer."
+
+msgid "Enter a positive minimum spend per bottle or leave it blank."
+msgstr "Geben Sie einen positiven Mindestbetrag pro Flasche ein oder lassen Sie das Feld leer."
+
+msgid "Budget defaults"
+msgstr "Budgetvorgaben"
+
+msgid "Minimum spend per bottle"
+msgstr "Mindestbetrag pro Flasche"
+
+msgid "Used to calculate the first budget choice on question 2. For example, 18 per bottle gives a minimum of 126 for 7 bottles. The catalogue minimum can still make the floor higher. Leave blank to use the catalogue-derived minimum."
+msgstr "Wird verwendet, um die erste Budgetauswahl in Frage 2 zu berechnen. Zum Beispiel ergeben 18 pro Flasche bei 7 Flaschen einen Mindestbetrag von 126. Der Katalog kann dennoch einen höheren Mindestbetrag erfordern. Leer lassen, um den aus dem Katalog abgeleiteten Mindestbetrag zu verwenden."
+
+msgid "Suggested bottle price"
+msgstr "Empfohlener Flaschenpreis"
+
+msgid "Used to calculate the Suggested total on question 2. For example, 22 per bottle gives a suggested total of 88 for 4 bottles. Leave blank to use the automatic suggestion."
+msgstr "Wird verwendet, um den empfohlenen Gesamtbetrag in Frage 2 zu berechnen. Zum Beispiel ergeben 22 pro Flasche bei 4 Flaschen einen empfohlenen Gesamtbetrag von 88. Leer lassen, um den automatischen Vorschlag zu verwenden."

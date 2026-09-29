@@ -47,6 +47,8 @@ final class MyNextWine_Woo_API_Client {
             'show_mnw_rating' => 'no',
             'show_budget_decrease' => 'yes',
             'show_budget_increase' => 'yes',
+            'suggested_bottle_price' => '',
+            'minimum_spend' => '',
             'wine_categories' => self::DEFAULT_WINE_CATEGORIES,
         );
         $saved = get_option(MYNEXTWINE_WOO_OPTION, array());
@@ -220,7 +222,9 @@ final class MyNextWine_Woo_API_Client {
 
     /** @return array<string,mixed>|WP_Error */
     public function update_display_settings(bool $show_notes, bool $show_rating, ?array $wine_categories = null,
-        ?bool $show_budget_decrease = null, ?bool $show_budget_increase = null) {
+        ?bool $show_budget_decrease = null, ?bool $show_budget_increase = null,
+        ?float $suggested_bottle_price = null, bool $clear_suggested_bottle_price = false,
+        ?float $minimum_spend = null, bool $clear_minimum_spend = false) {
         $payload = array(
             'showMyNextWineNotes' => $show_notes,
             'showMyNextWineRating' => $show_rating,
@@ -232,6 +236,18 @@ final class MyNextWine_Woo_API_Client {
         }
         if (null !== $show_budget_decrease) $payload['showBudgetDecrease'] = $show_budget_decrease;
         if (null !== $show_budget_increase) $payload['showBudgetIncrease'] = $show_budget_increase;
+        if ($clear_suggested_bottle_price) {
+            $payload['clearSuggestedBottlePrice'] = true;
+        } elseif (null !== $suggested_bottle_price && $suggested_bottle_price > 0) {
+            $payload['suggestedBottlePrice'] = $suggested_bottle_price;
+            $payload['clearSuggestedBottlePrice'] = false;
+        }
+        if ($clear_minimum_spend) {
+            $payload['clearMinimumSpend'] = true;
+        } elseif (null !== $minimum_spend && $minimum_spend > 0) {
+            $payload['minimumSpend'] = $minimum_spend;
+            $payload['clearMinimumSpend'] = false;
+        }
         return $this->request('POST', '/api/woocommerce/widget/merchant/display-settings', $payload, '', 40, $this->admin_locale());
     }
 

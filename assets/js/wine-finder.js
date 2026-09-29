@@ -752,6 +752,8 @@
     let minimumBottlePrice = null;
     let minimumOrder = null;
     let maximumBudget = null;
+    let suggestedBottlePrice = null;
+    let minimumSpend = null;
     let configurationReady = false;
     let configuredCategories = Array.from(LEGACY_WINE_CATEGORIES);
     let budgetButtonVisibility = normaliseBudgetButtonVisibility();
@@ -839,12 +841,15 @@
 
       if (budgetQuickChoices) {
         budgetQuickChoices.replaceChildren();
-        calculateBudgetQuickChoices(minimumBudget, allowedMaximum, currencyPrecision)
-          .forEach((choice) => {
+        calculateBudgetQuickChoices(
+          minimumBudget,
+          allowedMaximum,
+          currencyPrecision,
+          bottleCount,
+          suggestedBottlePrice
+        ).forEach((choice) => {
             const button = document.createElement("button");
-            const qualifier = choice.kind === "minimum"
-              ? "Minimum"
-              : (choice.kind === "suggested" ? "Suggested" : "");
+            const qualifier = choice.kind === "suggested" ? "Suggested" : "";
             const formattedValue = formatter.format(choice.value);
             const selected = currentBudget !== null && choice.value === currentBudget;
             button.type = "button";
@@ -877,6 +882,8 @@
         storeCurrency,
         storeCurrencySymbol,
         currencyPrecision,
+        suggestedBottlePrice,
+        minimumSpend,
         !budgetEdited
       );
       renderBudgetScreen();
@@ -2329,6 +2336,14 @@
         minimumBottlePrice = requirePositiveNumber(configuration.minimumBottlePrice, "minimum bottle price");
         minimumOrder = requirePositiveNumber(configuration.minimumOrder, "minimum order");
         maximumBudget = requirePositiveNumber(configuration.maximumBudget, "maximum budget");
+        const configuredSuggestedBottlePrice = Number(configuration.suggestedBottlePrice);
+        suggestedBottlePrice = Number.isFinite(configuredSuggestedBottlePrice) && configuredSuggestedBottlePrice > 0
+          ? configuredSuggestedBottlePrice
+          : null;
+        const configuredMinimumSpend = Number(configuration.minimumSpend);
+        minimumSpend = Number.isFinite(configuredMinimumSpend) && configuredMinimumSpend > 0
+          ? configuredMinimumSpend
+          : null;
         if (maximumBudget < Math.max(minimumBottlePrice, minimumOrder)) {
           throw new Error("The linked merchant currency range is invalid.");
         }
@@ -2354,7 +2369,10 @@
         openButton.disabled = true;
         openButton.setAttribute("aria-busy", "false");
         openButton.title = error?.message || "This shop's Wine Finder configuration is unavailable.";
-        budgetHelp.textContent = "This shop's currency and spend limits are not configured.";
+        if (budgetHelp) {
+          budgetHelp.hidden = false;
+          budgetHelp.textContent = "This shop's currency and spend limits are not configured.";
+        }
         if (budgetCurrencyElement) budgetCurrencyElement.textContent = "—";
       });
     bottleCountInput.value = String(readBreakdownTotal(form));
@@ -3739,10 +3757,33 @@
     );
   };
 
+  const calculateSuggestedBudget = (
+    minimumBudget,
+    maximumBudget,
+    bottleCount,
+    suggestedBottlePrice,
+    currencyPrecision = 2
+  ) => {
+    const minimum = Number(minimumBudget);
+    const maximum = Number(maximumBudget);
+    const count = Number(bottleCount);
+    const perBottle = Number(suggestedBottlePrice);
+    if (Number.isFinite(minimum) && Number.isFinite(maximum) && maximum >= minimum
+        && Number.isInteger(count) && count > 0 && Number.isFinite(perBottle) && perBottle > 0) {
+      return roundMoney(
+        Math.max(minimum, Math.min(maximum, perBottle * count)),
+        currencyPrecision
+      );
+    }
+    return calculateDefaultBudget(minimum, maximum, currencyPrecision);
+  };
+
   const calculateBudgetQuickChoices = (
     minimumBudget,
     maximumBudget,
-    currencyPrecision = 2
+    currencyPrecision = 2,
+    bottleCount = null,
+    suggestedBottlePrice = null
   ) => {
     const minimum = Number(minimumBudget);
     const maximum = Number(maximumBudget);
@@ -3751,7 +3792,13 @@
     }
 
     const roundedMinimum = roundMoney(minimum, currencyPrecision);
-    const suggested = calculateDefaultBudget(roundedMinimum, maximum, currencyPrecision);
+    const suggested = calculateSuggestedBudget(
+      roundedMinimum,
+      maximum,
+      bottleCount,
+      suggestedBottlePrice,
+      currencyPrecision
+    );
     const choiceGap = DEFAULT_BUDGET_ROUNDING_UNIT * 2;
     const candidates = [
       { value: roundedMinimum, kind: "minimum" },
@@ -3768,6 +3815,41 @@
     });
   };
 
+  const calculateMinimumBudget = (
+    bottleCount,
+    minimumBottlePrice,
+    minimumOrder,
+    maximumBudget,
+    minimumSpend = null,
+    currencyPrecision = 2
+  ) => {
+    const count = Number(bottleCount);
+    const bottleFloor = Number(minimumBottlePrice);
+    const orderFloor = Number(minimumOrder);
+    const maximum = Number(maximumBudget);
+    const configuredPerBottle = Number(minimumSpend);
+    if (!Number.isInteger(count) || count <= 0
+        || !Number.isFinite(bottleFloor) || bottleFloor <= 0
+        || !Number.isFinite(orderFloor) || orderFloor <= 0
+        || !Number.isFinite(maximum) || maximum <= 0) {
+      return null;
+    }
+    const configuredFloor = Number.isFinite(configuredPerBottle) && configuredPerBottle > 0
+      ? configuredPerBottle * count
+      : 0;
+    return roundMoney(
+      Math.min(
+        maximum,
+        Math.max(
+          count * bottleFloor,
+          orderFloor,
+          configuredFloor
+        )
+      ),
+      currencyPrecision
+    );
+  };
+
   const updateBudgetMinimum = (
     budgetInput,
     budgetHelp,
@@ -3779,20 +3861,32 @@
     currency,
     configuredSymbol,
     currencyPrecision,
+    suggestedBottlePrice = null,
+    minimumSpend = null,
     useSuggestedDefault = false
   ) => {
-    const minimumBudget = roundMoney(
-      Math.max(bottleCount * minimumBottlePrice, minimumOrder),
+    const minimumBudget = calculateMinimumBudget(
+      bottleCount,
+      minimumBottlePrice,
+      minimumOrder,
+      maximumBudget,
+      minimumSpend,
       currencyPrecision
     );
-    const formatter = createCurrencyFormatter(currency, currencyPrecision);
+    if (minimumBudget === null) return;
     budgetInput.min = String(minimumBudget);
     budgetInput.max = String(roundMoney(maximumBudget, currencyPrecision));
     budgetInput.step = moneyStep(currencyPrecision);
 
     const currentValue = Number(budgetInput.value);
     const preferredValue = useSuggestedDefault
-      ? calculateDefaultBudget(minimumBudget, maximumBudget, currencyPrecision)
+      ? calculateSuggestedBudget(
+          minimumBudget,
+          maximumBudget,
+          bottleCount,
+          suggestedBottlePrice,
+          currencyPrecision
+        )
       : Number.NaN;
     if (Number.isFinite(preferredValue) && preferredValue >= minimumBudget && preferredValue <= maximumBudget) {
       budgetInput.value = String(roundMoney(preferredValue, currencyPrecision));
@@ -3805,8 +3899,10 @@
     if (budgetCurrencyElement) {
       budgetCurrencyElement.textContent = configuredSymbol || currencySymbol(currency, currencyPrecision);
     }
-    const bottleLabel = bottleCount === 1 ? "bottle" : "bottles";
-    budgetHelp.textContent = `For ${bottleCount} ${bottleLabel}, the minimum budget is ${formatter.format(minimumBudget)}.`;
+    if (budgetHelp) {
+      budgetHelp.textContent = "";
+      budgetHelp.hidden = true;
+    }
   };
 
   const readBreakdownTotal = (form) => Array.from(form.querySelectorAll("[data-mnw-breakdown]:not(:disabled)"))
@@ -4067,6 +4163,8 @@
       createWorkingDialog,
       calculateAdjustedBreakdownValue,
       calculateAdjustedBudgetValue,
+      calculateMinimumBudget,
+      calculateSuggestedBudget,
       calculateBudgetQuickChoices,
       calculateRetryBudgetChoices,
       calculateSelectionSummary,

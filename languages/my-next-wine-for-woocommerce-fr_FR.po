@@ -1355,3 +1355,24 @@ msgstr "0 désactive les améliorations facultatives. Si une sélection répond 
 #. Modest EUR bottle safeguard, separate from the whole-basket percentage.
 msgid "0 switches optional upgrades off. For a selection that meets the shopper's requests and costs at least 90% of their budget, this percentage limits the extra spend on the whole basket. In EUR, each worthwhile bottle upgrade may cost up to 20% or EUR 5 more, whichever is lower. Other currencies retain this percentage as their bottle limit. Explain every extra cost; never spend more without a good reason."
 msgstr "0 désactive les améliorations facultatives. Pour une sélection qui répond aux souhaits du client et atteint au moins 90 % de son budget, ce pourcentage limite le dépassement du budget total. En EUR, chaque remplacement justifié est limité à 20 % ou 5 EUR de plus par bouteille, selon le montant le plus faible. Pour les autres devises, ce pourcentage reste aussi la limite par bouteille. Expliquez chaque supplément ; ne dépensez jamais plus sans bonne raison."
+
+msgid "Enter a positive suggested bottle price or leave it blank."
+msgstr "Saisissez un prix de bouteille conseillé positif ou laissez le champ vide."
+
+msgid "Enter a positive minimum spend per bottle or leave it blank."
+msgstr "Saisissez un montant minimum positif par bouteille ou laissez le champ vide."
+
+msgid "Budget defaults"
+msgstr "Valeurs par défaut du budget"
+
+msgid "Minimum spend per bottle"
+msgstr "Montant minimum par bouteille"
+
+msgid "Used to calculate the first budget choice on question 2. For example, 18 per bottle gives a minimum of 126 for 7 bottles. The catalogue minimum can still make the floor higher. Leave blank to use the catalogue-derived minimum."
+msgstr "Utilisé pour calculer le premier choix de budget à la question 2. Par exemple, 18 par bouteille donne un minimum de 126 pour 7 bouteilles. Le minimum du catalogue peut toutefois imposer un montant plus élevé. Laissez vide pour utiliser le minimum calculé à partir du catalogue."
+
+msgid "Suggested bottle price"
+msgstr "Prix conseillé par bouteille"
+
+msgid "Used to calculate the Suggested total on question 2. For example, 22 per bottle gives a suggested total of 88 for 4 bottles. Leave blank to use the automatic suggestion."
+msgstr "Utilisé pour calculer le budget total conseillé à la question 2. Par exemple, 22 par bouteille donne un total conseillé de 88 pour 4 bouteilles. Laissez vide pour utiliser la suggestion automatique."
