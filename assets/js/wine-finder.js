@@ -1339,16 +1339,15 @@
       budgetImprovementElement.hidden = true;
       const improvement = currentSelectionMode === "exact"
         ? validateBudgetImprovement(currentRecommendation, currentRequest, currencyPrecision) : null;
-      if (!improvement) return;
+      if (!improvement || Number(improvement.aboveBudgetAmount) <= 0) return;
       const selected = getSelectedWineIds(resultsElement);
       if (selected.size !== improvement.selectedWineIds.length
           || !improvement.selectedWineIds.every((id) => selected.has(String(id)))) return;
       const money = createCurrencyFormatter(currentRecommendation.currency || storeCurrency, currencyPrecision);
       const heading = document.createElement("h3");
-      const aboveBudget = Number(improvement.aboveBudgetAmount) > 0;
-      heading.textContent = aboveBudget
-        ? t("widget.tolerance.title", "Why we'd go {above} over budget", { above: money.format(improvement.aboveBudgetAmount) })
-        : t("widget.tolerance.within_title", "Why we chose these bottles");
+      heading.textContent = t("widget.tolerance.title", "Why we'd go {above} over budget", {
+        above: money.format(improvement.aboveBudgetAmount)
+      });
       budgetImprovementElement.append(heading);
       for (const change of improvement.changes) {
         const oldWine = improvement.wines.find((wine) => String(wine.sommWineId) === String(change.replacedWineId));
@@ -1370,17 +1369,6 @@
           total: money.format(improvement.total), above: money.format(improvement.aboveBudgetAmount),
           budget: money.format(currentRequest.budget), baseline: money.format(improvement.originalTotal)
         });
-      if (!aboveBudget) {
-        const under = Number(currentRequest.budget) - Number(improvement.total);
-        totals.textContent = under > 0
-          ? t("widget.tolerance.within_total", "These wines come to {total}, still {under} below your {budget} budget.", {
-              total: money.format(improvement.total), under: money.format(under), budget: money.format(currentRequest.budget)
-            })
-          : t("widget.tolerance.on_total", "These wines come to {total}, exactly your budget.", { total: money.format(improvement.total) });
-        budgetImprovementElement.append(totals);
-        budgetImprovementElement.hidden = false;
-        return; // No misleading 'keep to budget' action when this case already does.
-      }
       const actions = document.createElement("div");
       actions.className = "mnw-wine-finder__improvement-actions";
       const withinBudget = document.createElement("button");
@@ -2826,7 +2814,8 @@
   };
 
   // The backend has ALREADY selected the better basket. This validates the
-  // explanation/fallback; it never promotes a client-side upgrade or changes the budget.
+  // explanation/fallback; the renderer only surfaces it for a genuine target crossing.
+  // It never promotes a client-side upgrade or changes the shopper budget.
   const validateBudgetImprovement = (recommendation, request, precision = 2) => {
     try {
       const improvement = recommendation?.budgetImprovement;

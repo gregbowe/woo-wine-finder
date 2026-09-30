@@ -1553,3 +1553,43 @@ msgstr "Preço sugerido por garrafa"
 
 msgid "Used to calculate the Suggested total on question 2. For example, 22 per bottle gives a suggested total of 88 for 4 bottles. Leave blank to use the automatic suggestion."
 msgstr "Usado para calcular o total sugerido na pergunta 2. Por exemplo, 22 por garrafa dá um total sugerido de 88 para 4 garrafas. Deixe em branco para usar a sugestão automática."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Explanation voice"
+msgstr "Voz das explicações"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "How should the Wine Finder sound?"
+msgstr "Como deve soar o Wine Finder?"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "The Shop Voice"
+msgstr "A voz da loja"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Match the style and tone of the wine notes already used on your store."
+msgstr "Adapta o estilo e o tom às notas de vinho já usadas na sua loja."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "No BS"
+msgstr "No BS"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Simple, direct explanations with minimal wine jargon. This is the default."
+msgstr "Explicações simples e diretas, com o mínimo de jargão de vinho. Esta é a predefinição."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "The Connoisseur"
+msgstr "O conhecedor"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Technical explanations for wine-literate shoppers, using precise wine language."
+msgstr "Explicações técnicas para clientes conhecedores de vinho, com linguagem vínica precisa."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "This changes how explanations are written, not which wines are recommended."
+msgstr "Isto altera a forma como as explicações são escritas, não os vinhos recomendados."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Choose a valid explanation voice."
+msgstr "Escolha uma voz de explicação válida."

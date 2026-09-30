@@ -16,6 +16,7 @@
   };
   var configured = root.getAttribute('data-configured') === 'true';
   var budgetToleranceInput = $('[data-mnw-budget-tolerance]');
+  var explanationVoiceInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-explanation-voice]'));
   var discoveryInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-discovery-style]'));
   var pairingInputs = Array.prototype.slice.call(root.querySelectorAll('[data-mnw-pairing-style]'));
   var favouriteSearch = $('[data-mnw-favourite-search]');
@@ -58,10 +59,13 @@
       ? value.discoveryStyle : 'BALANCED';
     var pairing = ['CLASSIC', 'BALANCED', 'ADVENTUROUS'].indexOf(value.pairingStyle) >= 0
       ? value.pairingStyle : 'BALANCED';
+    var explanationVoice = ['SHOP_VOICE', 'NO_BS', 'CONNOISSEUR'].indexOf(value.explanationVoice) >= 0
+      ? value.explanationVoice : 'NO_BS';
     return {
       budgetTolerancePercent: Number.isInteger(value.budgetTolerancePercent)
         && value.budgetTolerancePercent >= 0 && value.budgetTolerancePercent <= 20
         ? value.budgetTolerancePercent : 0,
+      explanationVoice: explanationVoice,
       discoveryStyle: discovery,
       pairingStyle: pairing,
       staffFavourites: Array.isArray(value.staffFavourites)
@@ -89,6 +93,7 @@
   function payload() {
     return {
       budgetTolerancePercent: palate.budgetTolerancePercent,
+      explanationVoice: palate.explanationVoice,
       discoveryStyle: palate.discoveryStyle,
       pairingStyle: palate.pairingStyle,
       staffFavouriteWineIds: palate.staffFavourites.map(function (wine) { return wine.id; }),
@@ -226,6 +231,7 @@
 
   function render() {
     if (budgetToleranceInput) budgetToleranceInput.value = String(palate.budgetTolerancePercent);
+    explanationVoiceInputs.forEach(function (input) { input.checked = input.value === palate.explanationVoice; });
     discoveryInputs.forEach(function (input) { input.checked = input.value === palate.discoveryStyle; });
     pairingInputs.forEach(function (input) { input.checked = input.value === palate.pairingStyle; });
     renderFavourites();
@@ -310,6 +316,15 @@
   if (budgetToleranceInput) budgetToleranceInput.addEventListener('input', function () {
     palate.budgetTolerancePercent = Number(budgetToleranceInput.value);
     markDirty();
+  });
+
+  explanationVoiceInputs.forEach(function (input) {
+    input.addEventListener('change', function () {
+      if (!input.checked) return;
+      palate.explanationVoice = input.value;
+      markDirty();
+      render();
+    });
   });
 
   discoveryInputs.forEach(function (input) {

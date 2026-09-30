@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.44
+Stable tag: 1.0.51
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,22 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.51 =
+* Add merchant-configurable explanation voice: The Shop Voice, No BS (default), or The Connoisseur.
+
+= 1.0.50 =
+* Show budget-tolerance explanations only for genuine over-target upsells; better wines that still fit the original budget are selected silently.
+
+= 1.0.49 =
+* Fix minimum spend so the configured value is applied per bottle when calculating the question 2 floor and first quick-choice pill.
+
+= 1.0.48 =
+* Added a merchant-configurable minimum total spend for question 2; it becomes the first budget choice and clamps the suggested budget floor.
+
+= 1.0.47 =
+* Merchant-configurable suggested bottle price now drives the suggested total budget on question 2.
+* Removed the minimum-budget helper sentence and the Minimum label from the first quick-choice pill.
 
 = 1.0.42 =
 * Localised the budget-tolerance controls and revised initial widget text in all bundled French, German and Portuguese catalogues.

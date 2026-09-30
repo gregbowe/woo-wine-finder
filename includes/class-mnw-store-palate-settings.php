@@ -142,6 +142,7 @@ final class MyNextWine_Woo_Store_Palate_Settings {
             ? $status['storePalate']
             : array(
                 'budgetTolerancePercent' => 0,
+                'explanationVoice' => 'NO_BS',
                 'discoveryStyle' => 'BALANCED',
                 'pairingStyle' => 'BALANCED',
                 'staffFavourites' => array(),
@@ -188,6 +189,17 @@ final class MyNextWine_Woo_Store_Palate_Settings {
                 <input type="hidden" name="action" value="mynextwine_woo_save_store_palate">
                 <input type="hidden" name="store_palate_json" value="" data-mnw-palate-json>
                 <?php wp_nonce_field('mynextwine_woo_save_store_palate'); ?>
+
+                <section class="mnw-palate-admin__card mnw-palate-admin__card--wide">
+                    <p class="mnw-palate-admin__eyebrow"><?php echo esc_html__('Explanation voice', 'my-next-wine-for-woocommerce'); ?></p>
+                    <h2><?php echo esc_html__('How should the Wine Finder sound?', 'my-next-wine-for-woocommerce'); ?></h2>
+                    <div class="mnw-palate-admin__choice-list" role="radiogroup" aria-label="<?php echo esc_attr__('Explanation voice', 'my-next-wine-for-woocommerce'); ?>">
+                        <?php $this->render_voice_choice('SHOP_VOICE', __('The Shop Voice', 'my-next-wine-for-woocommerce'), __('Match the style and tone of the wine notes already used on your store.', 'my-next-wine-for-woocommerce')); ?>
+                        <?php $this->render_voice_choice('NO_BS', __('No BS', 'my-next-wine-for-woocommerce'), __('Simple, direct explanations with minimal wine jargon. This is the default.', 'my-next-wine-for-woocommerce')); ?>
+                        <?php $this->render_voice_choice('CONNOISSEUR', __('The Connoisseur', 'my-next-wine-for-woocommerce'), __('Technical explanations for wine-literate shoppers, using precise wine language.', 'my-next-wine-for-woocommerce')); ?>
+                    </div>
+                    <p class="mnw-palate-admin__note"><?php echo esc_html__('This changes how explanations are written, not which wines are recommended.', 'my-next-wine-for-woocommerce'); ?></p>
+                </section>
 
                 <section class="mnw-palate-admin__card mnw-palate-admin__card--wide">
                     <label for="mnw-budget-tolerance"><strong><?php echo esc_html__('Budget tolerance (%)', 'my-next-wine-for-woocommerce'); ?></strong></label>
@@ -294,6 +306,15 @@ final class MyNextWine_Woo_Store_Palate_Settings {
         <?php
     }
 
+    private function render_voice_choice(string $value, string $label, string $description): void {
+        ?>
+        <label class="mnw-palate-admin__choice">
+            <input type="radio" name="mnw_explanation_voice" value="<?php echo esc_attr($value); ?>" data-mnw-explanation-voice>
+            <span><strong><?php echo esc_html($label); ?></strong><small><?php echo esc_html($description); ?></small></span>
+        </label>
+        <?php
+    }
+
     /** @param array<string,mixed> $input @return array<string,mixed> */
     private function normalise_payload(array $input): array {
         $discovery = strtoupper(sanitize_key((string) ($input['discoveryStyle'] ?? 'BALANCED')));
@@ -303,6 +324,14 @@ final class MyNextWine_Woo_Store_Palate_Settings {
         }
         if (!in_array($pairing, array('CLASSIC', 'BALANCED', 'ADVENTUROUS'), true)) {
             throw new InvalidArgumentException(__('Choose a valid pairing style.', 'my-next-wine-for-woocommerce'));
+        }
+
+        // Null preserves the stored setting for older clients that omit this field.
+        $voice = array_key_exists('explanationVoice', $input)
+            ? strtoupper(sanitize_key((string) $input['explanationVoice']))
+            : null;
+        if (null !== $voice && !in_array($voice, array('SHOP_VOICE', 'NO_BS', 'CONNOISSEUR'), true)) {
+            throw new InvalidArgumentException(__('Choose a valid explanation voice.', 'my-next-wine-for-woocommerce'));
         }
 
         // Null preserves the stored setting for older clients that omit this field.
@@ -345,6 +374,7 @@ final class MyNextWine_Woo_Store_Palate_Settings {
 
         return array(
             'budgetTolerancePercent' => $tolerance,
+            'explanationVoice' => $voice,
             'discoveryStyle' => $discovery,
             'pairingStyle' => $pairing,
             'staffFavouriteWineIds' => $favourites,

@@ -1376,3 +1376,43 @@ msgstr "Prix conseillé par bouteille"
 
 msgid "Used to calculate the Suggested total on question 2. For example, 22 per bottle gives a suggested total of 88 for 4 bottles. Leave blank to use the automatic suggestion."
 msgstr "Utilisé pour calculer le budget total conseillé à la question 2. Par exemple, 22 par bouteille donne un total conseillé de 88 pour 4 bouteilles. Laissez vide pour utiliser la suggestion automatique."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Explanation voice"
+msgstr "Voix des explications"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "How should the Wine Finder sound?"
+msgstr "Quel ton le Wine Finder doit-il employer ?"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "The Shop Voice"
+msgstr "La voix de la boutique"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Match the style and tone of the wine notes already used on your store."
+msgstr "Adapte le style et le ton aux notes de dégustation déjà utilisées sur votre boutique."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "No BS"
+msgstr "No BS"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Simple, direct explanations with minimal wine jargon. This is the default."
+msgstr "Des explications simples et directes, avec un minimum de jargon œnologique. C’est le réglage par défaut."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "The Connoisseur"
+msgstr "Le connaisseur"
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Technical explanations for wine-literate shoppers, using precise wine language."
+msgstr "Des explications techniques pour les amateurs avertis, avec un vocabulaire œnologique précis."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "This changes how explanations are written, not which wines are recommended."
+msgstr "Cela change la façon dont les explications sont rédigées, pas les vins recommandés."
+
+#: includes/class-mnw-store-palate-settings.php
+msgid "Choose a valid explanation voice."
+msgstr "Choisissez une voix d’explication valide."

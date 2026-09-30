@@ -1,3 +1,9 @@
+= 1.0.51 =
+* Add merchant-configurable explanation voice: The Shop Voice, No BS (default), or The Connoisseur.
+
+= 1.0.50 =
+* Show budget-tolerance explanations only for genuine over-target upsells; better wines that still fit the original budget are selected silently.
+
 = 1.0.49 =
 * Fix minimum spend so the configured value is applied per bottle when calculating the question 2 floor and first quick-choice pill.
 
