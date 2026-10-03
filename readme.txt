@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.51
+Stable tag: 1.0.53
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,7 @@ The hosted My Next Wine service includes a 14-day free trial followed by one of 
 * Launch: EUR 29.99 per month for up to 350 completed Wine Finder sessions.
 * Growth: EUR 79.99 per month for up to 800 completed Wine Finder sessions.
 * Scale: EUR 199.99 per month for up to 2,000 completed Wine Finder sessions.
+* Enterprise: EUR 999.99 per month for up to 10,000 completed Wine Finder sessions.
 
 A completed session is one successful selection journey containing the shopper's initial recommendation and up to five combined follow-up refinements or bottle swaps. Starting again creates a new session. Follow-up actions are not counted as separate completed sessions. There is no commission or per-order fee.
 
@@ -139,6 +140,13 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.53 =
+* Increased AI-backed Wine Finder timeouts for recommendations, refinements and swaps to tolerate slower provider responses without aborting valid work.
+
+= 1.0.52 =
+* Added the Enterprise plan for high-volume retailers: EUR 999.99 per month for up to 10,000 completed Wine Finder sessions.
+* Added Enterprise Stripe checkout support and updated Merchant Terms acceptance to 2026-10-01-UK6.
 
 = 1.0.51 =
 * Add merchant-configurable explanation voice: The Shop Voice, No BS (default), or The Connoisseur.

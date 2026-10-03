@@ -282,6 +282,7 @@ final class MyNextWine_Woo_Settings {
                 array('code' => 'LAUNCH', 'name' => 'Launch', 'monthlyPrice' => '29.99', 'completedSessionsPerMonth' => 350),
                 array('code' => 'GROWTH', 'name' => 'Growth', 'monthlyPrice' => '79.99', 'completedSessionsPerMonth' => 800),
                 array('code' => 'SCALE', 'name' => 'Scale', 'monthlyPrice' => '199.99', 'completedSessionsPerMonth' => 2000),
+                array('code' => 'ENTERPRISE', 'name' => 'Enterprise', 'monthlyPrice' => '999.99', 'completedSessionsPerMonth' => 10000),
             );
         $plan_code = is_array($status) ? strtoupper((string) ($status['planCode'] ?? 'LAUNCH')) : 'LAUNCH';
         $plan_name = is_array($status) ? (string) ($status['planName'] ?? 'Launch') : 'Launch';
@@ -514,7 +515,7 @@ final class MyNextWine_Woo_Settings {
                                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px;">
                                         <?php foreach ($plans as $plan) :
                                             $candidate_code = strtoupper((string) ($plan['code'] ?? ''));
-                                            if (!in_array($candidate_code, array('LAUNCH', 'GROWTH', 'SCALE'), true)) {
+                                            if (!in_array($candidate_code, array('LAUNCH', 'GROWTH', 'SCALE', 'ENTERPRISE'), true)) {
                                                 continue;
                                             }
                                             ?>

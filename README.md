@@ -94,7 +94,7 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - Publish the Merchant Terms, Privacy Statement and subprocessor list at the URLs above.
 - Before UK activation, identify the appointed UK representative in the Privacy Statement or retain a documented Article 27 exception, and operate a data-protection complaints process that acknowledges complaints within 30 days and responds without undue delay.
 - For UK prospecting, email only recipients permitted by PECR, link the business-outreach privacy notice in the first message, and suppress every opt-out before any follow-up.
-- Create the three Stripe recurring Prices, configure Stripe Customer Portal for plan changes, register the dedicated Stripe webhook endpoint and add separate staging/production Stripe secrets in AWS Secrets Manager.
+- Create the four Stripe recurring Prices, configure Stripe Customer Portal for plan changes, register the dedicated Stripe webhook endpoint and add separate staging/production Stripe secrets in AWS Secrets Manager.
 - Test against the exact WordPress/WooCommerce/PHP versions claimed in `readme.txt` and update `Tested up to` before submission.
 - Run Plugin Check and WordPress Coding Standards, prepare repository assets/screenshots, and provide clear WordPress.org reviewer instructions for the external SaaS and Stripe billing flow.
 
@@ -103,7 +103,9 @@ Ambiguous or conflicting matches are rejected for manual support review rather t
 - The pilot accepts Ireland/EUR and United Kingdom/GBP stores. One store currency must match the merchant country's configured My Next Wine currency.
 - Backordered products are intentionally treated as unavailable.
 - Bundle, composite and subscription products are not imported as individual wine offers.
-- The initial direct subscriptions remain billed in EUR: Launch (EUR 29.99 / 350 completed sessions), Growth (EUR 79.99 / 800) and Scale (EUR 199.99 / 2,000) per month after a 14-day trial. One completed session covers an initial recommendation and up to five combined refinements or bottle swaps in the same selection journey. Each configured Stripe Price must exactly match the backend plan and published terms; Stripe Checkout and invoices are authoritative for any tax shown.
+- The direct subscriptions remain billed in EUR: Launch (EUR 29.99 / 350 completed sessions), Growth (EUR 79.99 / 800), Scale (EUR 199.99 / 2,000) and Enterprise (EUR 999.99 / 10,000) per month after a 14-day trial. One completed session covers an initial recommendation and up to five combined refinements or bottle swaps in the same selection journey. Each configured Stripe Price must exactly match the backend plan and published terms; Stripe Checkout and invoices are authoritative for any tax shown.
+
+The Enterprise recurring Price is read from `WOOCOMMERCE_WIDGET_STRIPE_PRICE_ENTERPRISE_ID` in the same environment-suffixed AWS Secrets Manager record as the existing Launch, Growth and Scale Price IDs.
 
 ## Local development
 

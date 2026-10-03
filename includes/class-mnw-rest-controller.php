@@ -8,8 +8,8 @@ if (!defined('ABSPATH')) {
 final class MyNextWine_Woo_REST_Controller {
     private const NAMESPACE = 'my-next-wine/v1';
     private const MAX_BODY_BYTES = 65536;
-    /** Keep the Woo proxy above the backend's temporary 120-second deadline. */
-    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 125;
+    /** Keep the Woo proxy above the backend's 180-second recommendation deadline. */
+    private const RECOMMENDATION_PROXY_TIMEOUT_SECONDS = 185;
 
     private MyNextWine_Woo_API_Client $client;
 
@@ -211,6 +211,7 @@ final class MyNextWine_Woo_REST_Controller {
         $timeout_seconds = in_array($backend_path, array(
             '/api/woocommerce/widget/recommendations',
             '/api/woocommerce/widget/refine',
+            '/api/woocommerce/widget/swap',
         ), true)
             ? self::RECOMMENDATION_PROXY_TIMEOUT_SECONDS
             : ('/api/woocommerce/widget/progress' === $backend_path ? 4 : 40);

@@ -202,7 +202,7 @@ final class MyNextWine_Woo_API_Client {
     /** @return array<string,mixed>|WP_Error */
     public function start_billing(string $plan_code = 'LAUNCH') {
         $plan_code = strtoupper(sanitize_key($plan_code));
-        if (!in_array($plan_code, array('LAUNCH', 'GROWTH', 'SCALE'), true)) {
+        if (!in_array($plan_code, array('LAUNCH', 'GROWTH', 'SCALE', 'ENTERPRISE'), true)) {
             return new WP_Error('mynextwine_woo_plan_invalid', __('Choose a valid Wine Finder plan.', 'my-next-wine-for-woocommerce'));
         }
         return $this->request('POST', '/api/woocommerce/widget/merchant/billing/start', array(
@@ -443,9 +443,9 @@ final class MyNextWine_Woo_API_Client {
         $url = untrailingslashit($this->default_api_base_url()) . '/' . ltrim($path, '/');
         $response = wp_remote_request($url, array(
             'method' => strtoupper($method),
-            // Recommendation/refinement requests currently have a 125-second
-            // proxy allowance; retain a finite ceiling for every other call.
-            'timeout' => max(1, min(130, $timeout_seconds)),
+            // Recommendation/refinement/swap requests may wait up to 185 seconds
+            // for the backend; retain a finite ceiling for every other call.
+            'timeout' => max(1, min(190, $timeout_seconds)),
             'redirection' => 0,
             'sslverify' => true,
             'headers' => array_merge(array(

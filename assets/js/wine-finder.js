@@ -115,7 +115,7 @@
     ["Chosen from wines currently in stock.", "widget.match.current_stock"],
     ["Other wines to consider", "widget.match.closest_alternatives"],
     ["Another selection to consider", "widget.match.closest_complete"],
-    ["A note about your wines", "widget.match.substitutions"],
+    ["Why we chose these wines", "widget.match.substitutions"],
     ["These wines are over budget", "widget.match.exact_over_budget"],
     ["Finding wines…", "widget.recommendation.finding"],
     ["The wine finder took too long to respond. Please try again.", "widget.recommendation.timeout"],
@@ -369,11 +369,11 @@
   const MAX_REFINEMENT_LENGTH = 240;
   const DEFAULT_BUDGET_MULTIPLIER = 1.2;
   const DEFAULT_BUDGET_ROUNDING_UNIT = 10;
-  // Temporary launch-stabilisation timeout. Leave five seconds of headroom
-  // above the backend's 120-second recommendation deadline.
-  const REQUEST_TIMEOUT_MS = 125000;
+  // AI-backed recommendation actions may legitimately run long under provider load.
+  // Leave ten seconds of headroom above the backend's 180-second hard deadline.
+  const REQUEST_TIMEOUT_MS = 190000;
   const CART_TIMEOUT_MS = 15000;
-  const SWAP_TIMEOUT_MS = 20000;
+  const SWAP_TIMEOUT_MS = 190000;
   const CONFIGURATION_TIMEOUT_MS = 10000;
   const MODAL_CLOSE_ANIMATION_MS = 190;
   const LOADING_MESSAGES = [
@@ -1349,6 +1349,11 @@
         above: money.format(improvement.aboveBudgetAmount)
       });
       budgetImprovementElement.append(heading);
+      const intro = document.createElement("p");
+      intro.className = "mnw-wine-finder__improvement-intro";
+      intro.textContent = t("widget.tolerance.intro",
+        "We think these upgrades are worth the extra because they are better choices than the bottles in the original under-budget selection.");
+      budgetImprovementElement.append(intro);
       for (const change of improvement.changes) {
         const oldWine = improvement.wines.find((wine) => String(wine.sommWineId) === String(change.replacedWineId));
         const newWine = currentRecommendation.wines.find((wine) => String(wine.sommWineId) === String(change.replacementWineId));
@@ -1374,8 +1379,8 @@
       const withinBudget = document.createElement("button");
       withinBudget.type = "button";
       withinBudget.className = "mnw-wine-finder__secondary-button";
-      withinBudget.textContent = t("widget.tolerance.keep_budget", "Keep to my {budget} budget", {
-        budget: money.format(currentRequest.budget)
+      withinBudget.textContent = t("widget.tolerance.keep_budget", "Keep the original {count} under budget", {
+        count: improvement.baseWineIds.length, budget: money.format(currentRequest.budget)
       });
       withinBudget.disabled = requestInFlight();
       withinBudget.addEventListener("click", () => {
@@ -1523,14 +1528,14 @@
         budgetNotice.dataset.mnwBudgetState = exactOverBudget ? "over" : "alternative";
         budgetNoticeTitle.textContent = exactOverBudget
           ? "Another selection to consider"
-          : "A note about your wines";
+          : "Why we chose these wines";
         budgetNoticeCopy.textContent = recommendationNoticeCopy(
           selection,
           exactOverBudget
             ? t("widget.alternative.not_enough_exact", "We could not include everything you asked for. These wines cost {total}, which is {difference} over your {budget} budget.", {
                 total: formatter.format(Number(selection.total || 0)), difference: formatter.format(Math.max(0, Number(selection.total || 0) - requestedBudget)), budget: formatter.format(requestedBudget)
               })
-            : "We could not give you everything you asked for at this price. These alternatives stay within your budget."
+            : "These are the strongest choices for your tastes while keeping the selection within budget."
         );
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
@@ -1548,7 +1553,7 @@
             : "");
         budgetNotice.hidden = !note;
         budgetNotice.dataset.mnwBudgetState = exactOverBudget ? "over" : "alternative";
-        budgetNoticeTitle.textContent = "A note about your wines";
+        budgetNoticeTitle.textContent = "Why we chose these wines";
         budgetNoticeCopy.textContent = note;
         if (showBudgetAlternativeButton) showBudgetAlternativeButton.hidden = true;
         if (showExactSelectionButton) showExactSelectionButton.hidden = true;
@@ -1943,7 +1948,9 @@
       error,
       request,
       instruction,
-      clearInput
+      clearInput,
+      snapshot,
+      refinementMode
     }) => {
       const proposal = createRefinementBudgetProposal(
         error,
@@ -1958,10 +1965,22 @@
           || !acceptRefinementBudgetButton || !acceptRefinementBudgetLabel
           || !declineRefinementBudgetButton) return false;
 
+      let preparedRefinement = proposal.preparedRefinement;
+      if (preparedRefinement) {
+        try {
+          validateRefinementResponse(preparedRefinement, configuredCategories);
+        } catch (_) {
+          preparedRefinement = null;
+        }
+      }
+
       pendingRefinementBudgetProposal = {
         ...proposal,
+        preparedRefinement,
         action: "refinement",
-        clearInput: Boolean(clearInput)
+        clearInput: Boolean(clearInput),
+        snapshot,
+        refinementMode: refinementMode === "BUDGET_ONLY" ? "BUDGET_ONLY" : "FREE_TEXT"
       };
       if (refineStatus) refineStatus.hidden = true;
       if (refinementBudgetTitle) refinementBudgetTitle.textContent = "This change would cost more";
@@ -2014,6 +2033,49 @@
       }
     };
 
+    const applyRefinementResult = ({
+      result,
+      snapshot,
+      request,
+      clearInput = false,
+      synchroniseBudgetInput = false,
+      refinementMode = "FREE_TEXT",
+      successMessage = "Your wines have been updated."
+    }) => {
+      validateRefinementResponse(result, configuredCategories);
+      if (refinementMode === "BUDGET_ONLY") {
+        preserveBudgetOnlyRequestState(request, result);
+        preserveRetainedRecommendationEvidence(currentRecommendation, result);
+      }
+      storeCurrency = normaliseCurrencyCode(result.currency || storeCurrency);
+      result.currency = storeCurrency;
+      result.exactSelection = {
+        summary: result.summary,
+        total: result.total,
+        explanation: String(result.customerMessage || "").trim(),
+        matchedPreferences: result.matchedPreferences,
+        unmetPreferences: result.unmetPreferences,
+        wines: result.wines
+      };
+
+      previousRefinement = snapshot;
+      currentRequest = result.refinedRequest;
+      currentRecommendation = result;
+      if (synchroniseBudgetInput) {
+        const refinedBudget = Number(currentRequest?.budget);
+        if (Number.isFinite(refinedBudget) && refinedBudget > 0) {
+          budgetEdited = true;
+          budgetInput.value = String(refinedBudget);
+        }
+      }
+      dismissRefinementBudgetConfirmation();
+      showRecommendationSelection("exact");
+      if (clearInput && refineInput) refineInput.value = "";
+      if (refineUndo) refineUndo.hidden = false;
+      announceRefinement(result.refinementSummary || successMessage);
+      return true;
+    };
+
     const submitRefinementRequest = async ({
       instruction,
       request = currentRequest,
@@ -2054,45 +2116,24 @@
           cache: "no-store"
         }, REQUEST_TIMEOUT_MS, "That took too long. We have kept your current wines.");
 
-        validateRefinementResponse(result, configuredCategories);
-        if (refinementMode === "BUDGET_ONLY") {
-          preserveBudgetOnlyRequestState(request, result);
-          preserveRetainedRecommendationEvidence(currentRecommendation, result);
-        }
-        storeCurrency = normaliseCurrencyCode(result.currency || storeCurrency);
-        result.currency = storeCurrency;
-        result.exactSelection = {
-          summary: result.summary,
-          total: result.total,
-          explanation: String(result.customerMessage || "").trim(),
-          matchedPreferences: result.matchedPreferences,
-          unmetPreferences: result.unmetPreferences,
-          wines: result.wines
-        };
-
-        previousRefinement = snapshot;
-        currentRequest = result.refinedRequest;
-        currentRecommendation = result;
-        if (synchroniseBudgetInput) {
-          const refinedBudget = Number(currentRequest?.budget);
-          if (Number.isFinite(refinedBudget) && refinedBudget > 0) {
-            budgetEdited = true;
-            budgetInput.value = String(refinedBudget);
-          }
-        }
-        dismissRefinementBudgetConfirmation();
-        showRecommendationSelection("exact");
-        if (clearInput && refineInput) refineInput.value = "";
-        if (refineUndo) refineUndo.hidden = false;
-        announceRefinement(result.refinementSummary || successMessage);
-        return true;
+        return applyRefinementResult({
+          result,
+          snapshot,
+          request,
+          clearInput,
+          synchroniseBudgetInput,
+          refinementMode,
+          successMessage
+        });
       } catch (error) {
         workingDialog.finish({ restoreFocus: false });
         const confirmationOffered = offerRefinementBudgetConfirmation({
           error,
           request,
           instruction,
-          clearInput
+          clearInput,
+          snapshot,
+          refinementMode
         });
         if (!confirmationOffered) {
           dismissRefinementBudgetConfirmation();
@@ -2142,6 +2183,23 @@
           request: proposal.request,
           synchroniseBudget: true,
           allowBudgetProposal: false
+        });
+        return;
+      }
+      if (proposal.preparedRefinement) {
+        applyRefinementResult({
+          result: clonePlainData(proposal.preparedRefinement),
+          snapshot: proposal.snapshot || createRefinementSnapshot(
+            currentRecommendation,
+            currentRequest,
+            currentSelectionMode,
+            getSelectedWineIds(resultsElement)
+          ),
+          request: proposal.request,
+          clearInput: proposal.clearInput,
+          synchroniseBudgetInput: true,
+          refinementMode: proposal.refinementMode,
+          successMessage: `Your selection now uses a budget of ${proposal.formattedSuggestedBudget}.`
         });
         return;
       }
@@ -2850,11 +2908,9 @@
       const inserted = new Set();
       const percent = improvement.tolerancePercent;
       if (!Number.isInteger(percent) || percent < 1 || percent > 20) return null;
-      // Currency, not locale: EUR has the agreed 20% / EUR 5 safeguard. Other currencies
-      // (and legacy responses without currency) retain their previous percentage cap.
-      const euro = String(recommendation.currency || "").trim().toUpperCase() === "EUR";
-      const bottlePercent = euro ? 20 : percent;
-      const maximumBottleExtra = euro ? minor(5) : null;
+      // Tolerance is a whole-basket rule. The backend has already constrained each replacement
+      // structurally and selected a basket that fits the merchant's configured case ceiling.
+      // Do not reintroduce the retired per-bottle percentage / EUR cap in the browser.
       let changedCost = 0;
       for (const change of improvement.changes) {
         const from = String(change?.replacedWineId);
@@ -2864,13 +2920,7 @@
         if (!oldWine || !newWine || after.has(from) || before.has(to)
             || removed.has(from) || inserted.has(to) || !String(change.explanation || "").trim()) return null;
         const extra = minor(newWine.price) - minor(oldWine.price);
-        // Integer minor-unit arithmetic; preserve strict rounding at fractional-cent boundaries.
-        const sourceMinor = minor(oldWine.price);
-        const percentNumerator = sourceMinor * bottlePercent;
-        if (!Number.isSafeInteger(percentNumerator)) return null;
-        const proportionalExtra = Math.floor(percentNumerator / 100);
-        const permittedExtra = euro ? Math.min(proportionalExtra, maximumBottleExtra) : proportionalExtra;
-        if (extra <= 0 || minor(change.addedCost) !== extra || extra > permittedExtra) return null;
+        if (extra <= 0 || minor(change.addedCost) !== extra) return null;
         changedCost += extra;
         removed.add(from); inserted.add(to);
       }
@@ -3110,6 +3160,19 @@
     const formattedRequestedBudget = formatter.format(requestedBudget);
     const formattedSuggestedBudget = formatter.format(suggestedBudget);
     const formattedDifference = formatter.format(difference);
+    const precision = Number.isInteger(currencyPrecision)
+      ? Math.max(0, Math.min(4, currencyPrecision))
+      : 2;
+    const prepared = details?.preparedRefinement;
+    const preparedBudget = Number(prepared?.refinedRequest?.budget);
+    const preparedTotal = Number(prepared?.total);
+    const preparedRefinement = prepared && typeof prepared === "object"
+      && Number.isFinite(preparedBudget)
+      && Number.isFinite(preparedTotal)
+      && roundMoney(preparedBudget, precision) === roundMoney(suggestedBudget, precision)
+      && roundMoney(preparedTotal, precision) === roundMoney(suggestedBudget, precision)
+      ? clonePlainData(prepared)
+      : null;
     return {
       instruction: cleanInstruction,
       request: {
@@ -3125,6 +3188,7 @@
       formattedRequestedBudget,
       formattedSuggestedBudget,
       formattedDifference,
+      preparedRefinement,
       prompt: t("widget.refine.budget_question", "That change would cost {suggested}, which is {difference} above your {current} budget. Is that okay?", {
         suggested: formattedSuggestedBudget, difference: formattedDifference, current: formattedRequestedBudget
       }),
