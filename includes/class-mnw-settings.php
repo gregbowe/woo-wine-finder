@@ -276,6 +276,10 @@ final class MyNextWine_Woo_Settings {
         $billing_price = is_array($status) ? (string) ($status['billingPrice'] ?? '29.99') : '29.99';
         $billing_price_display = $this->format_price($billing_price);
         $billing_trial_days = is_array($status) ? max(0, (int) ($status['billingTrialDays'] ?? 14)) : 14;
+        $billing_manual_access = is_array($status) && !empty($status['billingActive']) && (
+            !empty($status['billingManualAccess'])
+            || 'LEGACY_MANUAL' === strtoupper((string) ($status['billingProvider'] ?? ''))
+        );
         $plans = is_array($status) && !empty($status['plans']) && is_array($status['plans'])
             ? $status['plans']
             : array(
@@ -285,6 +289,19 @@ final class MyNextWine_Woo_Settings {
                 array('code' => 'ENTERPRISE', 'name' => 'Enterprise', 'monthlyPrice' => '999.99', 'completedSessionsPerMonth' => 10000),
             );
         $plan_code = is_array($status) ? strtoupper((string) ($status['planCode'] ?? 'LAUNCH')) : 'LAUNCH';
+        $can_start_billing = is_array($status) && !empty($status['canStartBilling']);
+        $available_plan_codes = array();
+        foreach ($plans as $plan) {
+            $candidate_code = strtoupper((string) ($plan['code'] ?? ''));
+            $checkout_available = array_key_exists('checkoutAvailable', $plan)
+                ? (bool) $plan['checkoutAvailable']
+                : (is_array($status) && !empty($status['billingConfigured']));
+            if ($checkout_available && in_array($candidate_code, array('LAUNCH', 'GROWTH', 'SCALE', 'ENTERPRISE'), true)) {
+                $available_plan_codes[] = $candidate_code;
+            }
+        }
+        $selected_plan_code = !$can_start_billing || in_array($plan_code, $available_plan_codes, true)
+            ? $plan_code : ($available_plan_codes[0] ?? $plan_code);
         $plan_name = is_array($status) ? (string) ($status['planName'] ?? 'Launch') : 'Launch';
         $completed_sessions = is_array($status) ? max(0, (int) ($status['completedSessionsThisMonth'] ?? 0)) : 0;
         $completed_session_limit = is_array($status) ? max(0, (int) ($status['completedSessionsLimit'] ?? 350)) : 350;
@@ -422,8 +439,13 @@ final class MyNextWine_Woo_Settings {
                         <p><strong><?php echo esc_html__('Last catalogue sync:', 'my-next-wine-for-woocommerce'); ?></strong> <?php echo esc_html($this->format_status_date($last_catalogue_sync_at)); ?></p>
                     <?php endif; ?>
                     <p><strong><?php echo esc_html__('Billing:', 'my-next-wine-for-woocommerce'); ?></strong>
-                        <?php echo esc_html($this->billing_status_label($billing_status, $billing_trial_days)); ?>
+                        <?php echo esc_html($billing_manual_access
+                            ? __('Manual access', 'my-next-wine-for-woocommerce')
+                            : $this->billing_status_label($billing_status, $billing_trial_days)); ?>
                     </p>
+                    <?php if ($billing_manual_access) : ?>
+                        <p class="description"><?php echo esc_html__('This store has manually granted access. Contact My Next Wine to switch it to a Stripe trial or paid plan.', 'my-next-wine-for-woocommerce'); ?></p>
+                    <?php endif; ?>
                     <p><strong><?php echo esc_html__('Plan:', 'my-next-wine-for-woocommerce'); ?></strong>
                         <?php
                         /* translators: 1: plan name, 2: billing currency code, 3: monthly price. */
@@ -506,7 +528,7 @@ final class MyNextWine_Woo_Settings {
                                 <?php submit_button(__('Sync catalogue now', 'my-next-wine-for-woocommerce'), 'secondary', 'submit', false); ?>
                             </form>
                         <?php endif; ?>
-                        <?php if (is_array($status) && !empty($status['canStartBilling'])) : ?>
+                        <?php if (is_array($status)) : ?>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="width:100%;margin-top:12px;">
                                 <input type="hidden" name="action" value="mynextwine_woo_start_billing">
                                 <?php wp_nonce_field('mynextwine_woo_start_billing'); ?>
@@ -518,17 +540,31 @@ final class MyNextWine_Woo_Settings {
                                             if (!in_array($candidate_code, array('LAUNCH', 'GROWTH', 'SCALE', 'ENTERPRISE'), true)) {
                                                 continue;
                                             }
+                                            $checkout_available = in_array($candidate_code, $available_plan_codes, true);
                                             ?>
                                             <label style="display:block;border:1px solid #c3c4c7;border-radius:6px;padding:12px;background:#fff;">
-                                                <input type="radio" name="plan_code" value="<?php echo esc_attr($candidate_code); ?>" <?php checked($plan_code, $candidate_code); ?> required>
+                                                <input type="radio" name="plan_code" value="<?php echo esc_attr($candidate_code); ?>" <?php checked($selected_plan_code, $candidate_code); ?> <?php disabled(!$can_start_billing || !$checkout_available); ?> required>
                                                 <strong><?php echo esc_html((string) ($plan['name'] ?? ucfirst(strtolower($candidate_code)))); ?></strong><br>
                                                 <span><?php echo esc_html($this->format_price((string) ($plan['monthlyPrice'] ?? '')) . ' ' . $billing_currency); ?> / <?php echo esc_html__('month', 'my-next-wine-for-woocommerce'); ?></span><br>
                                                 <small><?php echo esc_html(number_format_i18n((int) ($plan['completedSessionsPerMonth'] ?? 0)) . ' ' . __('completed sessions', 'my-next-wine-for-woocommerce')); ?></small>
+                                                <?php if (!$checkout_available) : ?>
+                                                    <br><small><?php echo esc_html__('Checkout is not available for this plan yet.', 'my-next-wine-for-woocommerce'); ?></small>
+                                                <?php endif; ?>
                                             </label>
                                         <?php endforeach; ?>
                                     </div>
                                 </fieldset>
-                                <?php submit_button(sprintf(__('Start %d-day trial with selected plan', 'my-next-wine-for-woocommerce'), $billing_trial_days), 'primary', 'submit', false); ?>
+                                <?php if (empty($status['billingActive'])) : ?>
+                                    <?php submit_button(
+                                        $billing_trial_days > 0
+                                            ? sprintf(__('Start %d-day trial with selected plan', 'my-next-wine-for-woocommerce'), $billing_trial_days)
+                                            : __('Start subscription with selected plan', 'my-next-wine-for-woocommerce'),
+                                        'primary',
+                                        'submit',
+                                        false,
+                                        (!$can_start_billing || empty($available_plan_codes)) ? array('disabled' => 'disabled') : array()
+                                    ); ?>
+                                <?php endif; ?>
                             </form>
                         <?php endif; ?>
                         <?php if (is_array($status) && !empty($status['canManageBilling'])) : ?>

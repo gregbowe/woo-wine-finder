@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 1.0.53
+Stable tag: 1.0.54
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,11 @@ No. My Next Wine provides recommendation and catalogue technology. The WooCommer
 WooCommerce revalidates the selected product or variation, quantity, current price, stock and purchase eligibility before basket insertion.
 
 == Changelog ==
+
+= 1.0.54 =
+* Always display all four subscription plans, with checkout availability for each tier.
+* Distinguish manually granted access from a Stripe trial or paid subscription.
+* Keep trial checkout disabled until the service confirms eligibility and a configured plan.
 
 = 1.0.53 =
 * Increased AI-backed Wine Finder timeouts for recommendations, refinements and swaps to tolerate slower provider responses without aborting valid work.

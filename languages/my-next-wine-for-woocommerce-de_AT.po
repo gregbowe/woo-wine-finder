@@ -1413,3 +1413,19 @@ msgstr "Dies ändert nur die Formulierung der Erklärungen, nicht die empfohlene
 #: includes/class-mnw-store-palate-settings.php
 msgid "Choose a valid explanation voice."
 msgstr "Wählen Sie einen gültigen Erklärungsstil."
+
+#: includes/class-mnw-settings.php
+msgid "Manual access"
+msgstr "Manuell gewährter Zugang"
+
+#: includes/class-mnw-settings.php
+msgid "This store has manually granted access. Contact My Next Wine to switch it to a Stripe trial or paid plan."
+msgstr "Dieser Shop hat manuell gewährten Zugang. Kontaktieren Sie My Next Wine, um zu einem Stripe-Testzeitraum oder einem kostenpflichtigen Tarif zu wechseln."
+
+#: includes/class-mnw-settings.php
+msgid "Checkout is not available for this plan yet."
+msgstr "Der Checkout ist für diesen Tarif noch nicht verfügbar."
+
+#: includes/class-mnw-settings.php
+msgid "Start subscription with selected plan"
+msgstr "Abonnement mit ausgewähltem Tarif starten"

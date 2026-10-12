@@ -1,3 +1,8 @@
+= 1.0.54 =
+* Always display all four subscription plans, with checkout availability for each tier.
+* Distinguish manually granted access from a Stripe trial or paid subscription.
+* Keep trial checkout disabled until the service confirms eligibility and a configured plan.
+
 = 1.0.53 =
 * Increased AI-backed Wine Finder timeouts for recommendations, refinements and swaps to tolerate slower provider responses without aborting valid work.
 

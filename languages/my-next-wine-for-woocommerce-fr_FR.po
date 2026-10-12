@@ -1416,3 +1416,19 @@ msgstr "Cela change la façon dont les explications sont rédigées, pas les vin
 #: includes/class-mnw-store-palate-settings.php
 msgid "Choose a valid explanation voice."
 msgstr "Choisissez une voix d’explication valide."
+
+#: includes/class-mnw-settings.php
+msgid "Manual access"
+msgstr "Accès manuel"
+
+#: includes/class-mnw-settings.php
+msgid "This store has manually granted access. Contact My Next Wine to switch it to a Stripe trial or paid plan."
+msgstr "Un accès a été accordé manuellement à cette boutique. Contactez My Next Wine pour passer à un essai Stripe ou à une offre payante."
+
+#: includes/class-mnw-settings.php
+msgid "Checkout is not available for this plan yet."
+msgstr "Le paiement n’est pas encore disponible pour cette offre."
+
+#: includes/class-mnw-settings.php
+msgid "Start subscription with selected plan"
+msgstr "Démarrer l’abonnement avec l’offre sélectionnée"
