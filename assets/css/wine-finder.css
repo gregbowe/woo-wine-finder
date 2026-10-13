@@ -5968,9 +5968,21 @@ body.mnw-wine-finder-open {
   overflow-wrap: anywhere;
 }
 .mnw-wine-finder__budget-improvement[hidden] { display: none !important; }
-.mnw-wine-finder__budget-improvement h3 { margin: 0 0 .6rem; font-size: 1.05rem; }
-.mnw-wine-finder__budget-improvement p { margin: .5rem 0; line-height: 1.5; }
-.mnw-wine-finder__improvement-total { font-weight: 600; }
+.mnw-wine-finder .mnw-wine-finder__budget-improvement > h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.mnw-wine-finder .mnw-wine-finder__budget-improvement > p {
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.mnw-wine-finder .mnw-wine-finder__budget-improvement > .mnw-wine-finder__improvement-total {
+  font-weight: 600;
+}
 .mnw-wine-finder__improvement-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .9rem; }
 .mnw-wine-finder__improvement-actions button { white-space: normal; height: auto; min-height: 44px; }
 @media (max-width: 540px) {
